@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11
-Release:          0
+Release:          0.cvs.2
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,6 +18,8 @@ Obsoletes:        mozilla-nss
 Source0:          %{name}-%{version}.cvs.tar.bz2
 Source1:          nss.pc.in
 Source2:          nss-config.in
+
+Patch1:           nss-3.11-zdefs.patch
 
 
 %description
@@ -68,6 +70,7 @@ low level services.
 
 %prep
 %setup -q
+%patch1 -p0
 
 %build
 
@@ -296,6 +299,9 @@ done
 
 
 %changelog
+* Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-0.cvs.2
+- Add patch to allow building on ppc*
+
 * Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-0.cvs
 - Initial import into Fedora Core, based on a CVS snapshot of
   the NSS_3_11_RTM tag
