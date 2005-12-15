@@ -112,7 +112,7 @@ export USE_64
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
-                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" > \
+                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSS_VERSION%%,%{version},g" > \
                           $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
 
