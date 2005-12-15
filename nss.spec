@@ -112,6 +112,7 @@ export USE_64
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
+                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" > \
                           -e "s,%%NSS_VERSION%%,%{version},g" > \
                           $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
 
@@ -301,6 +302,7 @@ done
 %changelog
 * Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-0.cvs.2
 - Add patch to allow building on ppc*
+- Update the pkgconfig file to Require nspr
 
 * Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-0.cvs
 - Initial import into Fedora Core, based on a CVS snapshot of
