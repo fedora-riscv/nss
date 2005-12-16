@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11
-Release:          0.cvs.2
+Release:          1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -15,7 +15,7 @@ BuildRequires:    gawk
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-Source0:          %{name}-%{version}.cvs.tar.bz2
+Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 
@@ -300,6 +300,9 @@ done
 
 
 %changelog
+* Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-1
+- Update to 3.11
+
 * Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-0.cvs.2
 - Add patch to allow building on ppc*
 - Update the pkgconfig file to Require nspr
