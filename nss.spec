@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11
-Release:          1
+Release:          2
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -237,6 +237,7 @@ done
 %{_includedir}/nss3/nss.h
 %{_includedir}/nss3/nssb64.h
 %{_includedir}/nss3/nssb64t.h
+%{_includedir}/nss3/nssckbi.h
 %{_includedir}/nss3/nssilckt.h
 %{_includedir}/nss3/nssilock.h
 %{_includedir}/nss3/nsslocks.h
@@ -292,14 +293,24 @@ done
 
 %files pkcs11-devel
 %defattr(-, root, root)
-%{_includedir}/nss3/nssck*.h
 %{_includedir}/nss3/nssbase.h
 %{_includedir}/nss3/nssbaset.h
+%{_includedir}/nss3/nssckepv.h
+%{_includedir}/nss3/nssckft.h
+%{_includedir}/nss3/nssckfw.h
+%{_includedir}/nss3/nssckfwc.h
+%{_includedir}/nss3/nssckfwt.h
+%{_includedir}/nss3/nssckg.h
+%{_includedir}/nss3/nssckmdt.h
+%{_includedir}/nss3/nssckt.h
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
 
 %changelog
+* Fri Dec 16 2005 Christopher Aillon <caillon@redhat.com> 3.11-2
+- Update file list for the devel packages
+
 * Thu Dec 15 2005 Christopher Aillon <caillon@redhat.com> 3.11-1
 - Update to 3.11
 
