@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11
-Release:          2
+Release:          3
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -308,6 +308,9 @@ done
 
 
 %changelog
+* Thu Jan 19 2006 Ray Strode <rstrode@redhat.com> 3.11-3
+- rebuild
+
 * Fri Dec 16 2005 Christopher Aillon <caillon@redhat.com> 3.11-2
 - Update file list for the devel packages
 
