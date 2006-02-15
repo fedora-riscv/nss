@@ -1,0 +1,11 @@
+--- mozilla/security/nss/lib/freebl/Makefile.fix180726	2006-02-15 07:19:21.000000000 +0100
++++ mozilla/security/nss/lib/freebl/Makefile	2006-02-15 07:19:25.000000000 +0100
+@@ -134,7 +134,7 @@
+ ifeq ($(OS_TARGET),Linux)
+ ifeq ($(CPU_ARCH),x86_64)
+     ASFILES  = arcfour-amd64-gas.s mpi_amd64_gas.s
+-    ASFLAGS += -march=opteron -m64 -fPIC
++    ASFLAGS += -march=opteron -m64 -fPIC -Wa,--noexecstack
+     DEFINES += -DNSS_BEVAND_ARCFOUR -DMPI_AMD64 -DMP_ASSEMBLY_MULTIPLY
+     DEFINES += -DNSS_USE_COMBA
+     MPI_SRCS += mpi_amd64.c mp_comba.c

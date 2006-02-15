@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11
-Release:          3.2
+Release:          4
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -20,6 +20,7 @@ Source1:          nss.pc.in
 Source2:          nss-config.in
 
 Patch1:           nss-3.11-zdefs.patch
+Patch2:           nss-bug180726.patch
 
 
 %description
@@ -71,6 +72,7 @@ low level services.
 %prep
 %setup -q
 %patch1 -p0
+%patch2 -p0
 
 %build
 
@@ -308,6 +310,9 @@ done
 
 
 %changelog
+* Wed Feb 15 2006 Kai Engert <kengert@redhat.com> - 3.11-4
+- add --noexecstack when compiling assembler on x86_64
+
 * Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 3.11-3.2
 - bump again for double-long bug on ppc(64)
 
