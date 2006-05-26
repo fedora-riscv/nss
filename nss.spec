@@ -2,8 +2,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11
-Release:          4
+Version:          3.11.1
+Release:          1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -19,8 +19,7 @@ Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 
-Patch1:           nss-3.11-zdefs.patch
-Patch2:           nss-bug180726.patch
+Patch1:           nss-limit-suite-b.patch
 
 
 %description
@@ -72,7 +71,6 @@ low level services.
 %prep
 %setup -q
 %patch1 -p0
-%patch2 -p0
 
 %build
 
@@ -310,6 +308,10 @@ done
 
 
 %changelog
+* Fri May 26 2006 Kai Engert <kengert@redhat.com> - 3.11.1-1
+- Update to 3.11.1
+- Include upstream patch to limit curves
+
 * Wed Feb 15 2006 Kai Engert <kengert@redhat.com> - 3.11-4
 - add --noexecstack when compiling assembler on x86_64
 
