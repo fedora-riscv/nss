@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.1
-Release:          1
+Release:          2
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -101,6 +101,9 @@ export NSPR_LIB_DIR
 USE_64=1
 export USE_64
 %endif
+
+NSS_ENABLE_ECC=1
+export NSS_ENABLE_ECC
 
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
@@ -308,6 +311,9 @@ done
 
 
 %changelog
+* Wed Jun 14 2006 Kai Engert <kengert@redhat.com> - 3.11.1-2
+- Enable Elliptic Curve Cryptography (ECC)
+
 * Fri May 26 2006 Kai Engert <kengert@redhat.com> - 3.11.1-1
 - Update to 3.11.1
 - Include upstream patch to limit curves
