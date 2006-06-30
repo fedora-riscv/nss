@@ -2,8 +2,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.1
-Release:          2
+Version:          3.11.2
+Release:          1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,8 +18,6 @@ Obsoletes:        mozilla-nss
 Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
-
-Patch1:           nss-limit-suite-b.patch
 
 
 %description
@@ -70,7 +68,6 @@ low level services.
 
 %prep
 %setup -q
-%patch1 -p0
 
 %build
 
@@ -149,7 +146,13 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 
 # Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libsoftokn3.so libsoftokn3.chk libnssckbi.so libfreebl3.so libfreebl3.chk
+for file in libnss3.so libssl3.so libsmime3.so libsoftokn3.so libnssckbi.so libfreebl3.so
+do
+  %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+done
+
+# Copy the chk files we want
+for file in libsoftokn3.chk libfreebl3.chk
 do
   %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -311,6 +314,10 @@ done
 
 
 %changelog
+* Fri Jun 30 2006 Kai Engert <kengert@redhat.com> - 3.11.2-1
+- Update to 3.11.2
+- Enable executable bit on shared libs, also fixes debug info.
+
 * Wed Jun 14 2006 Kai Engert <kengert@redhat.com> - 3.11.1-2
 - Enable Elliptic Curve Cryptography (ECC)
 
