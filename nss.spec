@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.2
-Release:          1
+Release:          1.1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -314,6 +314,9 @@ done
 
 
 %changelog
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - sh: line 0: fg: no job control
+- rebuild
+
 * Fri Jun 30 2006 Kai Engert <kengert@redhat.com> - 3.11.2-1
 - Update to 3.11.2
 - Enable executable bit on shared libs, also fixes debug info.
