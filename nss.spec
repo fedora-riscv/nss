@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.2
-Release:          1.1
+Release:          2
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,6 +18,9 @@ Obsoletes:        mozilla-nss
 Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
+Source3:          blank-cert8.db
+Source4:          blank-key3.db
+Source5:          blank-secmod.db
 
 
 %description
@@ -157,6 +160,12 @@ do
   %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
+# Install the empty NSS db files
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
+%{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
+%{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
+%{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
@@ -198,7 +207,10 @@ done
 %{_libdir}/libnssckbi.so
 %{_libdir}/libfreebl3.so
 %{_libdir}/libfreebl3.chk
-
+%dir %{_sysconfdir}/pki/nssdb
+%config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
+%config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
+%config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
 
 %files tools
 %defattr(-,root,root)
@@ -314,7 +326,10 @@ done
 
 
 %changelog
-* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - sh: line 0: fg: no job control
+* Thu Aug 03 2006 Kai Engert <kengert@redhat.com> - 3.11.2-2
+- Add /etc/pki/nssdb
+
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 3.11.2-1.1
 - rebuild
 
 * Fri Jun 30 2006 Kai Engert <kengert@redhat.com> - 3.11.2-1
