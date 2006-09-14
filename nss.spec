@@ -1,9 +1,9 @@
-%define nspr_version 4.6
+%define nspr_version 4.6.3
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.2
-Release:          2
+Version:          3.11.3
+Release:          1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -326,6 +326,9 @@ done
 
 
 %changelog
+* Thu Sep 14 2006 Kai Engert <kengert@redhat.com> - 3.11.3-1
+- Update to 3.11.3
+
 * Thu Aug 03 2006 Kai Engert <kengert@redhat.com> - 3.11.2-2
 - Add /etc/pki/nssdb
 
