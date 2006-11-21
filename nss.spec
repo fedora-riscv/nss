@@ -2,8 +2,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.3
-Release:          2
+Version:          3.11.4
+Release:          1
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -326,6 +326,9 @@ done
 
 
 %changelog
+* Tue Nov 21 2006 Kai Engert <kengert@redhat.com> - 3.11.4-1
+- Update to 3.11.4
+
 * Thu Sep 14 2006 Kai Engert <kengert@redhat.com> - 3.11.3-2
 - Revert the attempt to require latest NSPR, as it is not yet available
   in the build infrastructure.
