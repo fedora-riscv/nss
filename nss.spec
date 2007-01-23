@@ -3,7 +3,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.4
-Release:          1
+Release:          5%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -21,7 +21,7 @@ Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-
+Source6:	  nss-clobber.sh
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -71,6 +71,7 @@ low level services.
 
 %prep
 %setup -q
+sh %{SOURCE6} > /dev/null
 
 %build
 
@@ -102,8 +103,8 @@ USE_64=1
 export USE_64
 %endif
 
-NSS_ENABLE_ECC=1
-export NSS_ENABLE_ECC
+# NSS_ENABLE_ECC=1
+# export NSS_ENABLE_ECC
 
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
@@ -326,7 +327,10 @@ done
 
 
 %changelog
-* Tue Nov 21 2006 Kai Engert <kengert@redhat.com> - 3.11.4-1
+* Tue Jan  9 2007 Bob Relyea <rrelyea@redhat.com> - 3.11.4-4
+- disable ECC, cleanout dead code
+
+* Tue Nov 28 2006 Kai Engert <kengert@redhat.com> - 3.11.4-1
 - Update to 3.11.4
 
 * Thu Sep 14 2006 Kai Engert <kengert@redhat.com> - 3.11.3-2
