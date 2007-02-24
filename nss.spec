@@ -1,9 +1,10 @@
 %define nspr_version 4.6.2
+%define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.4
-Release:          5%{?dist}
+Version:          3.11.5
+Release:          1%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -22,6 +23,8 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source6:	  nss-clobber.sh
+
+Patch1:           nss-no-rpath.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -72,6 +75,7 @@ low level services.
 %prep
 %setup -q
 sh %{SOURCE6} > /dev/null
+%patch1  -p0
 
 %build
 
@@ -148,6 +152,7 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
+%{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 
 # Copy the binary libraries we want
 for file in libnss3.so libssl3.so libsmime3.so libsoftokn3.so libnssckbi.so libfreebl3.so
@@ -174,9 +179,15 @@ do
 done
 
 # Copy the binaries we want
-for file in certutil modutil pk12util signtool ssltap
+for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+done
+
+# Copy the binaries we ship as unsupported
+for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
+do
+  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files
@@ -216,10 +227,25 @@ done
 %files tools
 %defattr(-,root,root)
 %{_bindir}/certutil
+%{_bindir}/cmsutil
+%{_bindir}/crlutil
 %{_bindir}/modutil
 %{_bindir}/pk12util
 %{_bindir}/signtool
+%{_bindir}/signver
 %{_bindir}/ssltap
+%{unsupported_tools_directory}/atob
+%{unsupported_tools_directory}/btoa
+%{unsupported_tools_directory}/derdump
+%{unsupported_tools_directory}/ocspclnt
+%{unsupported_tools_directory}/pp
+%{unsupported_tools_directory}/selfserv
+%{unsupported_tools_directory}/shlibsign
+%{unsupported_tools_directory}/strsclnt
+%{unsupported_tools_directory}/symkeyutil
+%{unsupported_tools_directory}/tstclnt
+%{unsupported_tools_directory}/vfyserv
+%{unsupported_tools_directory}/vfychain
 
 
 %files devel
@@ -327,6 +353,12 @@ done
 
 
 %changelog
+* Sat Feb 24 2007 Kai Engert <kengert@redhat.com> - 3.11.5-1
+- Update to 3.11.5
+- This update fixes two security vulnerabilities with SSL 2
+- Do not use -rpath link option
+- Added several unsupported tools to tools package
+
 * Tue Jan  9 2007 Bob Relyea <rrelyea@redhat.com> - 3.11.4-4
 - disable ECC, cleanout dead code
 

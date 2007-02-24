@@ -4,6 +4,7 @@ set -e
 
 mv ${FREEBLDIR}/ecl/ecl-exp.h ${FREEBLDIR}/save
 rm -rf ${FREEBLDIR}/ecl/tests
+rm -rf ${FREEBLDIR}/ecl/CVS
 for i in ${FREEBLDIR}/ecl/* ; do
 echo clobbering $i
  > $i
