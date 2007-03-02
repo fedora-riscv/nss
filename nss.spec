@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.5
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -25,6 +25,7 @@ Source5:          blank-secmod.db
 Source6:	  nss-clobber.sh
 
 Patch1:           nss-no-rpath.patch
+Patch2:           nss-smartcard-auth.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -76,6 +77,7 @@ low level services.
 %setup -q
 sh %{SOURCE6} > /dev/null
 %patch1  -p0
+%patch2 -p0 -b .smartcard-auth.patch
 
 %build
 
@@ -160,11 +162,9 @@ do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
-# Copy the chk files we want
-for file in libsoftokn3.chk libfreebl3.chk
-do
-  %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
-done
+# These ghost files will be generated in the post step
+touch $RPM_BUILD_ROOT/%{_libdir}/libsoftokn3.chk
+touch $RPM_BUILD_ROOT/%{_libdir}/libfreebl3.chk
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
@@ -203,6 +203,8 @@ done
 
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
+%{unsupported_tools_directory}/shlibsign -i %{_libdir}/libsoftokn3.so >/dev/null 2>/dev/null
+%{unsupported_tools_directory}/shlibsign -i %{_libdir}/libfreebl3.so >/dev/null 2>/dev/null
 
 
 %postun
@@ -215,10 +217,11 @@ done
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %{_libdir}/libsoftokn3.so
-%{_libdir}/libsoftokn3.chk
 %{_libdir}/libnssckbi.so
 %{_libdir}/libfreebl3.so
-%{_libdir}/libfreebl3.chk
+%{unsupported_tools_directory}/shlibsign
+%ghost %{_libdir}/libsoftokn3.chk
+%ghost %{_libdir}/libfreebl3.chk
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
@@ -240,7 +243,6 @@ done
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
-%{unsupported_tools_directory}/shlibsign
 %{unsupported_tools_directory}/strsclnt
 %{unsupported_tools_directory}/symkeyutil
 %{unsupported_tools_directory}/tstclnt
@@ -353,6 +355,11 @@ done
 
 
 %changelog
+* Fri Mar 02 2007 Kai Engert <kengert@redhat.com> - 3.11.5-2
+- Fix rhbz#230545, failure to enable FIPS mode
+- Fix rhbz#220542, make NSS more tolerant of resets when in the 
+  middle of prompting for a user password.
+
 * Sat Feb 24 2007 Kai Engert <kengert@redhat.com> - 3.11.5-1
 - Update to 3.11.5
 - This update fixes two security vulnerabilities with SSL 2
