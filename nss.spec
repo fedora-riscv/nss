@@ -3,7 +3,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.5
+Version:          3.11.7
 Release:          2%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -16,16 +16,17 @@ BuildRequires:    gawk
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-Source0:          %{name}-%{version}.tar.gz
+Source0:          %{name}-%{version}-fbst3115-stripped.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source6:	  nss-clobber.sh
+Source7:          fake-kstat.h
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-smartcard-auth.patch
+Patch3:           nss-use-netstat-hack.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -75,9 +76,11 @@ low level services.
 
 %prep
 %setup -q
-sh %{SOURCE6} > /dev/null
 %patch1  -p0
 %patch2 -p0 -b .smartcard-auth.patch
+%patch3 -p0
+%{__mkdir_p} mozilla/security/nss/lib/fake/
+cp -i %{SOURCE7} mozilla/security/nss/lib/fake/kstat.h
 
 %build
 
@@ -114,6 +117,14 @@ export USE_64
 
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
+%{__make} -C ./mozilla/security/nss export
+
+%{__make} -C ./mozilla/security/nss/lib/util
+%{__make} -C ./mozilla/security/nss/lib/freebl
+
+touch ./mozilla/security/nss/lib/freebl/unix_rand.c
+USE_NETSTAT_HACK=1 %{__make} -C ./mozilla/security/nss/lib/freebl
+
 %{__make} -C ./mozilla/security/nss 
 
 # Set up our package file
@@ -355,6 +366,10 @@ done
 
 
 %changelog
+* Fri Jun 01 2007 Kai Engert <kengert@redhat.com> - 3.11.7-2
+- Update to 3.11.7, but freebl/softokn remain at 3.11.5.
+- Use a workaround to avoid mozilla bug 51429.
+
 * Fri Mar 02 2007 Kai Engert <kengert@redhat.com> - 3.11.5-2
 - Fix rhbz#230545, failure to enable FIPS mode
 - Fix rhbz#220542, make NSS more tolerant of resets when in the 
