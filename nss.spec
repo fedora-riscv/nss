@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -233,6 +233,8 @@ done
 %{unsupported_tools_directory}/shlibsign
 %ghost %{_libdir}/libsoftokn3.chk
 %ghost %{_libdir}/libfreebl3.chk
+%dir %{_libdir}/nss
+%dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
@@ -366,6 +368,9 @@ done
 
 
 %changelog
+* Sun Jun 10 2007 Kai Engert <kengert@redhat.com> - 3.11.7-3
+- Fix unowned directories, rhbz#233890
+
 * Fri Jun 01 2007 Kai Engert <kengert@redhat.com> - 3.11.7-2
 - Update to 3.11.7, but freebl/softokn remain at 3.11.5.
 - Use a workaround to avoid mozilla bug 51429.
