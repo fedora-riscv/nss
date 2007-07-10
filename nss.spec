@@ -1,10 +1,12 @@
 %define nspr_version 4.6.2
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%define fips_source_version 3.11.5
+%define ckbi_version 1.64
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.5
-Release:          2%{?dist}
+Version:          3.11.7
+Release:          0.7.1%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,16 +18,24 @@ BuildRequires:    gawk
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-Source0:          %{name}-%{version}.tar.gz
+#Source0:          %{name}-%{version}-no-fbst.tar.gz
+Source0:          %{name}-%{version}-no-fbst-with-ckbi-%{ckbi_version}.tar.gz
+# ckbi is the builtin roots module which may get released separately.
+
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source6:	  nss-clobber.sh
+Source7:          fake-kstat.h
+Source10:         %{name}-%{fips_source_version}-fbst-stripped.tar.gz
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-smartcard-auth.patch
+Patch3:           nss-use-netstat-hack.patch
+Patch4:           nss-decouple-softokn.patch
+Patch5:           nss-disable-build-freebl-softoken.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -75,9 +85,43 @@ low level services.
 
 %prep
 %setup -q
-sh %{SOURCE6} > /dev/null
-%patch1  -p0
-%patch2 -p0 -b .smartcard-auth.patch
+%setup -q -T -D -n %{name}-%{version} -a 10
+
+%define old_nss_lib %{name}-%{fips_source_version}/mozilla/security/nss/lib
+%define new_nss_lib mozilla/security/nss/lib
+
+# Ensure we will not use new freebl/softoken code
+rm -rf %{new_nss_lib}/freebl
+rm -rf %{new_nss_lib}/softoken
+
+# However, in order to build newer NSS we need some exports
+cp -a %{old_nss_lib}/freebl %{new_nss_lib}
+cp -a %{old_nss_lib}/softoken %{new_nss_lib}
+
+# Ensure the newer NSS tree will not build code, except the loader
+mv -i %{new_nss_lib}/freebl/loader.c %{new_nss_lib}/freebl/loader.c.save
+rm -rf %{new_nss_lib}/freebl/*.c %{new_nss_lib}/freebl/*.s
+rm -rf %{new_nss_lib}/softoken/*.c %{new_nss_lib}/softoken/*.s
+mv -i %{new_nss_lib}/freebl/loader.c.save %{new_nss_lib}/freebl/loader.c
+
+# These currently don't build without freebl/softoken in the same tree
+rm -rf mozilla/security/nss/cmd/bltest
+rm -rf mozilla/security/nss/cmd/fipstest
+rm -rf mozilla/security/nss/cmd/certcgi
+
+# Apply the patches to the newer NSS tree
+%patch1 -p0
+%patch2 -p0 -b .smartcard-auth
+%patch4 -p0 -b .decouple-softokn
+%patch5 -p0 -b .nofbst
+
+# Apply the patches to the tree where we build freebl/softoken
+cd nss-%{fips_source_version}
+%patch3 -p0 -b .use-netstat-hack
+%{__mkdir_p} mozilla/security/nss/lib/fake/
+cp -i %{SOURCE7} mozilla/security/nss/lib/fake/kstat.h
+cd ..
+
 
 %build
 
@@ -112,9 +156,27 @@ export USE_64
 # NSS_ENABLE_ECC=1
 # export NSS_ENABLE_ECC
 
+##### first, build freebl and softokn shared libraries
+
+cd nss-%{fips_source_version}
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
-%{__make} -C ./mozilla/security/nss 
+%{__make} -C ./mozilla/security/nss export
+%{__make} -C ./mozilla/security/nss/lib/base
+%{__make} -C ./mozilla/security/nss/lib/util
+%{__make} -C ./mozilla/security/nss/lib/freebl
+touch ./mozilla/security/nss/lib/freebl/unix_rand.c
+USE_NETSTAT_HACK=1 %{__make} -C ./mozilla/security/nss/lib/freebl
+%{__make} -C ./mozilla/security/nss/lib/freebl install
+%{__make} -C ./mozilla/security/nss/lib/softoken
+%{__make} -C ./mozilla/security/nss/lib/softoken install
+cd ..
+
+##### second, build all the rest of NSS
+
+%{__make} -C ./mozilla/security/coreconf
+%{__make} -C ./mozilla/security/dbm
+%{__make} -C ./mozilla/security/nss
 
 # Set up our package file
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
@@ -157,7 +219,14 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 
 # Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libsoftokn3.so libnssckbi.so libfreebl3.so
+for file in libsoftokn3.so libfreebl3.so
+do
+  %{__install} -m 755 nss-%{fips_source_version}/mozilla/dist/*.OBJ/lib/$file \
+                      $RPM_BUILD_ROOT/%{_libdir}
+done
+
+# Copy the binary libraries we want
+for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -190,7 +259,16 @@ do
   %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
-# Copy the include files
+# Copy the include files we want from freebl/softoken sources
+# and remove those files from the other area
+for file in blapit.h shsign.h ecl-exp.h pkcs11.h pkcs11f.h pkcs11p.h pkcs11t.h pkcs11n.h pkcs11u.h
+do
+  %{__install} -m 644 nss-%{fips_source_version}/mozilla/dist/public/nss/$file \
+                      $RPM_BUILD_ROOT/%{_includedir}/nss3
+  rm mozilla/dist/public/nss/$file
+done
+
+# Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
   %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
@@ -222,6 +300,8 @@ done
 %{unsupported_tools_directory}/shlibsign
 %ghost %{_libdir}/libsoftokn3.chk
 %ghost %{_libdir}/libfreebl3.chk
+%dir %{_libdir}/nss
+%dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
@@ -355,6 +435,11 @@ done
 
 
 %changelog
+* Tue Jul 10 2007 Kai Engert <kengert@redhat.com> - 3.11.7-0.7.1
+- Update to 3.11.7, but freebl/softokn remain at 3.11.5.
+- Remove link time dependency on softokn.
+- Use a workaround to avoid mozilla bug 51429.
+
 * Fri Mar 02 2007 Kai Engert <kengert@redhat.com> - 3.11.5-2
 - Fix rhbz#230545, failure to enable FIPS mode
 - Fix rhbz#220542, make NSS more tolerant of resets when in the 
