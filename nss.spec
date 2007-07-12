@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -166,6 +166,8 @@ cd nss-%{fips_source_version}
 %{__make} -C ./mozilla/security/nss/lib/util
 %{__make} -C ./mozilla/security/nss/lib/freebl
 touch ./mozilla/security/nss/lib/freebl/unix_rand.c
+rm -f ./mozilla/security/nss/lib/freebl/*/*/libfreebl3*
+rm -f ./mozilla/security/nss/lib/freebl/*/*/sysrand*
 USE_NETSTAT_HACK=1 %{__make} -C ./mozilla/security/nss/lib/freebl
 %{__make} -C ./mozilla/security/nss/lib/freebl install
 %{__make} -C ./mozilla/security/nss/lib/softoken
@@ -435,6 +437,9 @@ done
 
 
 %changelog
+* Wed Jul 11 2007 Kai Engert <kengert@redhat.com> - 3.11.7-5
+- Ensure the workaround for mozilla bug 51429 really get's built.
+
 * Mon Jun 18 2007 Kai Engert <kengert@redhat.com> - 3.11.7-4
 - Better approach to ship freebl/softokn based on 3.11.5
 - Remove link time dependency on softokn
