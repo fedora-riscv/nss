@@ -6,8 +6,8 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          5%{?dist}
-License:          MPL/GPL/LGPL
+Release:          6%{?dist}
+License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
@@ -437,6 +437,9 @@ done
 
 
 %changelog
+* Tue Aug 28 2007 Kai Engert <kengert@redhat.com> - 3.11.7-6
+- Updated license tag
+
 * Wed Jul 11 2007 Kai Engert <kengert@redhat.com> - 3.11.7-5
 - Ensure the workaround for mozilla bug 51429 really get's built.
 
