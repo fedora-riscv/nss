@@ -1,0 +1,177 @@
+Index: mozilla/security/nss/lib/nss/nss.def
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/nss/nss.def,v
+retrieving revision 1.158.2.7
+diff -u -r1.158.2.7 nss.def
+--- mozilla/security/nss/lib/nss/nss.def     25 Apr 2007 23:26:53 -0000      1.158.2.7
++++ mozilla/security/nss/lib/nss/nss.def     31 Aug 2007 18:54:54 -0000
+@@ -899,3 +899,10 @@
+ ;+    local:
+ ;+       *;
+ ;+};
++;+NSS_3.12 {
++;+    global:
++PK11_CreateGenericObject;
++PK11_WriteRawAttribute;
++;+    local:
++;+       *;
++;+};
+Index: mozilla/security/nss/lib/pk11wrap/pk11obj.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11obj.c,v
+retrieving revision 1.11.2.3
+diff -u -r1.11.2.3 pk11obj.c
+--- mozilla/security/nss/lib/pk11wrap/pk11obj.c	5 Jan 2007 09:44:05 -0000	1.11.2.3
++++ mozilla/security/nss/lib/pk11wrap/pk11obj.c	9 May 2007 20:58:17 -0000
+@@ -388,7 +388,7 @@
+ 
+ SECStatus
+ PK11_CreateNewObject(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
+-				CK_ATTRIBUTE *theTemplate, int count, 
++				const CK_ATTRIBUTE *theTemplate, int count, 
+ 				PRBool token, CK_OBJECT_HANDLE *objectID)
+ {
+ 	CK_SESSION_HANDLE rwsession;
+@@ -1306,7 +1306,7 @@
+ 	PK11_DestroyGenericObject(objects);
+     }
+     /* delete all the objects before it in the list */
+-    for (objects = prevObject; objects;  objects = nextObject) {
++    for (objects = prevObject; objects;  objects = prevObject) {
+ 	prevObject = objects->prev;
+ 	PK11_DestroyGenericObject(objects);
+     }
+@@ -1314,6 +1314,96 @@
+ }
+ 
+ 
++/*
++ * Hand Create a new object and return the Generic object for our new object.
++ */
++PK11GenericObject *
++PK11_CreateGenericObject(PK11SlotInfo *slot, const CK_ATTRIBUTE *template,
++		int count,  PRBool token)
++{
++    CK_OBJECT_HANDLE objectID;
++    PK11GenericObject *obj;
++    CK_RV crv;
++
++    PK11_EnterSlotMonitor(slot);
++    crv = PK11_CreateNewObject(slot, slot->session, template, count, 
++			       token, &objectID);
++    PK11_ExitSlotMonitor(slot);
++    if (crv != CKR_OK) {
++	PORT_SetError(PK11_MapError(crv));
++	return NULL;
++    }
++
++    obj = PORT_New(PK11GenericObject);
++    if ( !obj ) {
++	/* error set by PORT_New */
++	return NULL;
++    }
++
++    /* initialize it */	
++    obj->slot = PK11_ReferenceSlot(slot);
++    obj->objectID = objectID;
++    obj->next = NULL;
++    obj->prev = NULL;
++    return obj;
++}
++
++/*
++ * Change an attribute on a raw object
++ */
++SECStatus
++PK11_WriteRawAttribute(PK11ObjectType objType, void *objSpec, 
++				CK_ATTRIBUTE_TYPE attrType, SECItem *item)
++{
++    PK11SlotInfo *slot = NULL;
++    CK_OBJECT_HANDLE handle;
++    CK_ATTRIBUTE setTemplate;
++    CK_RV crv;
++    CK_SESSION_HANDLE rwsession;
++
++    switch (objType) {
++    case PK11_TypeGeneric:
++	slot = ((PK11GenericObject *)objSpec)->slot;
++	handle = ((PK11GenericObject *)objSpec)->objectID;
++	break;
++    case PK11_TypePrivKey:
++	slot = ((SECKEYPrivateKey *)objSpec)->pkcs11Slot;
++	handle = ((SECKEYPrivateKey *)objSpec)->pkcs11ID;
++	break;
++    case PK11_TypePubKey:
++	slot = ((SECKEYPublicKey *)objSpec)->pkcs11Slot;
++	handle = ((SECKEYPublicKey *)objSpec)->pkcs11ID;
++	break;
++    case PK11_TypeSymKey:
++	slot = ((PK11SymKey *)objSpec)->slot;
++	handle = ((PK11SymKey *)objSpec)->objectID;
++	break;
++    case PK11_TypeCert: /* don't handle cert case for now */
++    default:
++	break;
++    }
++    if (slot == NULL) {
++	PORT_SetError(SEC_ERROR_UNKNOWN_OBJECT_TYPE);
++	return SECFailure;
++    }
++
++    PK11_SETATTRS(&setTemplate, attrType, (CK_CHAR *) item->data, item->len);
++    rwsession = PK11_GetRWSession(slot);
++    if (rwsession == CK_INVALID_SESSION) {
++    	PORT_SetError(SEC_ERROR_BAD_DATA);
++    	return SECFailure;
++    }
++    crv = PK11_GETTAB(slot)->C_SetAttributeValue(rwsession, handle,
++			&setTemplate, 1);
++    PK11_RestoreROSession(slot, rwsession);
++    if (crv != CKR_OK) {
++	PORT_SetError(PK11_MapError(crv));
++	return SECFailure;
++    }
++    return SECSuccess;
++}
++
++
+ SECStatus
+ PK11_ReadRawAttribute(PK11ObjectType objType, void *objSpec, 
+ 				CK_ATTRIBUTE_TYPE attrType, SECItem *item)
+Index: mozilla/security/nss/lib/pk11wrap/pk11pub.h
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11pub.h,v
+retrieving revision 1.14.2.1
+diff -u -r1.14.2.1 pk11pub.h
+--- mozilla/security/nss/lib/pk11wrap/pk11pub.h	2 Mar 2006 00:12:27 -0000	1.14.2.1
++++ mozilla/security/nss/lib/pk11wrap/pk11pub.h	9 May 2007 20:58:17 -0000
+@@ -688,8 +688,13 @@
+ 				 PK11GenericObject *object);
+ SECStatus PK11_DestroyGenericObjects(PK11GenericObject *object);
+ SECStatus PK11_DestroyGenericObject(PK11GenericObject *object);
++PK11GenericObject *PK11_CreateGenericObject(PK11SlotInfo *slot, 
++				   const CK_ATTRIBUTE *template, 
++				   int count, PRBool token);
+ SECStatus PK11_ReadRawAttribute(PK11ObjectType type, void *object, 
+ 				CK_ATTRIBUTE_TYPE attr, SECItem *item);
++SECStatus PK11_WriteRawAttribute(PK11ObjectType type, void *object, 
++				CK_ATTRIBUTE_TYPE attr, SECItem *item);
+ 
+ 
+ /**********************************************************************
+Index: mozilla/security/nss/lib/pk11wrap/secmodi.h
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/secmodi.h,v
+retrieving revision 1.23
+diff -u -r1.23 secmodi.h
+--- mozilla/security/nss/lib/pk11wrap/secmodi.h	9 Sep 2005 02:03:57 -0000	1.23
++++ mozilla/security/nss/lib/pk11wrap/secmodi.h	9 May 2007 20:58:17 -0000
+@@ -105,7 +105,7 @@
+ #define PK11_SETATTRS(x,id,v,l) (x)->type = (id); \
+ 		(x)->pValue=(v); (x)->ulValueLen = (l);
+ SECStatus PK11_CreateNewObject(PK11SlotInfo *slot, CK_SESSION_HANDLE session,
+-                               CK_ATTRIBUTE *theTemplate, int count,
++                               const CK_ATTRIBUTE *theTemplate, int count,
+                                 PRBool token, CK_OBJECT_HANDLE *objectID);
+ 
+ SECStatus pbe_PK11AlgidToParam(SECAlgorithmID *algid,SECItem *mech);

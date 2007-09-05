@@ -1,12 +1,13 @@
 %define nspr_version 4.6.2
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %define fips_source_version 3.11.5
+%define ckfw_source_version 3.12-alpha
 %define ckbi_version 1.64
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -29,12 +30,16 @@ Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source7:          fake-kstat.h
 Source10:         %{name}-%{fips_source_version}-fbst-stripped.tar.gz
+Source11:         %{name}-%{ckfw_source_version}-ckfw.tar.gz
+Source12:         %{name}-%{ckfw_source_version}-pem.tar.gz
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-smartcard-auth.patch
 Patch3:           nss-use-netstat-hack.patch
 Patch4:           nss-decouple-softokn.patch
 Patch5:           nss-disable-build-freebl-softoken.patch
+Patch6:           nss-enable-pem.patch
+Patch7:           nss-create-obj.patch
 
 
 %description
@@ -86,9 +91,12 @@ low level services.
 %prep
 %setup -q
 %setup -q -T -D -n %{name}-%{version} -a 10
+%setup -q -T -D -n %{name}-%{version} -a 11
+%setup -q -T -D -n %{name}-%{version} -a 12
 
 %define old_nss_lib %{name}-%{fips_source_version}/mozilla/security/nss/lib
 %define new_nss_lib mozilla/security/nss/lib
+%define new_ckfw_lib %{name}-%{ckfw_source_version}/mozilla/security/nss/lib
 
 # Ensure we will not use new freebl/softoken code
 rm -rf %{new_nss_lib}/freebl
@@ -97,6 +105,10 @@ rm -rf %{new_nss_lib}/softoken
 # However, in order to build newer NSS we need some exports
 cp -a %{old_nss_lib}/freebl %{new_nss_lib}
 cp -a %{old_nss_lib}/softoken %{new_nss_lib}
+
+# set up ckfw
+rm -rf %{new_nss_lib}/ckfw
+cp -a %{new_ckfw_lib}/ckfw %{new_nss_lib}
 
 # Ensure the newer NSS tree will not build code, except the loader
 mv -i %{new_nss_lib}/freebl/loader.c %{new_nss_lib}/freebl/loader.c.save
@@ -114,6 +126,8 @@ rm -rf mozilla/security/nss/cmd/certcgi
 %patch2 -p0 -b .smartcard-auth
 %patch4 -p0 -b .decouple-softokn
 %patch5 -p0 -b .nofbst
+%patch6 -p0 -b .libpem
+%patch7 -p0 -b .create-obj
 
 # Apply the patches to the tree where we build freebl/softoken
 cd nss-%{fips_source_version}
@@ -228,7 +242,7 @@ do
 done
 
 # Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so
+for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -298,6 +312,7 @@ done
 %{_libdir}/libsmime3.so
 %{_libdir}/libsoftokn3.so
 %{_libdir}/libnssckbi.so
+%{_libdir}/libnsspem.so
 %{_libdir}/libfreebl3.so
 %{unsupported_tools_directory}/shlibsign
 %ghost %{_libdir}/libsoftokn3.chk
@@ -370,6 +385,7 @@ done
 %{_includedir}/nss3/nssilckt.h
 %{_includedir}/nss3/nssilock.h
 %{_includedir}/nss3/nsslocks.h
+%{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/nssrwlk.h
 %{_includedir}/nss3/nssrwlkt.h
 %{_includedir}/nss3/ocsp.h
@@ -437,6 +453,9 @@ done
 
 
 %changelog
+* Wed Sep 05 2007 Bob Relyea <rrelyea@redhat.com> - 3.11.7-7
+- Add 3.12 ckfw and libnsspem
+
 * Tue Aug 28 2007 Kai Engert <kengert@redhat.com> - 3.11.7-6
 - Updated license tag
 
