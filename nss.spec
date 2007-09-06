@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -453,6 +453,9 @@ done
 
 
 %changelog
+* Thu Sep 06 2007 Rob Crittenden <rcritten@redhat.com> - 3.11.7-9
+- Fix off-by-one error in the PEM module
+
 * Thu Sep 06 2007 Kai Engert <kengert@redhat.com> - 3.11.7-8
 - fix a C++ mode compilation error
 
