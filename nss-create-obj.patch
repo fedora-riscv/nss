@@ -49,7 +49,7 @@ diff -u -r1.11.2.3 pk11obj.c
 + * Hand Create a new object and return the Generic object for our new object.
 + */
 +PK11GenericObject *
-+PK11_CreateGenericObject(PK11SlotInfo *slot, const CK_ATTRIBUTE *template,
++PK11_CreateGenericObject(PK11SlotInfo *slot, const CK_ATTRIBUTE *template_,
 +		int count,  PRBool token)
 +{
 +    CK_OBJECT_HANDLE objectID;
@@ -57,7 +57,7 @@ diff -u -r1.11.2.3 pk11obj.c
 +    CK_RV crv;
 +
 +    PK11_EnterSlotMonitor(slot);
-+    crv = PK11_CreateNewObject(slot, slot->session, template, count, 
++    crv = PK11_CreateNewObject(slot, slot->session, template_, count, 
 +			       token, &objectID);
 +    PK11_ExitSlotMonitor(slot);
 +    if (crv != CKR_OK) {
@@ -150,7 +150,7 @@ diff -u -r1.14.2.1 pk11pub.h
  SECStatus PK11_DestroyGenericObjects(PK11GenericObject *object);
  SECStatus PK11_DestroyGenericObject(PK11GenericObject *object);
 +PK11GenericObject *PK11_CreateGenericObject(PK11SlotInfo *slot, 
-+				   const CK_ATTRIBUTE *template, 
++				   const CK_ATTRIBUTE *template_, 
 +				   int count, PRBool token);
  SECStatus PK11_ReadRawAttribute(PK11ObjectType type, void *object, 
  				CK_ATTRIBUTE_TYPE attr, SECItem *item);
