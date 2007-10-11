@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.7
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -29,6 +29,7 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source7:          fake-kstat.h
+Source8:          nss-prelink.conf
 Source10:         %{name}-%{fips_source_version}-fbst-stripped.tar.gz
 Source11:         %{name}-%{ckfw_source_version}-ckfw.tar.gz
 Source12:         %{name}-%{ckfw_source_version}-pem.tar.gz
@@ -256,6 +257,8 @@ touch $RPM_BUILD_ROOT/%{_libdir}/libfreebl3.chk
 %{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
 %{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
 %{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d
+%{__install} -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
@@ -323,6 +326,7 @@ done
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 %files tools
 %defattr(-,root,root)
@@ -453,6 +457,10 @@ done
 
 
 %changelog
+* Wed Oct 10 2007 Kai Engert <kengert@redhat.com> - 3.11.7-10
+- Add /etc/prelink.conf.d/nss-prelink.conf in order to blacklist
+  our signed libraries and protect them from modification.
+
 * Thu Sep 06 2007 Rob Crittenden <rcritten@redhat.com> - 3.11.7-9
 - Fix off-by-one error in the PEM module
 
