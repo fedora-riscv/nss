@@ -1,44 +1,35 @@
-%define nspr_version 4.6.2
+%define nspr_version 4.6.99
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%define fips_source_version 3.11.5
-%define ckfw_source_version 3.12-alpha
-%define ckbi_version 1.64
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.7
-Release:          10%{?dist}
+Version:          3.11.99.2
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
+Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
+BuildRequires:    sqlite-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-#Source0:          %{name}-%{version}-no-fbst.tar.gz
-Source0:          %{name}-%{version}-no-fbst-with-ckbi-%{ckbi_version}.tar.gz
-# ckbi is the builtin roots module which may get released separately.
+Source0:          %{name}-%{version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source7:          fake-kstat.h
 Source8:          nss-prelink.conf
-Source10:         %{name}-%{fips_source_version}-fbst-stripped.tar.gz
-Source11:         %{name}-%{ckfw_source_version}-ckfw.tar.gz
-Source12:         %{name}-%{ckfw_source_version}-pem.tar.gz
+Source12:         %{name}-pem.tar.gz
 
 Patch1:           nss-no-rpath.patch
-Patch2:           nss-smartcard-auth.patch
-Patch3:           nss-use-netstat-hack.patch
-Patch4:           nss-decouple-softokn.patch
-Patch5:           nss-disable-build-freebl-softoken.patch
+Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nss-create-obj.patch
 
@@ -91,51 +82,12 @@ low level services.
 
 %prep
 %setup -q
-%setup -q -T -D -n %{name}-%{version} -a 10
-%setup -q -T -D -n %{name}-%{version} -a 11
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%define old_nss_lib %{name}-%{fips_source_version}/mozilla/security/nss/lib
-%define new_nss_lib mozilla/security/nss/lib
-%define new_ckfw_lib %{name}-%{ckfw_source_version}/mozilla/security/nss/lib
-
-# Ensure we will not use new freebl/softoken code
-rm -rf %{new_nss_lib}/freebl
-rm -rf %{new_nss_lib}/softoken
-
-# However, in order to build newer NSS we need some exports
-cp -a %{old_nss_lib}/freebl %{new_nss_lib}
-cp -a %{old_nss_lib}/softoken %{new_nss_lib}
-
-# set up ckfw
-rm -rf %{new_nss_lib}/ckfw
-cp -a %{new_ckfw_lib}/ckfw %{new_nss_lib}
-
-# Ensure the newer NSS tree will not build code, except the loader
-mv -i %{new_nss_lib}/freebl/loader.c %{new_nss_lib}/freebl/loader.c.save
-rm -rf %{new_nss_lib}/freebl/*.c %{new_nss_lib}/freebl/*.s
-rm -rf %{new_nss_lib}/softoken/*.c %{new_nss_lib}/softoken/*.s
-mv -i %{new_nss_lib}/freebl/loader.c.save %{new_nss_lib}/freebl/loader.c
-
-# These currently don't build without freebl/softoken in the same tree
-rm -rf mozilla/security/nss/cmd/bltest
-rm -rf mozilla/security/nss/cmd/fipstest
-rm -rf mozilla/security/nss/cmd/certcgi
-
-# Apply the patches to the newer NSS tree
 %patch1 -p0
-%patch2 -p0 -b .smartcard-auth
-%patch4 -p0 -b .decouple-softokn
-%patch5 -p0 -b .nofbst
+%patch2 -p0
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .create-obj
-
-# Apply the patches to the tree where we build freebl/softoken
-cd nss-%{fips_source_version}
-%patch3 -p0 -b .use-netstat-hack
-%{__mkdir_p} mozilla/security/nss/lib/fake/
-cp -i %{SOURCE7} mozilla/security/nss/lib/fake/kstat.h
-cd ..
 
 
 %build
@@ -170,26 +122,6 @@ export USE_64
 
 # NSS_ENABLE_ECC=1
 # export NSS_ENABLE_ECC
-
-##### first, build freebl and softokn shared libraries
-
-cd nss-%{fips_source_version}
-%{__make} -C ./mozilla/security/coreconf
-%{__make} -C ./mozilla/security/dbm
-%{__make} -C ./mozilla/security/nss export
-%{__make} -C ./mozilla/security/nss/lib/base
-%{__make} -C ./mozilla/security/nss/lib/util
-%{__make} -C ./mozilla/security/nss/lib/freebl
-touch ./mozilla/security/nss/lib/freebl/unix_rand.c
-rm -f ./mozilla/security/nss/lib/freebl/*/*/libfreebl3*
-rm -f ./mozilla/security/nss/lib/freebl/*/*/sysrand*
-USE_NETSTAT_HACK=1 %{__make} -C ./mozilla/security/nss/lib/freebl
-%{__make} -C ./mozilla/security/nss/lib/freebl install
-%{__make} -C ./mozilla/security/nss/lib/softoken
-%{__make} -C ./mozilla/security/nss/lib/softoken install
-cd ..
-
-##### second, build all the rest of NSS
 
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
@@ -236,14 +168,7 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so
-do
-  %{__install} -m 755 nss-%{fips_source_version}/mozilla/dist/*.OBJ/lib/$file \
-                      $RPM_BUILD_ROOT/%{_libdir}
-done
-
-# Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
+for file in libsoftokn3.so libfreebl3.so libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -278,12 +203,15 @@ do
   %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
-# Copy the include files we want from freebl/softoken sources
-# and remove those files from the other area
-for file in blapit.h shsign.h ecl-exp.h pkcs11.h pkcs11f.h pkcs11p.h pkcs11t.h pkcs11n.h pkcs11u.h
+# For now, we don't want any pkix files to be public
+for file in mozilla/dist/public/nss/pkix*.h
 do
-  %{__install} -m 644 nss-%{fips_source_version}/mozilla/dist/public/nss/$file \
-                      $RPM_BUILD_ROOT/%{_includedir}/nss3
+  rm $file
+done
+
+# For now, we don't want these files to be public
+for file in sdb.h sftkdbt.h
+do
   rm mozilla/dist/public/nss/$file
 done
 
@@ -311,6 +239,7 @@ done
 %files
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
+%{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %{_libdir}/libsoftokn3.so
@@ -457,6 +386,9 @@ done
 
 
 %changelog
+* Wed Nov 07 2007 Kai Engert <kengert@redhat.com> - 3.11.99.2-1
+- NSS 3.12 alpha 2
+
 * Wed Oct 10 2007 Kai Engert <kengert@redhat.com> - 3.11.7-10
 - Add /etc/prelink.conf.d/nss-prelink.conf in order to blacklist
   our signed libraries and protect them from modification.

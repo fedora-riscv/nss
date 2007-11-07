@@ -1,21 +1,17 @@
-Index: mozilla/security/nss/lib/nss/nss.def
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/nss/nss.def,v
-retrieving revision 1.158.2.7
-diff -u -r1.158.2.7 nss.def
---- mozilla/security/nss/lib/nss/nss.def     25 Apr 2007 23:26:53 -0000      1.158.2.7
-+++ mozilla/security/nss/lib/nss/nss.def     31 Aug 2007 18:54:54 -0000
-@@ -899,3 +899,10 @@
- ;+    local:
- ;+       *;
- ;+};
-+;+NSS_3.12 {
-+;+    global:
+diff -up mozilla/security/nss/lib/nss/nss.def.createobj mozilla/security/nss/lib/nss/nss.def
+--- mozilla/security/nss/lib/nss/nss.def.createobj	2007-11-06 14:11:40.000000000 +0100
++++ mozilla/security/nss/lib/nss/nss.def	2007-11-06 14:11:59.000000000 +0100
+@@ -913,8 +913,10 @@ CERT_FindCRLEntryReasonExten;
+ CERT_FindCRLNumberExten;
+ CERT_FindNameConstraintsExten;
+ CERT_PKIXVerifyCert;
 +PK11_CreateGenericObject;
+ PK11_GenerateKeyPairWithOpFlags;
+ PK11_GetAllSlotsForCert;
 +PK11_WriteRawAttribute;
-+;+    local:
-+;+       *;
-+;+};
+ SECKEY_ECParamsToBasePointOrderLen;
+ SECKEY_ECParamsToKeySize;
+ SECMOD_DeleteModuleEx;
 Index: mozilla/security/nss/lib/pk11wrap/pk11obj.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11obj.c,v
