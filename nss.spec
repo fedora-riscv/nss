@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -30,6 +30,7 @@ Source12:         %{name}-pem.tar.gz
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
+Patch3:           nss-unix_rand.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nss-create-obj.patch
 
@@ -86,6 +87,7 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
+%patch3 -p0
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .create-obj
 
@@ -386,6 +388,9 @@ done
 
 
 %changelog
+* Mon Dec 03 2007 Kai Engert <kengert@redhat.com> - 3.11.99.2-2
+- upstream patches to avoid calling netstat for random data
+
 * Wed Nov 07 2007 Kai Engert <kengert@redhat.com> - 3.11.99.2-1
 - NSS 3.12 alpha 2
 
