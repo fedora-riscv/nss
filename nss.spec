@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.2b
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -131,7 +131,7 @@ export USE_64
 
 # Set up our package file
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
-%{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
+%{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,/%{_lib},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
@@ -148,7 +148,7 @@ export NSS_VMINOR
 export NSS_VPATCH
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
-%{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
+%{__cat} %{SOURCE2} | sed -e "s,@libdir@,/%{_lib},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
                           -e "s,@includedir@,%{_includedir}/nss3,g" \
@@ -166,18 +166,18 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_lib}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 
 # Copy the binary libraries we want
 for file in libsoftokn3.so libfreebl3.so libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
 done
 
 # These ghost files will be generated in the post step
-touch $RPM_BUILD_ROOT/%{_libdir}/libsoftokn3.chk
-touch $RPM_BUILD_ROOT/%{_libdir}/libfreebl3.chk
+touch $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.chk
+touch $RPM_BUILD_ROOT/%{_lib}/libfreebl3.chk
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
@@ -230,8 +230,8 @@ done
 
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i %{_libdir}/libsoftokn3.so >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i %{_libdir}/libfreebl3.so >/dev/null 2>/dev/null
+%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libsoftokn3.so >/dev/null 2>/dev/null
+%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libfreebl3.so >/dev/null 2>/dev/null
 
 
 %postun
@@ -240,17 +240,17 @@ done
 
 %files
 %defattr(-,root,root)
-%{_libdir}/libnss3.so
-%{_libdir}/libnssdbm3.so
-%{_libdir}/libssl3.so
-%{_libdir}/libsmime3.so
-%{_libdir}/libsoftokn3.so
-%{_libdir}/libnssckbi.so
-%{_libdir}/libnsspem.so
-%{_libdir}/libfreebl3.so
+/%{_lib}/libnss3.so
+/%{_lib}/libnssdbm3.so
+/%{_lib}/libssl3.so
+/%{_lib}/libsmime3.so
+/%{_lib}/libsoftokn3.so
+/%{_lib}/libnssckbi.so
+/%{_lib}/libnsspem.so
+/%{_lib}/libfreebl3.so
 %{unsupported_tools_directory}/shlibsign
-%ghost %{_libdir}/libsoftokn3.chk
-%ghost %{_libdir}/libfreebl3.chk
+%ghost /%{_lib}/libsoftokn3.chk
+%ghost /%{_lib}/libfreebl3.chk
 %dir %{_libdir}/nss
 %dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
@@ -388,6 +388,9 @@ done
 
 
 %changelog
+* Mon Jan 07 2008 Kai Engert <kengert@redhat.com> - 3.11.99.2b-3
+- move .so files to /lib
+
 * Wed Dec 12 2007 Kai Engert <kengert@redhat.com> - 3.11.99.2b-2
 - NSS 3.12 alpha 2b
 
