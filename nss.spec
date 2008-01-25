@@ -3,8 +3,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.99.2b
-Release:          3%{?dist}
+Version:          3.11.99.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -26,13 +26,11 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem.tar.gz
+Source12:         %{name}-pem-20080124.tar.bz2
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
-Patch3:           nss-unix_rand.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nss-create-obj.patch
 
 
 %description
@@ -87,9 +85,7 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
-%patch3 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .create-obj
 
 
 %build
@@ -170,7 +166,8 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
+for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
+            libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
 done
@@ -205,18 +202,6 @@ do
   %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
-# For now, we don't want any pkix files to be public
-for file in mozilla/dist/public/nss/pkix*.h
-do
-  rm $file
-done
-
-# For now, we don't want these files to be public
-for file in sdb.h sftkdbt.h
-do
-  rm mozilla/dist/public/nss/$file
-done
-
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
@@ -241,6 +226,7 @@ done
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
+/%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
@@ -368,6 +354,7 @@ done
 %{_includedir}/nss3/sslerr.h
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
+%{_includedir}/nss3/utilrename.h
 %{_includedir}/nss3/watcomfx.h
 
 
@@ -388,6 +375,9 @@ done
 
 
 %changelog
+* Thu Jan 24 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-1
+* NSS 3.12 Beta 1
+
 * Mon Jan 07 2008 Kai Engert <kengert@redhat.com> - 3.11.99.2b-3
 - move .so files to /lib
 
