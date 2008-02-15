@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -15,6 +15,7 @@ BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
+BuildRequires:    psmisc
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
@@ -31,6 +32,7 @@ Source12:         %{name}-pem-20080124.tar.bz2
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           bug432146.patch
 
 
 %description
@@ -86,6 +88,7 @@ low level services.
 %patch1 -p0
 %patch2 -p0
 %patch6 -p0 -b .libpem
+%patch7 -p0
 
 
 %build
@@ -154,6 +157,28 @@ export NSS_VPATCH
                           > $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
+
+# enable the following line to force a test failure
+# find ./mozilla -name \*.chk | xargs rm -f
+
+# run test suite
+killall selfserv || :
+rm -rf ./mozilla/tests_results
+cd ./mozilla/security/nss/tests/
+%ifarch x86_64 s390x ppc64
+TEST_BIND_PORT=8564
+%else
+TEST_BIND_PORT=8532
+%endif
+HOST=localhost DOMSUF=localdomain PORT=$TEST_BIND_PORT ./all.sh
+cd ../../../../
+
+TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
+if [ $TEST_FAILURES -ne 0 ]; then
+  echo "error: test suite returned failure(s)"
+  exit 1
+fi
+echo "test suite completed"
 
 
 %install
@@ -375,6 +400,10 @@ done
 
 
 %changelog
+* Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-2
+- Build against gcc 4.3.0, use workaround for bug 432146
+- Run the test suite after the build and abort on failures.
+
 * Thu Jan 24 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-1
 * NSS 3.12 Beta 1
 
