@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.3
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,6 +16,7 @@ BuildRequires:    sqlite-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
+BuildRequires:    perl
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
@@ -161,20 +162,48 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
-# test suite fails on ppc64 and ppc
+### test suite fails on ppc64 and ppc, temporarily disable
 %ifnarch ppc64 ppc
 
-# run test suite
-killall selfserv || :
+# Run test suite.
+# In order to support multiple concurrent executions of the test suite
+# (caused by concurrent RPM builds) on a single host,
+# we'll use a random port. Also, we want to clean up any stuck
+# selfserv processes. If process name "selfserv" is used everywhere,
+# we can't simply do a "killall selfserv", because it could disturb
+# concurrent builds. Therefore we'll do a search and replace and use
+# a different process name.
+# Using xargs doesn't mix well with spaces in filenames, in order to
+# avoid weird quoting we'll require that no spaces are being used.
+
+SPACEISBAD=`find ./mozilla/security/nss/tests | grep -c ' '` ||:
+if [ SPACEISBAD -ne 0 ]; then
+  echo "error: filenames containing space are not supported (xargs)"
+  exit 1
+fi
+MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
+RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
+DISTBINDIR=`ls -d ./mozilla/dist/*.OBJ/bin`; echo $DISTBINDIR ||:
+pushd `pwd`
+cd $DISTBINDIR
+ln -s selfserv $RANDSERV
+popd
+# man perlrun, man perlrequick
+# replace word-occurrences of selfserv with selfserv_$MYRAND
+find ./mozilla/security/nss/tests -type f |\
+  grep -v "\.db$" |grep -v "\.crl$" | grep -v "\.crt$" |\
+  grep -vw CVS  |xargs grep -lw selfserv |\
+  xargs -l perl -pi -e "s/\bselfserv\b/$RANDSERV/g" ||:
+
+killall $RANDSERV || :
+
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
-%ifarch x86_64 s390x ppc64
-TEST_BIND_PORT=8564
-%else
-TEST_BIND_PORT=8532
-%endif
-HOST=localhost DOMSUF=localdomain PORT=$TEST_BIND_PORT ./all.sh
+# all.sh is the test suite script
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
 cd ../../../../
+
+killall $RANDSERV || :
 
 TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
 if [ $TEST_FAILURES -ne 0 ]; then
@@ -183,7 +212,7 @@ if [ $TEST_FAILURES -ne 0 ]; then
 fi
 echo "test suite completed"
 
-# end of ifarch for test suite
+### end of ifnarch for test suite
 %endif
 
 
@@ -406,6 +435,8 @@ done
 
 
 %changelog
+* Fri Feb 15 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-5
+- Support concurrent runs of the test suite on a single build host.
 * Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-4
 - disable test suite on ppc
 * Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-3
