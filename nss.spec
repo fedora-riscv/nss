@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.3
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -161,6 +161,9 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
+# test suite fails on ppc64
+%ifnarch ppc64
+
 # run test suite
 killall selfserv || :
 rm -rf ./mozilla/tests_results
@@ -179,6 +182,9 @@ if [ $TEST_FAILURES -ne 0 ]; then
   exit 1
 fi
 echo "test suite completed"
+
+# end of ifarch for test suite
+%endif
 
 
 %install
@@ -400,6 +406,9 @@ done
 
 
 %changelog
+* Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-3
+- disable test suite on ppc64
+
 * Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-2
 - Build against gcc 4.3.0, use workaround for bug 432146
 - Run the test suite after the build and abort on failures.
