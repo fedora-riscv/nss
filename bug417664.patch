@@ -1,0 +1,56 @@
+Index: mozilla/security/nss/lib/libpkix/pkix/top/pkix_defaultcrlchecker.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/libpkix/pkix/top/pkix_defaultcrlchecker.c,v
+retrieving revision 1.6
+diff -u -u -r1.6 pkix_defaultcrlchecker.c
+--- mozilla/security/nss/lib/libpkix/pkix/top/pkix_defaultcrlchecker.c	6 Dec 2007 18:15:10 -0000	1.6
++++ mozilla/security/nss/lib/libpkix/pkix/top/pkix_defaultcrlchecker.c	16 Feb 2008 05:36:03 -0000
+@@ -58,6 +58,9 @@
+ 	"Certificate is revoked by CRL for aACompromise",
+ };
+ 
++static const int numReasonCodes = 
++    sizeof(reasonCodeMsgString) / sizeof(reasonCodeMsgString[0]);
++
+ /* --Private-DefaultCRLCheckerState-Functions------------------------------- */
+ 
+ /*
+@@ -433,8 +436,9 @@
+ 
+                 /* Set reason code in state for advance CRL reviewing */
+ 
+-                if (reasonCode >= 0 &&
+-                    reasonCode < sizeof (reasonCodeMsgString)) {
++                if (reasonCode >= 0) {
++                    if (reasonCode >= numReasonCodes) 
++		        reasonCode = 0;
+ 
+                     state->reasonCodeMask |= 1 << reasonCode;
+                     PKIX_DEFAULTCRLCHECKERSTATE_DEBUG_ARG
+@@ -726,12 +730,13 @@
+                             (crlEntry, &reasonCode, plContext),
+                             PKIX_CRLENTRYGETCRLENTRYREASONCODEFAILED);
+ 
+-                    if ((reasonCode >= 0) &&
+-                        (reasonCode < sizeof (reasonCodeMsgString))) {
++		    if (reasonCode >= 0) {
++			if (reasonCode >= numReasonCodes) 
++			    reasonCode = 0;
+ 
+-                            allReasonCodes |= (1 << (reasonCode - 1));
++			allReasonCodes |= (1 << reasonCode);
+ 
+-                            PKIX_DEFAULTCRLCHECKERSTATE_DEBUG_ARG
++			PKIX_DEFAULTCRLCHECKERSTATE_DEBUG_ARG
+                                     ("CRL revocation Reason: %s\n ",
+                                     reasonCodeMsgString[reasonCode]);
+ 
+@@ -991,7 +996,7 @@
+         PKIX_PL_PublicKey *newPublicKey = NULL;
+         PKIX_Error *checkKeyUsageFail = NULL;
+         PKIX_Boolean selfIssued = PKIX_FALSE;
+-        void *nbioContext = PKIX_FALSE;
++        void *nbioContext = NULL;
+ 
+         PKIX_ENTER(CERTCHAINCHECKER, "pkix_DefaultCRLChecker_Check");
+         PKIX_NULLCHECK_THREE(checker, cert, pNBIOContext);

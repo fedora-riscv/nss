@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.3
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -34,6 +34,7 @@ Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           bug432146.patch
+Patch8:           bug417664.patch
 
 
 %description
@@ -90,6 +91,7 @@ low level services.
 %patch2 -p0
 %patch6 -p0 -b .libpem
 %patch7 -p0
+%patch8 -p0
 
 
 %build
@@ -162,9 +164,6 @@ chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
-### test suite fails on ppc64 and ppc, temporarily disable
-%ifnarch ppc64 ppc
-
 # Run test suite.
 # In order to support multiple concurrent executions of the test suite
 # (caused by concurrent RPM builds) on a single host,
@@ -211,9 +210,6 @@ if [ $TEST_FAILURES -ne 0 ]; then
   exit 1
 fi
 echo "test suite completed"
-
-### end of ifnarch for test suite
-%endif
 
 
 %install
@@ -435,6 +431,8 @@ done
 
 
 %changelog
+* Sat Feb 16 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-6
+- Apply upstream patch for bug 417664, enable test suite on pcc.
 * Fri Feb 15 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-5
 - Support concurrent runs of the test suite on a single build host.
 * Thu Feb 14 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-4
