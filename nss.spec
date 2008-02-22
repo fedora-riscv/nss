@@ -1,10 +1,10 @@
-%define nspr_version 4.6.99
+%define nspr_version 4.7
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.99.3
-Release:          6%{?dist}
+Version:          3.11.99.4
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -20,7 +20,7 @@ BuildRequires:    perl
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-Source0:          %{name}-%{version}-stripped.tar.bz2
+Source0:          %{name}-%{version}-stripped.tar.gz
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -34,7 +34,6 @@ Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           bug432146.patch
-Patch8:           bug417664.patch
 
 
 %description
@@ -91,7 +90,6 @@ low level services.
 %patch2 -p0
 %patch6 -p0 -b .libpem
 %patch7 -p0
-%patch8 -p0
 
 
 %build
@@ -133,7 +131,7 @@ export USE_64
 
 # Set up our package file
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
-%{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,/%{_lib},g" \
+%{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
@@ -150,7 +148,7 @@ export NSS_VMINOR
 export NSS_VPATCH
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
-%{__cat} %{SOURCE2} | sed -e "s,@libdir@,/%{_lib},g" \
+%{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
                           -e "s,@includedir@,%{_includedir}/nss3,g" \
@@ -226,11 +224,16 @@ for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
             libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
+  ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
 # These ghost files will be generated in the post step
-touch $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.chk
-touch $RPM_BUILD_ROOT/%{_lib}/libfreebl3.chk
+# Make sure chk files can be found in both places
+for file in libsoftokn3.chk libfreebl3.chk
+do
+  touch $RPM_BUILD_ROOT/%{_lib}/$file
+  ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
+done
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
@@ -326,6 +329,17 @@ done
 
 %files devel
 %defattr(-,root,root)
+%{_libdir}/libnss3.so
+%{_libdir}/libnssutil3.so
+%{_libdir}/libnssdbm3.so
+%{_libdir}/libssl3.so
+%{_libdir}/libsmime3.so
+%{_libdir}/libsoftokn3.so
+%{_libdir}/libsoftokn3.chk
+%{_libdir}/libnssckbi.so
+%{_libdir}/libnsspem.so
+%{_libdir}/libfreebl3.so
+%{_libdir}/libfreebl3.chk
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
@@ -431,6 +445,9 @@ done
 
 
 %changelog
+* Fri Feb 22 2008 Kai Engert <kengert@redhat.com> - 3.11.99.4-1
+- NSS 3.12 Beta 2
+- Use /usr/lib{64} as devel libdir, create symbolic links.
 * Sat Feb 16 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-6
 - Apply upstream patch for bug 417664, enable test suite on pcc.
 * Fri Feb 15 2008 Kai Engert <kengert@redhat.com> - 3.11.99.3-5
