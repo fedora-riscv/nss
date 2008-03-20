@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.11.99.5
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -17,8 +17,6 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
-Provides:         mozilla-nss
-Obsoletes:        mozilla-nss
 
 Source0:          %{name}-%{version}-stripped.tar.gz
 
@@ -64,8 +62,6 @@ Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
 Requires:         nss = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
-Provides:         mozilla-nss-devel
-Obsoletes:        mozilla-nss-devel
 
 %description devel
 Header and Library files for doing development with Network Security Services.
@@ -444,6 +440,9 @@ done
 
 
 %changelog
+* Thu Mar 20 2008 Jesse Keating <jkeating@redhat.com> - 3.11.99.5-2
+- Zapping old Obsoletes/Provides.  No longer needed, causes multilib headache.
+
 * Mon Mar 17 2008 Kai Engert <kengert@redhat.com> - 3.11.99.5-1
 - Update to NSS_3_12_BETA3
 * Fri Feb 22 2008 Kai Engert <kengert@redhat.com> - 3.11.99.4-1
