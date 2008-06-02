@@ -3,8 +3,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.0.1
-Release:          1%{?dist}
+Version:          3.12.0.3
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,7 +18,7 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
 
-Source0:          %{name}-%{version}-stripped.tar.gz
+Source0:          %{name}-%{version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -440,6 +440,8 @@ done
 
 
 %changelog
+* Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-2
+- Update to NSS_3_12_RC4
 * Mon Apr 14 2008 Kai Engert <kengert@redhat.com> - 3.12.0.1-1
 - Update to NSS_3_12_RC2
 * Thu Mar 20 2008 Jesse Keating <jkeating@redhat.com> - 3.11.99.5-2
