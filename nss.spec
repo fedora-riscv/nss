@@ -5,8 +5,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.11.7
-Release:          0.7.2%{?dist}
+Version:          3.11.9
+Release:          0.7.1%{?dist}
 License:          MPL/GPL/LGPL
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,8 +18,8 @@ BuildRequires:    gawk
 Provides:         mozilla-nss
 Obsoletes:        mozilla-nss
 
-#Source0:          %{name}-%{version}-no-fbst.tar.gz
-Source0:          %{name}-%{version}-no-fbst-with-ckbi-%{ckbi_version}.tar.gz
+Source0:          %{name}-%{version}-no-fbst.tar.gz
+#Source0:          %{name}-%{version}-no-fbst-with-ckbi-%{ckbi_version}.tar.gz
 # ckbi is the builtin roots module which may get released separately.
 
 Source1:          nss.pc.in
@@ -437,6 +437,9 @@ done
 
 
 %changelog
+* Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.11.9-0.7.1
+- Update to 3.11.9, but freebl/softokn remain at 3.11.5.
+
 * Wed Jul 11 2007 Kai Engert <kengert@redhat.com> - 3.11.7-0.7.2
 - Ensure the workaround for mozilla bug 51429 really get's built.
 
