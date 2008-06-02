@@ -1,0 +1,44 @@
+diff -up ./mozilla/security/nss/tests/header.prex ./mozilla/security/nss/tests/header
+--- ./mozilla/security/nss/tests/header.prex	2008-03-17 21:36:11.000000000 +0100
++++ ./mozilla/security/nss/tests/header	2008-03-17 21:36:47.000000000 +0100
+@@ -1114,8 +1114,8 @@ qa_stat_get_sysinfo()
+ set_objdir()
+ {
+     Debug "set object dir"
+-    OBJDIR=`cd ${TESTSCRIPTDIR}/common; gmake objdir_name`
+-    OS_ARCH=`cd ${TESTSCRIPTDIR}/common; gmake os_arch`
++    OBJDIR=`cd ${TESTSCRIPTDIR}/common; gmake --no-print-directory objdir_name`
++    OS_ARCH=`cd ${TESTSCRIPTDIR}/common; gmake --no-print-directory os_arch`
+     
+     #at this point $MASTERBUILD needs to be either NT or unix
+ 
+diff -up ./mozilla/security/nss/tests/nsspath.prex ./mozilla/security/nss/tests/nsspath
+--- ./mozilla/security/nss/tests/nsspath.prex	2008-03-17 21:37:10.000000000 +0100
++++ ./mozilla/security/nss/tests/nsspath	2008-03-17 21:37:23.000000000 +0100
+@@ -2,7 +2,7 @@
+ 
+ set PWD=`pwd`
+ source /u/sonmi/bin/nssdir $*
+-set OBJDIR=`(cd mozilla/security/nss/tests/common; gmake objdir_name)`
++set OBJDIR=`(cd mozilla/security/nss/tests/common; gmake --no-print-directory objdir_name)`
+ setenv PATH `perl /u/sonmi/bin/path_uniq -s "${PATH}:${UXDIST}/${OBJDIR}/bin"`
+ if ( `uname -n` == "iws-perf" ) then
+     setenv LD_LIBRARY_PATH "${UXDIST}/${OBJDIR}/lib:/opt/nfast/toolkits/pkcs11"
+diff -up ./mozilla/security/nss/tests/common/init.sh.prex ./mozilla/security/nss/tests/common/init.sh
+--- ./mozilla/security/nss/tests/common/init.sh.prex	2008-03-17 21:37:32.000000000 +0100
++++ ./mozilla/security/nss/tests/common/init.sh	2008-03-17 21:38:52.000000000 +0100
+@@ -269,10 +269,10 @@ if [ -z "${INIT_SOURCED}" -o "${INIT_SOU
+     DIST=${DIST-${MOZILLA_ROOT}/dist}
+     SECURITY_ROOT=${SECURITY_ROOT-${MOZILLA_ROOT}/security/nss}
+     TESTDIR=${TESTDIR-${MOZILLA_ROOT}/tests_results/security}
+-    OBJDIR=`(cd $COMMON; $MAKE objdir_name)`
+-    OS_ARCH=`(cd $COMMON; $MAKE os_arch)`
+-    DLL_PREFIX=`(cd $COMMON; $MAKE dll_prefix)`
+-    DLL_SUFFIX=`(cd $COMMON; $MAKE dll_suffix)`
++    OBJDIR=`(cd $COMMON; $MAKE --no-print-directory objdir_name)`
++    OS_ARCH=`(cd $COMMON; $MAKE --no-print-directory os_arch)`
++    DLL_PREFIX=`(cd $COMMON; $MAKE --no-print-directory dll_prefix)`
++    DLL_SUFFIX=`(cd $COMMON; $MAKE --no-print-directory dll_suffix)`
+     OS_NAME=`uname -s | sed -e "s/-[0-9]*\.[0-9]*//" | sed -e "s/-WOW64//"`
+ 
+     BINDIR="${DIST}/${OBJDIR}/bin"
