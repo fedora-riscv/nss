@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.0.3
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -297,6 +297,7 @@ done
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%dir %{_sysconfdir}/prelink.conf.d
 %{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 %files tools
@@ -440,6 +441,9 @@ done
 
 
 %changelog
+* Tue Jun 24 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-3
+- nss package should own /etc/prelink.conf.d folder, rhbz#452062
+- use upstream patch to fix test suite abort
 * Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-2
 - Update to NSS_3_12_RC4
 * Mon Apr 14 2008 Kai Engert <kengert@redhat.com> - 3.12.0.1-1
