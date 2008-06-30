@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.0.3
-Release:          0.8.1%{?dist}
+Release:          0.8.2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -428,6 +428,8 @@ done
 
 
 %changelog
+* Mon Jun 30 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-0.8.2
+- Update nss-config and nss.pc to include libnssutil
 * Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-0.8.1
 - Update all of NSS to to NSS_3_12_RC4
 - Require NSPR 4.7, SQLite
