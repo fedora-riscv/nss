@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.0.3
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -442,7 +442,7 @@ done
 
 
 %changelog
-* Tue Aug 05 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-5
+* Tue Aug 05 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-6
 - bug 456847, add Requires: pkgconfig
 * Tue Jun 24 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-3
 - nss package should own /etc/prelink.conf.d folder, rhbz#452062

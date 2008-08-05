@@ -1,11 +1,7 @@
-Index: mozilla/security/nss/lib/ckfw/manifest.mn
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/ckfw/manifest.mn,v
-retrieving revision 1.9
-diff -u -r1.9 manifest.mn
---- mozilla/security/nss/lib/ckfw/manifest.mn   16 Dec 2005 00:48:01 -0000      1.9
-+++ mozilla/security/nss/lib/ckfw/manifest.mn   31 Aug 2007 17:58:23 -0000
-@@ -38,7 +38,7 @@
+diff -up ./mozilla/security/nss/lib/ckfw/manifest.mn.prepem ./mozilla/security/nss/lib/ckfw/manifest.mn
+--- ./mozilla/security/nss/lib/ckfw/manifest.mn.prepem	2008-08-05 16:34:23.000000000 -0700
++++ ./mozilla/security/nss/lib/ckfw/manifest.mn	2008-08-05 16:34:30.000000000 -0700
+@@ -38,7 +38,7 @@ MANIFEST_CVS_ID = "@(#) $RCSfile: manife
  
  CORE_DEPTH = ../../..
  
@@ -13,4 +9,4 @@ diff -u -r1.9 manifest.mn
 +DIRS = builtins pem
  
  PRIVATE_EXPORTS = \
-        ck.h              \
+ 	ck.h		  \
