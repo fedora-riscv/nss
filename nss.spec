@@ -4,16 +4,16 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.0.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         sqlite
+Requires:         pkgconfig
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    sqlite-devel
-BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
@@ -441,6 +441,8 @@ done
 
 
 %changelog
+* Tue Aug 05 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-4
+- bug 456847, Requires: pkgconfig
 * Tue Jun 24 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-3
 - nss package should own /etc/prelink.conf.d folder, rhbz#452062
 - use upstream patch to fix test suite abort
