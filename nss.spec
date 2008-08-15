@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.0.3
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -31,6 +31,7 @@ Source12:         %{name}-pem-20080124.tar.bz2
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
+Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 patch7:           nss-fix-tests.patch
 
@@ -84,6 +85,7 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
+%patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .prex
 
@@ -442,6 +444,8 @@ done
 
 
 %changelog
+* Fri Aug 15 2008 Kai Engert <kaie@redhat.com> - 3.12.0.3-7
+- fix bug bug 429175 in libpem module
 * Tue Aug 05 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-6
 - bug 456847, add Requires: pkgconfig
 * Tue Jun 24 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-3
