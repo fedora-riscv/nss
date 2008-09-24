@@ -4,13 +4,12 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.1.1
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         sqlite
-Requires:         pkgconfig
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    sqlite-devel
@@ -63,6 +62,7 @@ Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
 Requires:         nss = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
+Requires:         pkgconfig
 
 %description devel
 Header and Library files for doing development with Network Security Services.
@@ -442,6 +442,8 @@ done
 
 
 %changelog
+* Wed Sep 24 2008 Kai Engert <kaie@redhat.com> - 3.12.1.1-3
+- bug 456847, move pkgconfig requirement to devel package
 * Fri Sep 05 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-2
 - Update to NSS_3_12_1_RC2
 * Fri Aug 22 2008 Kai Engert <kaie@redhat.com> - 3.12.1.0-2
