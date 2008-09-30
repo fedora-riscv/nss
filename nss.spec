@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.1.1
-Release:          1%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -62,6 +62,7 @@ Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
 Requires:         nss = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
+Requires:         pkgconfig
 
 %description devel
 Header and Library files for doing development with Network Security Services.
@@ -112,7 +113,7 @@ NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
-%ifarch x86_64 ppc64 ia64 s390x
+%ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
 export USE_64
 %endif
@@ -297,6 +298,7 @@ done
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%dir %{_sysconfdir}/prelink.conf.d
 %{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 %files tools
@@ -440,13 +442,23 @@ done
 
 
 %changelog
-* Fri Sep 05 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-1
+* Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
+- add sparc64 to the list of 64 bit arches
+
+* Wed Sep 24 2008 Kai Engert <kaie@redhat.com> - 3.12.1.1-3
+- bug 456847, move pkgconfig requirement to devel package
+* Fri Sep 05 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-2
 - Update to NSS_3_12_1_RC2
-* Fri Aug 22 2008 Kai Engert <kaie@redhat.com> - 3.12.1.0-1
+* Fri Aug 22 2008 Kai Engert <kaie@redhat.com> - 3.12.1.0-2
 - NSS 3.12.1 RC1
-* Fri Aug 22 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-0.9.2
+* Fri Aug 15 2008 Kai Engert <kaie@redhat.com> - 3.12.0.3-7
 - fix bug bug 429175 in libpem module
-* Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-0.9.1
+* Tue Aug 05 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-6
+- bug 456847, add Requires: pkgconfig
+* Tue Jun 24 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-3
+- nss package should own /etc/prelink.conf.d folder, rhbz#452062
+- use upstream patch to fix test suite abort
+* Mon Jun 02 2008 Kai Engert <kengert@redhat.com> - 3.12.0.3-2
 - Update to NSS_3_12_RC4
 * Mon Apr 14 2008 Kai Engert <kengert@redhat.com> - 3.12.0.1-1
 - Update to NSS_3_12_RC2
