@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.1.1
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -113,7 +113,7 @@ NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
-%ifarch x86_64 ppc64 ia64 s390x
+%ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
 export USE_64
 %endif
@@ -442,6 +442,9 @@ done
 
 
 %changelog
+* Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
+- add sparc64 to the list of 64 bit arches
+
 * Wed Sep 24 2008 Kai Engert <kaie@redhat.com> - 3.12.1.1-3
 - bug 456847, move pkgconfig requirement to devel package
 * Fri Sep 05 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-2
