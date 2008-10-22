@@ -3,8 +3,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.1.1
-Release:          4%{?dist}
+Version:          3.12.2.0
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -442,6 +442,8 @@ done
 
 
 %changelog
+* Wed Oct 22 2008 Kai Engert <kaie@redhat.com> - 3.12.2.0-2
+- update to NSS_3_12_2_RC1
 * Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
 - add sparc64 to the list of 64 bit arches
 
