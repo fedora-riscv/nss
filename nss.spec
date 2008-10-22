@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.0
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -13,6 +13,7 @@ Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    sqlite-devel
+BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
@@ -45,6 +46,7 @@ v3 certificates, and other security standards.
 Summary:          Tools for the Network Security Services
 Group:            System Environment/Base
 Requires:         nss = %{version}-%{release}
+Requires:         zlib
 
 %description tools
 Network Security Services (NSS) is a set of libraries designed to
@@ -442,8 +444,9 @@ done
 
 
 %changelog
-* Wed Oct 22 2008 Kai Engert <kaie@redhat.com> - 3.12.2.0-2
+* Wed Oct 22 2008 Kai Engert <kaie@redhat.com> - 3.12.2.0-3
 - update to NSS_3_12_2_RC1
+- use system zlib
 * Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
 - add sparc64 to the list of 64 bit arches
 
