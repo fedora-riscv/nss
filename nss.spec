@@ -1,10 +1,11 @@
 %define nspr_version 4.7
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%define ckbi_version 1.72
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.1.1
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,7 +19,8 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
 
-Source0:          %{name}-%{version}-stripped.tar.bz2
+#Source0:          %{name}-%{version}-stripped.tar.bz2
+Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -442,9 +444,10 @@ done
 
 
 %changelog
+* Thu Nov 06 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-5
+- Update to NSS_3_12_1_WITH_CKBI_1_72_RTM
 * Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
 - add sparc64 to the list of 64 bit arches
-
 * Wed Sep 24 2008 Kai Engert <kaie@redhat.com> - 3.12.1.1-3
 - bug 456847, move pkgconfig requirement to devel package
 * Fri Sep 05 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-2
