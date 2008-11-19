@@ -4,8 +4,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.1.1
-Release:          5%{?dist}
+Version:          3.12.2.0
+Release:          1.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,9 +18,10 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
+BuildRequires:    zlib-devel
 
-#Source0:          %{name}-%{version}-stripped.tar.bz2
-Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
+Source0:          %{name}-%{version}-stripped.tar.bz2
+#Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -47,6 +48,7 @@ v3 certificates, and other security standards.
 Summary:          Tools for the Network Security Services
 Group:            System Environment/Base
 Requires:         nss = %{version}-%{release}
+Requires:         zlib
 
 %description tools
 Network Security Services (NSS) is a set of libraries designed to
@@ -444,6 +446,9 @@ done
 
 
 %changelog
+* Wed Nov 19 2008 Kai Engert <kengert@redhat.com> - 3.12.2.0-1.1
+- Update to NSS_3_12_2_RC1
+- Use system zlib
 * Thu Nov 06 2008 Kai Engert <kengert@redhat.com> - 3.12.1.1-5
 - Update to NSS_3_12_1_WITH_CKBI_1_72_RTM
 * Tue Sep 30 2008 Dennis Gilmore <dennis@ausil.us> - 3.12.1.1-4
