@@ -1,10 +1,11 @@
 %define nspr_version 4.7
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%define ckbi_version 1.73
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.0
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -19,7 +20,8 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
 
-Source0:          %{name}-%{version}-stripped.tar.bz2
+#Source0:          %{name}-%{version}-stripped.tar.bz2
+Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -444,6 +446,8 @@ done
 
 
 %changelog
+* Fri Jan 23 2009 Kai Engert <kengert@redhat.com> - 3.12.2.0-4
+- Update to NSS_3_12_2_WITH_CKBI_1_73_RTM
 * Wed Oct 22 2008 Kai Engert <kaie@redhat.com> - 3.12.2.0-3
 - update to NSS_3_12_2_RC1
 - use system zlib
