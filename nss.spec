@@ -3,8 +3,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.2.0
-Release:          4%{?dist}
+Version:          3.12.2.99.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -444,6 +444,9 @@ done
 
 
 %changelog
+* Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-1
+- Update to NSS_3_12_3_BETA4
+
 * Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.12.2.0-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
