@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.99.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,6 +91,9 @@ low level services.
 
 
 %build
+
+FREEBL_NO_DEPEND=1
+export FREEBL_NO_DEPEND
 
 # Enable compiler optimizations and disable debugging code
 BUILD_OPT=1
@@ -375,6 +378,7 @@ done
 %{_includedir}/nss3/nssilckt.h
 %{_includedir}/nss3/nssilock.h
 %{_includedir}/nss3/nsslocks.h
+%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/nssrwlk.h
 %{_includedir}/nss3/nssrwlkt.h
@@ -444,6 +448,8 @@ done
 
 
 %changelog
+* Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-2
+- build nspr-less freebl library
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-1
 - Update to NSS_3_12_3_BETA4
 
