@@ -5,7 +5,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.0
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -33,6 +33,7 @@ Source12:         %{name}-pem-20080124.tar.bz2
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
+Patch4:           nss-pem-bug483855.patch
 Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 
@@ -88,6 +89,7 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
+%patch4 -p0 -b .483855
 %patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
 
@@ -446,6 +448,8 @@ done
 
 
 %changelog
+* Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.0-5
+- add upstream patch to fix bug 483855
 * Fri Jan 23 2009 Kai Engert <kengert@redhat.com> - 3.12.2.0-4
 - Update to NSS_3_12_2_WITH_CKBI_1_73_RTM
 * Wed Oct 22 2008 Kai Engert <kaie@redhat.com> - 3.12.2.0-3
