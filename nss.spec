@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.99.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -34,6 +34,7 @@ Patch2:           nss-nolocalsql.patch
 Patch4:           nss-pem-bug483855.patch
 Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nss-disable-freebl-execstack.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -90,6 +91,7 @@ low level services.
 %patch4 -p0 -b .483855
 %patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
+%patch7 -p1
 
 
 %build
@@ -450,6 +452,8 @@ done
 
 
 %changelog
+* Thu Apr 02 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-4
+- disable execstack when building freebl
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-3
 - add upstream patch to fix bug 483855
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-2
