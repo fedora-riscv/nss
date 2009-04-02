@@ -4,11 +4,12 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.99.3
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
+Requires:         nss-softokn-freebl >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
@@ -42,6 +43,20 @@ support cross-platform development of security-enabled client and
 server applications. Applications built with NSS can support SSL v2
 and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
 v3 certificates, and other security standards.
+
+%package softokn-freebl
+Summary:          Freebl library for the Network Security Services
+Group:            System Environment/Base
+
+%description softokn-freebl
+Network Security Services (NSS) is a set of libraries designed to
+support cross-platform development of security-enabled client and
+server applications. Applications built with NSS can support SSL v2
+and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
+v3 certificates, and other security standards.
+
+Install the nss-softokn-freebl package if you need the freebl 
+library.
 
 
 %package tools
@@ -297,7 +312,6 @@ done
 /%{_lib}/libsoftokn3.so
 /%{_lib}/libnssckbi.so
 /%{_lib}/libnsspem.so
-/%{_lib}/libfreebl3.so
 %{unsupported_tools_directory}/shlibsign
 %ghost /%{_lib}/libsoftokn3.chk
 %ghost /%{_lib}/libfreebl3.chk
@@ -309,6 +323,9 @@ done
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
 %dir %{_sysconfdir}/prelink.conf.d
 %{_sysconfdir}/prelink.conf.d/nss-prelink.conf
+
+%files softokn-freebl
+/%{_lib}/libfreebl3.so
 
 %files tools
 %defattr(-,root,root)
@@ -452,6 +469,8 @@ done
 
 
 %changelog
+* Thu Apr 02 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-5
+- introduce separate nss-softokn-freebl package
 * Thu Apr 02 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-4
 - disable execstack when building freebl
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-3
