@@ -4,12 +4,12 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.2.99.3
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-softokn-freebl >= %{version}
+Requires:         nss-softokn-freebl%{_isa} >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
@@ -469,6 +469,8 @@ done
 
 
 %changelog
+* Mon Apr 06 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-6
+- fix softokn-freebl dependency for multilib (bug 494122)
 * Thu Apr 02 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-5
 - introduce separate nss-softokn-freebl package
 * Thu Apr 02 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-4
