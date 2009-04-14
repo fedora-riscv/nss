@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -36,6 +36,7 @@ Patch4:           nss-pem-bug483855.patch
 Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nss-disable-freebl-execstack.patch
+Patch8:           nss-freebl-kernelfipsmode
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -107,6 +108,7 @@ low level services.
 %patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
 %patch7 -p1
+%patch8 -p1
 
 
 %build
@@ -230,6 +232,14 @@ killall $RANDSERV || :
 #fi
 #echo "test suite completed"
 
+# Produce .chk files for the final stripped binaries
+%define __spec_install_post \
+    %{?__debug_package:%{__debug_install_post}} \
+    %{__arch_install_post} \
+    %{__os_install_post} \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
+%{nil}
 
 %install
 
@@ -248,11 +258,9 @@ do
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
-# These ghost files will be generated in the post step
 # Make sure chk files can be found in both places
 for file in libsoftokn3.chk libfreebl3.chk
 do
-  touch $RPM_BUILD_ROOT/%{_lib}/$file
   ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
@@ -295,8 +303,6 @@ done
 
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libsoftokn3.so >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libfreebl3.so >/dev/null 2>/dev/null
 
 
 %postun
@@ -311,11 +317,10 @@ done
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
 /%{_lib}/libsoftokn3.so
+/%{_lib}/libsoftokn3.chk
 /%{_lib}/libnssckbi.so
 /%{_lib}/libnsspem.so
 %{unsupported_tools_directory}/shlibsign
-%ghost /%{_lib}/libsoftokn3.chk
-%ghost /%{_lib}/libfreebl3.chk
 %dir %{_libdir}/nss
 %dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
@@ -327,6 +332,7 @@ done
 
 %files softokn-freebl
 /%{_lib}/libfreebl3.so
+/%{_lib}/libfreebl3.chk
 
 %files tools
 %defattr(-,root,root)
@@ -470,6 +476,10 @@ done
 
 
 %changelog
+* Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-3
+- ship .chk files instead of running shlibsign at install time
+- include .chk file in softokn-freebl subpackage
+- add patch for upstream nss bug 488350
 * Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-2
 - Update to NSS 3.12.3
 * Mon Apr 06 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-7
