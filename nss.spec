@@ -3,8 +3,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.2.99.3
-Release:          7%{?dist}
+Version:          3.12.3
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -404,6 +404,7 @@ done
 %{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/nssrwlk.h
 %{_includedir}/nss3/nssrwlkt.h
+%{_includedir}/nss3/nssutil.h
 %{_includedir}/nss3/ocsp.h
 %{_includedir}/nss3/ocspt.h
 %{_includedir}/nss3/p12.h
@@ -450,7 +451,6 @@ done
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
 %{_includedir}/nss3/utilrename.h
-%{_includedir}/nss3/watcomfx.h
 
 
 %files pkcs11-devel
@@ -470,6 +470,8 @@ done
 
 
 %changelog
+* Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-2
+- Update to NSS 3.12.3
 * Mon Apr 06 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-7
 - temporarily disable the test suite because of bug 494266
 * Mon Apr 06 2009 Kai Engert <kaie@redhat.com> - 3.12.2.99.3-6
