@@ -217,7 +217,6 @@ find ./mozilla/security/nss/tests -type f |\
 
 killall $RANDSERV || :
 
-temporarily disable the test suite because of bug 494266
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
