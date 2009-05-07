@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -217,21 +217,21 @@ find ./mozilla/security/nss/tests -type f |\
 
 killall $RANDSERV || :
 
-#temporarily disable the test suite because of bug 494266
-#rm -rf ./mozilla/tests_results
-#cd ./mozilla/security/nss/tests/
-## all.sh is the test suite script
-#HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
-#cd ../../../../
+temporarily disable the test suite because of bug 494266
+rm -rf ./mozilla/tests_results
+cd ./mozilla/security/nss/tests/
+# all.sh is the test suite script
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
+cd ../../../../
 
-#killall $RANDSERV || :
+killall $RANDSERV || :
 
-#TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
-#if [ $TEST_FAILURES -ne 0 ]; then
-#  echo "error: test suite returned failure(s)"
-#  exit 1
-#fi
-#echo "test suite completed"
+TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
+if [ $TEST_FAILURES -ne 0 ]; then
+  echo "error: test suite returned failure(s)"
+  exit 1
+fi
+echo "test suite completed"
 
 # Produce .chk files for the final stripped binaries
 %define __spec_install_post \
@@ -477,6 +477,8 @@ done
 
 
 %changelog
+* Thu May 07 2009 Kai Engert <kaie@redhat.com> - 3.12.3-5
+- re-enable test suite
 * Wed May 06 2009 Kai Engert <kaie@redhat.com> - 3.12.3-4
 - add conflicts info in order to fix bug 499436
 * Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-3
