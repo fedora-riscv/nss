@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -476,7 +476,7 @@ done
 
 
 %changelog
-* Thu May 07 2009 Kai Engert <kaie@redhat.com> - 3.12.3-5
+* Thu May 07 2009 Kai Engert <kaie@redhat.com> - 3.12.3-6
 - re-enable test suite
 * Wed May 06 2009 Kai Engert <kaie@redhat.com> - 3.12.3-4
 - add conflicts info in order to fix bug 499436
