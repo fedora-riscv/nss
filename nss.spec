@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -29,6 +29,8 @@ Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
 Source12:         %{name}-pem-20080124.tar.bz2
+Source13:         PayPalEE.cert
+Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
@@ -37,6 +39,7 @@ Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nss-disable-freebl-execstack.patch
 Patch8:           nss-freebl-kernelfipsmode
+Patch9:           nss-bug488646.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -110,6 +113,11 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1 -b .bug488646
+
+#need newer certs to make test suite work
+#remove once we update to NSS 3.12.4
+cp %{SOURCE13} %{SOURCE14} mozilla/security/nss/tests/libpkix/certs
 
 
 %build
@@ -476,8 +484,10 @@ done
 
 
 %changelog
-* Thu May 07 2009 Kai Engert <kaie@redhat.com> - 3.12.3-6
+* Thu May 07 2009 Kai Engert <kaie@redhat.com> - 3.12.3-7
 - re-enable test suite
+- add patch for upstream bug 488646 and add newer paypal
+  certs in order to make the test suite pass
 * Wed May 06 2009 Kai Engert <kaie@redhat.com> - 3.12.3-4
 - add conflicts info in order to fix bug 499436
 * Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-3
