@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -48,6 +48,7 @@ v3 certificates, and other security standards.
 %package softokn-freebl
 Summary:          Freebl library for the Network Security Services
 Group:            System Environment/Base
+Conflicts:        nss < 3.12.2.99.3-5
 
 %description softokn-freebl
 Network Security Services (NSS) is a set of libraries designed to
@@ -476,6 +477,8 @@ done
 
 
 %changelog
+* Fri May 08 2009 Kai Engert <kaie@redhat.com> - 3.12.3-4
+- add conflicts info in order to fix bug 499436
 * Tue Apr 14 2009 Kai Engert <kaie@redhat.com> - 3.12.3-3
 - ship .chk files instead of running shlibsign at install time
 - include .chk file in softokn-freebl subpackage
