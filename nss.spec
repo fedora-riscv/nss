@@ -5,7 +5,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.9.1%{?dist}
+Release:          2.9.2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -385,7 +385,6 @@ done
 %{_includedir}/nss3/nssilckt.h
 %{_includedir}/nss3/nssilock.h
 %{_includedir}/nss3/nsslocks.h
-%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/nssrwlk.h
 %{_includedir}/nss3/nssrwlkt.h
@@ -455,6 +454,8 @@ done
 
 
 %changelog
+* Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2.9.2
+- don't have nsslowhash.h
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2.9.1
 - update list of header files
 - switch to release 2.9.1 to ensure it will remain lower than
