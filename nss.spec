@@ -5,7 +5,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -30,6 +30,8 @@ Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
 Source12:         %{name}-pem-20080124.tar.bz2
+Source13:         PayPalEE.cert
+Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
@@ -92,6 +94,10 @@ low level services.
 %patch4 -p0 -b .483855
 %patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
+
+#need newer certs to make test suite work
+#remove once we update to NSS 3.12.4
+cp %{SOURCE13} %{SOURCE14} mozilla/security/nss/tests/libpkix/certs
 
 
 %build
@@ -448,6 +454,8 @@ done
 
 
 %changelog
+* Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2
+- fix test suite failure
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-1
 - updated to NSS_3_12_4_FIPS1_WITH_CKBI_1_75
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.0-5
