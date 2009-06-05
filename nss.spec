@@ -4,8 +4,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.2.0
-Release:          3%{?dist}
+Version:          3.12.3.99.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -20,8 +20,8 @@ BuildRequires:    psmisc
 BuildRequires:    perl
 BuildRequires:    zlib-devel
 
-#Source0:          %{name}-%{version}-stripped.tar.bz2
-Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
+Source0:          %{name}-%{version}-stripped.tar.bz2
+#Source0:          %{name}-%{version}-ckbi-%{ckbi_version}-stripped.tar.bz2
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -448,6 +448,8 @@ done
 
 
 %changelog
+* Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-1
+- updated to NSS_3_12_4_FIPS1_WITH_CKBI_1_75
 * Tue Mar 31 2009 Kai Engert <kaie@redhat.com> - 3.12.2.0-3
 - add upstream patch to fix bug 483855
 * Fri Jan 23 2009 Kai Engert <kengert@redhat.com> - 3.12.2.0-2
