@@ -482,6 +482,7 @@ done
 %changelog
 * Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
 - add patch for bug 502133 upstream bug 496997
+* Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-3
 - rebuild with higher release number for upgrade sanity
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2
 - updated to NSS_3_12_4_FIPS1_WITH_CKBI_1_75
