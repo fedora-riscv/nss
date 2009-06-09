@@ -480,6 +480,8 @@ done
 
 
 %changelog
+* Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.11.2
+- correct version and release number in this log
 * Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 2.11.2
 - add patch for bug 502133 upstream bug 496997
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2.11.1
