@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,6 +37,7 @@ Patch2:           nss-nolocalsql.patch
 Patch4:           nss-pem-bug483855.patch
 Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nss-stubs-bug502133.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -108,6 +109,7 @@ low level services.
 %patch4 -p0 -b .483855
 %patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .502133
 
 #need newer certs to make test suite work
 #remove once we update to NSS 3.12.4
@@ -478,7 +480,8 @@ done
 
 
 %changelog
-* Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-3
+* Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
+- add patch for bug 502133 upstream bug 496997
 - rebuild with higher release number for upgrade sanity
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2
 - updated to NSS_3_12_4_FIPS1_WITH_CKBI_1_75
