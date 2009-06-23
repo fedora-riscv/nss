@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -28,14 +28,12 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20080124.tar.bz2
+Source12:         %{name}-pem-20090622.tar.bz2
 Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
-Patch4:           nss-pem-bug483855.patch
-Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nss-stubs-bug502133.patch
 
@@ -106,8 +104,6 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
-%patch4 -p0 -b .483855
-%patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .502133
 
@@ -480,6 +476,16 @@ done
 
 
 %changelog
+* Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
+- updated pem module incorporates various patches
+- fix off-by-one error when computing size to reduce memory leak. (483855)
+- fix data type to work on x86_64 systems. (429175)
+- fix various memory leaks and free internal objects on module unload. (501080)
+- fix to not clone internal objects in collect_objects().  (501118)
+- fix to not bypass initialization if module arguments are omitted. (501058)
+- fix numerous gcc warnings. (500815)
+- fix to support arbitrarily long password while loading a private key. (500180) 
+- fix memory leak in make_key and memory leaks and return values in pem_mdSession_Login (501191)
 * Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
 - add patch for bug 502133 upstream bug 496997
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-3
