@@ -5,7 +5,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.10.2%{?dist}
+Release:          2.10.3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -35,8 +35,6 @@ Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
-Patch4:           nss-pem-bug483855.patch
-Patch5:           nss-pem-bug429175.patch
 Patch6:           nss-enable-pem.patch
 
 %description
@@ -91,8 +89,6 @@ low level services.
 
 %patch1 -p0
 %patch2 -p0
-%patch4 -p0 -b .483855
-%patch5 -p0 -b .429175
 %patch6 -p0 -b .libpem
 
 #need newer certs to make test suite work
@@ -454,6 +450,16 @@ done
 
 
 %changelog
+* Tue Jun 23 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.10.4
+- updated pem module incorporates various patches
+- fix off-by-one error when computing size to reduce memory leak, rhbz#483855
+- fix data type to work on x86_64 systems, rhbz #429175
+- fix various memory leaks and free internal objects on module unload, rhbz#501080
+- fix to not clone internal objects in collect_objects(), rhbz#501118
+- fix to not bypass initialization if module arguments are omitted, rhbz#501058
+- fix gcc warnings, rhbz#500815
+- fix to support arbitrarily long password while loading a private key, rhbz#500180
+- fix memory leak in make_key and memory leaks and return values in pem_mdSession_Login, rhbz#501191
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2.10.2
 - don't have nsslowhash.h
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-2.10.1
