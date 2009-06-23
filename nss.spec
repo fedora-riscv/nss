@@ -5,7 +5,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.10.3%{?dist}
+Release:          2.10.4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -29,7 +29,7 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20080124.tar.bz2
+Source12:         %{name}-pem-20090622.tar.bz2
 Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
 
@@ -451,6 +451,8 @@ done
 
 %changelog
 * Tue Jun 23 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.10.4
+- updated source12 to refer to new pem source tar ball
+* Tue Jun 23 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.10.3
 - updated pem module incorporates various patches
 - fix off-by-one error when computing size to reduce memory leak, rhbz#483855
 - fix data type to work on x86_64 systems, rhbz #429175
