@@ -1,18 +1,25 @@
 %define nspr_version 4.7
+%define fips_source_version 3.12.3.99.3
+%define nss-softokn_version 3.12.3.99.3
+%define nss_util_version 3.12.3.99.3
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          6%{?dist}
+Release:          7%{?dist}.test.1
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
+Requires:         nss-softokn >= %{nss-softokn_version}
+Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn-freebl%{_isa} >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
+BuildRequires:    nss-softokn-devel >= %{nss-softokn_version}
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -82,6 +89,8 @@ Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
 Requires:         nss = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
+Requires:         nss-softokn-devel >= %{nss-softokn_version}
+Requires:         nss-util-devel >= %{nss_util_version}
 Requires:         pkgconfig
 
 %description devel
@@ -312,12 +321,9 @@ done
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
-/%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
-/%{_lib}/libsoftokn3.so
-/%{_lib}/libsoftokn3.chk
 /%{_lib}/libnssckbi.so
 /%{_lib}/libnsspem.so
 %{unsupported_tools_directory}/shlibsign
@@ -360,27 +366,19 @@ done
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
-%{_libdir}/libnssutil3.so
 %{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%{_libdir}/libsoftokn3.so
-%{_libdir}/libsoftokn3.chk
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
-%{_libdir}/libfreebl3.so
-%{_libdir}/libfreebl3.chk
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
 
 %dir %{_includedir}/nss3
-%{_includedir}/nss3/base64.h
-%{_includedir}/nss3/blapit.h
 %{_includedir}/nss3/cert.h
 %{_includedir}/nss3/certdb.h
 %{_includedir}/nss3/certt.h
-%{_includedir}/nss3/ciferfam.h
 %{_includedir}/nss3/cmmf.h
 %{_includedir}/nss3/cmmft.h
 %{_includedir}/nss3/cms.h
@@ -390,8 +388,6 @@ done
 %{_includedir}/nss3/crmft.h
 %{_includedir}/nss3/cryptohi.h
 %{_includedir}/nss3/cryptoht.h
-%{_includedir}/nss3/ecl-exp.h
-%{_includedir}/nss3/hasht.h
 %{_includedir}/nss3/jar-ds.h
 %{_includedir}/nss3/jar.h
 %{_includedir}/nss3/jarfile.h
@@ -400,12 +396,9 @@ done
 %{_includedir}/nss3/keyt.h
 %{_includedir}/nss3/keythi.h
 %{_includedir}/nss3/nss.h
-%{_includedir}/nss3/nssb64.h
-%{_includedir}/nss3/nssb64t.h
 %{_includedir}/nss3/nssckbi.h
 %{_includedir}/nss3/nssilckt.h
 %{_includedir}/nss3/nssilock.h
-%{_includedir}/nss3/nsslocks.h
 %{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/nssrwlk.h
@@ -421,42 +414,19 @@ done
 %{_includedir}/nss3/pk11priv.h
 %{_includedir}/nss3/pk11pub.h
 %{_includedir}/nss3/pk11sdr.h
-%{_includedir}/nss3/pkcs11.h
-%{_includedir}/nss3/pkcs11f.h
-%{_includedir}/nss3/pkcs11n.h
-%{_includedir}/nss3/pkcs11p.h
-%{_includedir}/nss3/pkcs11t.h
-%{_includedir}/nss3/pkcs11u.h
 %{_includedir}/nss3/pkcs12.h
 %{_includedir}/nss3/pkcs12t.h
 %{_includedir}/nss3/pkcs7t.h
-%{_includedir}/nss3/portreg.h
 %{_includedir}/nss3/preenc.h
-%{_includedir}/nss3/secasn1.h
-%{_includedir}/nss3/secasn1t.h
-%{_includedir}/nss3/seccomon.h
-%{_includedir}/nss3/secder.h
-%{_includedir}/nss3/secdert.h
-%{_includedir}/nss3/secdig.h
-%{_includedir}/nss3/secdigt.h
-%{_includedir}/nss3/secerr.h
-%{_includedir}/nss3/sechash.h
-%{_includedir}/nss3/secitem.h
 %{_includedir}/nss3/secmime.h
 %{_includedir}/nss3/secmod.h
-%{_includedir}/nss3/secmodt.h
-%{_includedir}/nss3/secoid.h
-%{_includedir}/nss3/secoidt.h
 %{_includedir}/nss3/secpkcs5.h
 %{_includedir}/nss3/secpkcs7.h
-%{_includedir}/nss3/secport.h
-%{_includedir}/nss3/shsign.h
 %{_includedir}/nss3/smime.h
 %{_includedir}/nss3/ssl.h
 %{_includedir}/nss3/sslerr.h
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
-%{_includedir}/nss3/utilrename.h
 
 
 %files pkcs11-devel
@@ -476,6 +446,8 @@ done
 
 
 %changelog
+* Wed Jul  1 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-7
+- removed two patch files which are no longer needed and fixed previous change log number
 * Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-6
 - removed two patch files which are no longer needed and fixed previous change log number
 * Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-5
