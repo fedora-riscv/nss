@@ -1,10 +1,19 @@
-%define nspr_version 4.7
-%define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%global nspr_version 4.7
+%global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+
+# Produce .chk files for the final stripped binaries
+%define __spec_install_post \
+    %{?__debug_package:%{__debug_install_post}} \
+    %{__arch_install_post} \
+    %{__os_install_post} \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
+%{nil}
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.11.3%{?dist}
+Release:          2.11.4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -153,14 +162,14 @@ export USE_64
 %{__make} -C ./mozilla/security/nss
 
 # Set up our package file
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSS_VERSION%%,%{version},g" > \
-                          $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+                          ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
 NSS_VMINOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
@@ -170,7 +179,6 @@ export NSS_VMAJOR
 export NSS_VMINOR 
 export NSS_VPATCH
 
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
@@ -178,9 +186,9 @@ export NSS_VPATCH
                           -e "s,@MOD_MAJOR_VERSION@,$NSS_VMAJOR,g" \
                           -e "s,@MOD_MINOR_VERSION@,$NSS_VMINOR,g" \
                           -e "s,@MOD_PATCH_VERSION@,$NSS_VPATCH,g" \
-                          > $RPM_BUILD_ROOT/%{_bindir}/nss-config
+                          > ./mozilla/dist/pkgconfig/nss-config
 
-chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
+chmod 755 ./mozilla/dist/pkgconfig/nss-config
 
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
@@ -232,16 +240,10 @@ if [ $TEST_FAILURES -ne 0 ]; then
 fi
 echo "test suite completed"
 
-# Produce .chk files for the final stripped binaries
-%define __spec_install_post \
-    %{?__debug_package:%{__debug_install_post}} \
-    %{__arch_install_post} \
-    %{__os_install_post} \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
-%{nil}
 
 %install
+
+%{__rm} -rf $RPM_BUILD_ROOT
 
 # There is no make install target so we'll do it ourselves.
 
@@ -249,6 +251,7 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_lib}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
 for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
@@ -296,6 +299,9 @@ do
   %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
+# Copy the package configuration files
+%{__install} -p ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+%{__install} -p ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -331,6 +337,7 @@ done
 %{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 %files softokn-freebl
+%defattr(-,root,root)
 /%{_lib}/libfreebl3.so
 /%{_lib}/libfreebl3.chk
 
@@ -476,6 +483,8 @@ done
 
 
 %changelog
+* Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.11.4
+- Fixed problems uncovered by mass rebuild with new version of rpmbuild
 * Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.11.3
 - updated pem module incorporates various patches
 - fix off-by-one error when computing size to reduce memory leak, rhbz#483855
