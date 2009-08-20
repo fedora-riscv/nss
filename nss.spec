@@ -1,27 +1,25 @@
-%global nspr_version 4.7
+%global nspr_version 4.8
+# Eventually we will have 3.12.4
+# for now we test with 3.12.3.99.3
+%global nss_softokn_version 3.12.3.99.3
+%global nss_util_version 3.12.3.99.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-
-# Produce .chk files for the final stripped binaries
-%define __spec_install_post \
-    %{?__debug_package:%{__debug_install_post}} \
-    %{__arch_install_post} \
-    %{__os_install_post} \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
-%{nil}
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          7.1%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-softokn-freebl%{_isa} >= %{version}
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
+Requires:         nss-util >= %{nss_util_version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -36,15 +34,12 @@ Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20090622.tar.bz2
-Source13:         PayPalEE.cert
-Source14:         PayPalICA.cert
+Source6:         %{name}-pem-20090622.tar.bz2
+Source7:         PayPalEE.cert
+Source8:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
-Patch2:           nss-nolocalsql.patch
-Patch6:           nss-enable-pem.patch
-Patch7:           nss-stubs-bug502133.patch
+Patch2:           nss-enable-pem.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -52,21 +47,6 @@ support cross-platform development of security-enabled client and
 server applications. Applications built with NSS can support SSL v2
 and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
 v3 certificates, and other security standards.
-
-%package softokn-freebl
-Summary:          Freebl library for the Network Security Services
-Group:            System Environment/Base
-Conflicts:        nss < 3.12.2.99.3-5
-
-%description softokn-freebl
-Network Security Services (NSS) is a set of libraries designed to
-support cross-platform development of security-enabled client and
-server applications. Applications built with NSS can support SSL v2
-and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
-v3 certificates, and other security standards.
-
-Install the nss-softokn-freebl package if you need the freebl 
-library.
 
 
 %package tools
@@ -91,6 +71,8 @@ Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
 Requires:         nss = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
+Requires:         nss-softokn-devel >= %{nss_softkn_version}
+Requires:         nss-util-devel >= %{nss_util_version}
 Requires:         pkgconfig
 
 %description devel
@@ -109,16 +91,14 @@ low level services.
 
 %prep
 %setup -q
-%setup -q -T -D -n %{name}-%{version} -a 12
+%setup -q -T -D -n %{name}-%{version} -a 6
 
 %patch1 -p0
-%patch2 -p0
-%patch6 -p0 -b .libpem
-%patch7 -p0 -b .502133
+%patch2 -p0 -b .libpem
 
-#need newer certs to make test suite work
-#remove once we update to NSS 3.12.4
-cp %{SOURCE13} %{SOURCE14} mozilla/security/nss/tests/libpkix/certs
+# need newer certs to make test suite work
+# remove once we update to NSS 3.12.4
+cp %{SOURCE7} %{SOURCE8} mozilla/security/nss/tests/libpkix/certs
 
 
 %build
@@ -134,8 +114,6 @@ export BUILD_OPT
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
 
-#export NSPR_INCLUDE_DIR=`nspr-config --includedir`
-#export NSPR_LIB_DIR=`nspr-config --libdir`
 
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
@@ -149,14 +127,25 @@ NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
+NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss | sed 's/-I//'`
+NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss | sed 's/-L//'`
+
+export NSS_INCLUDE_DIR
+export NSS_LIB_DIR
+
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
 export USE_64
 %endif
 
-# NSS_ENABLE_ECC=1
-# export NSS_ENABLE_ECC
-
+#
+# Though we only ship the nss proper libraries, no
+# softoken nor util, we actually compile everything
+# as we are using the entire source tree. It is a bit
+# a waste but this is the only way we can find the
+# private exports from util. Let's keep it simple
+# for now.
+#
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
 %{__make} -C ./mozilla/security/nss
@@ -179,6 +168,7 @@ export NSS_VMAJOR
 export NSS_VMINOR 
 export NSS_VPATCH
 
+%{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
@@ -228,7 +218,13 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
+
+%define all_tests "cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+%define nossl_tests "cipher libpkix cert dbtests tools fips sdr crmf smime ocsp merge pkits chains"
+%define cipher_suite "cipher"
+%define fips_suite "fips"
+
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_TESTS=%{all_tests} ./all.sh
 cd ../../../../
 
 killall $RANDSERV || :
@@ -254,49 +250,68 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
-            libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
+for file in libnss3.so \
+            libssl3.so libsmime3.so libnssckbi.so libnsspem.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
-# Make sure chk files can be found in both places
-for file in libsoftokn3.chk libfreebl3.chk
-do
-  ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
-done
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
 %{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
 %{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
 %{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d
-%{__install} -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+done
+
+# Before installing public headers romove the ones that nss-util-devel
+# and nss-softokn-devel have already installed
+
+# query the installed devel packages
+util_includes=`rpm -ql nss-util-devel | grep "%{_includedir}/nss3/"`
+softokn_includes=`rpm -ql nss-softokn-devel | grep "%{_includedir}/nss3/"`
+
+# make a more convenient list
+uslist=
+for f in ${util_includes}; do
+  bn=`basename ${f}`
+  uslist+="${bn} "
+done
+for f in ${softokn_includes}; do 
+  bn=`basename ${f}`
+  uslist+="${bn} "
+done
+
+# remove the headers we don't need
+for file in ${uslist}; do
+  if [ -f mozilla/dist/public/nss/${file} ]
+  then
+    rm mozilla/dist/public/nss/${file}
+  fi
 done
 
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
-  %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
 # Copy the package configuration files
@@ -318,28 +333,17 @@ done
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
-/%{_lib}/libnssutil3.so
-/%{_lib}/libnssdbm3.so
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
-/%{_lib}/libsoftokn3.so
-/%{_lib}/libsoftokn3.chk
 /%{_lib}/libnssckbi.so
 /%{_lib}/libnsspem.so
-%{unsupported_tools_directory}/shlibsign
 %dir %{_libdir}/nss
 %dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
-%dir %{_sysconfdir}/prelink.conf.d
-%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
-%files softokn-freebl
-%defattr(-,root,root)
-/%{_lib}/libfreebl3.so
-/%{_lib}/libfreebl3.chk
 
 %files tools
 %defattr(-,root,root)
@@ -367,27 +371,20 @@ done
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
-%{_libdir}/libnssutil3.so
-%{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%{_libdir}/libsoftokn3.so
-%{_libdir}/libsoftokn3.chk
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
-%{_libdir}/libfreebl3.so
-%{_libdir}/libfreebl3.chk
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
 
+
+# shared with nss-util and nss-softokn
 %dir %{_includedir}/nss3
-%{_includedir}/nss3/base64.h
-%{_includedir}/nss3/blapit.h
 %{_includedir}/nss3/cert.h
 %{_includedir}/nss3/certdb.h
 %{_includedir}/nss3/certt.h
-%{_includedir}/nss3/ciferfam.h
 %{_includedir}/nss3/cmmf.h
 %{_includedir}/nss3/cmmft.h
 %{_includedir}/nss3/cms.h
@@ -397,8 +394,6 @@ done
 %{_includedir}/nss3/crmft.h
 %{_includedir}/nss3/cryptohi.h
 %{_includedir}/nss3/cryptoht.h
-%{_includedir}/nss3/ecl-exp.h
-%{_includedir}/nss3/hasht.h
 %{_includedir}/nss3/jar-ds.h
 %{_includedir}/nss3/jar.h
 %{_includedir}/nss3/jarfile.h
@@ -407,17 +402,8 @@ done
 %{_includedir}/nss3/keyt.h
 %{_includedir}/nss3/keythi.h
 %{_includedir}/nss3/nss.h
-%{_includedir}/nss3/nssb64.h
-%{_includedir}/nss3/nssb64t.h
 %{_includedir}/nss3/nssckbi.h
-%{_includedir}/nss3/nssilckt.h
-%{_includedir}/nss3/nssilock.h
-%{_includedir}/nss3/nsslocks.h
-%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nsspem.h
-%{_includedir}/nss3/nssrwlk.h
-%{_includedir}/nss3/nssrwlkt.h
-%{_includedir}/nss3/nssutil.h
 %{_includedir}/nss3/ocsp.h
 %{_includedir}/nss3/ocspt.h
 %{_includedir}/nss3/p12.h
@@ -428,42 +414,19 @@ done
 %{_includedir}/nss3/pk11priv.h
 %{_includedir}/nss3/pk11pub.h
 %{_includedir}/nss3/pk11sdr.h
-%{_includedir}/nss3/pkcs11.h
-%{_includedir}/nss3/pkcs11f.h
-%{_includedir}/nss3/pkcs11n.h
-%{_includedir}/nss3/pkcs11p.h
-%{_includedir}/nss3/pkcs11t.h
-%{_includedir}/nss3/pkcs11u.h
 %{_includedir}/nss3/pkcs12.h
 %{_includedir}/nss3/pkcs12t.h
 %{_includedir}/nss3/pkcs7t.h
-%{_includedir}/nss3/portreg.h
 %{_includedir}/nss3/preenc.h
-%{_includedir}/nss3/secasn1.h
-%{_includedir}/nss3/secasn1t.h
-%{_includedir}/nss3/seccomon.h
-%{_includedir}/nss3/secder.h
-%{_includedir}/nss3/secdert.h
-%{_includedir}/nss3/secdig.h
-%{_includedir}/nss3/secdigt.h
-%{_includedir}/nss3/secerr.h
-%{_includedir}/nss3/sechash.h
-%{_includedir}/nss3/secitem.h
 %{_includedir}/nss3/secmime.h
 %{_includedir}/nss3/secmod.h
-%{_includedir}/nss3/secmodt.h
-%{_includedir}/nss3/secoid.h
-%{_includedir}/nss3/secoidt.h
 %{_includedir}/nss3/secpkcs5.h
 %{_includedir}/nss3/secpkcs7.h
-%{_includedir}/nss3/secport.h
-%{_includedir}/nss3/shsign.h
 %{_includedir}/nss3/smime.h
 %{_includedir}/nss3/ssl.h
 %{_includedir}/nss3/sslerr.h
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
-%{_includedir}/nss3/utilrename.h
 
 
 %files pkcs11-devel
@@ -483,6 +446,9 @@ done
 
 
 %changelog
+* Tue Aug 19 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-8
+- Split off nss-softokn and nss-util as their own packages (508479)
+
 * Sat Aug 06 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-7.1
 - Fix spec file problems uncovered by Fedora_12_Mass_Rebuild
 
