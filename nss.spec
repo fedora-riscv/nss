@@ -13,7 +13,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          7.1%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -254,7 +254,7 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
+for file in libsoftokn3.so libfreebl3.so libnss3.so \
             libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
@@ -318,7 +318,6 @@ done
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
-/%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
@@ -367,7 +366,6 @@ done
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
-%{_libdir}/libnssutil3.so
 %{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -483,6 +481,9 @@ done
 
 
 %changelog
+* Thu Aug 20 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-8
+- dont install libnssutil3.so since its now in nss-util
+
 * Sat Aug 06 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-7.1
 - Fix spec file problems uncovered by Fedora_12_Mass_Rebuild
 
