@@ -13,7 +13,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -254,10 +254,10 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so \
+for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
             libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
@@ -284,19 +284,19 @@ done
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
-  %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
 # Copy the package configuration files
@@ -318,6 +318,7 @@ done
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
+/%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
@@ -366,6 +367,7 @@ done
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
+%{_libdir}/libnssutil3.so
 %{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -481,6 +483,10 @@ done
 
 
 %changelog
+* Thu Aug 20 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-10
+- must install libnssutil3.since nss-util is untagged at the moment
+- preserve time stamps when installing various files
+
 * Thu Aug 20 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-9
 - dont install libnssutil3.so since its now in nss-util
 
