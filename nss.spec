@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          11%{?dist}
+Release:          12%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -440,9 +440,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
 
-%post util
-/sbin/ldconfig >/dev/null 2>/dev/null
-
 %post softokn
 /sbin/ldconfig >/dev/null 2>/dev/null
 
@@ -451,9 +448,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
 
 %postun
-/sbin/ldconfig >/dev/null 2>/dev/null
-
-%postun util
 /sbin/ldconfig >/dev/null 2>/dev/null
 
 %postun softokn
