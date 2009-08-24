@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          12%{?dist}
+Release:          13%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -603,11 +603,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %{_includedir}/nss3/preenc.h
 %{_includedir}/nss3/secmime.h
 %{_includedir}/nss3/secmod.h
-%{_includedir}/nss3/secoid.h
-%{_includedir}/nss3/secoidt.h
 %{_includedir}/nss3/secpkcs5.h
 %{_includedir}/nss3/secpkcs7.h
-%{_includedir}/nss3/secport.h
 %{_includedir}/nss3/smime.h
 %{_includedir}/nss3/ssl.h
 %{_includedir}/nss3/sslerr.h
@@ -632,6 +629,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
 
 %changelog
+* Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-13
+- remove from -devel the 3 headers that ship in nss-util-devel
+
 * Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-12
 - kill off the nss-util nss-util-devel subpackages
 
