@@ -60,33 +60,6 @@ server applications. Applications built with NSS can support SSL v2
 and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
 v3 certificates, and other security standards.
 
-%package util
-Summary:          Network Security Services Utilities Library
-Group:            System Environment/Base
-Conflicts:        nss < 3.12.3.99.3-8
-#Provides:         nss >= 3.12.3.99.3-11
-#Provides:	  	  libnssutil3.so
-#Requires:         nss >= 3.12.3.99.3-11
-
-%description util
-Utilities for Network Security Services and the Softoken module
-
-# We shouln't need to have a devel subpackage as util will be used in the
-# context of nss or nss-softoken. keeping to please rpmlint.
-# 
-%package util-devel
-Summary:          Development libraries for Network Security Services Utilities
-Group:            Development/Libraries
-Conflicts:        nss-devel < 3.12.3.99.3-8
-#Provides:         nss-devel >= 3.12.3.99.3-11
-#Requires:         nss-util >= 3.12.3.99.3-11
-Requires:         nss-util = %{version}-%{release}
-Requires:         nspr-devel >= %{nspr_version}
-Requires:         pkgconfig
-
-%description util-devel
-Header and utility library files for doing development with Network Security Services.
-
 %package softokn
 Summary:          Network Security Services Soktoken Module
 Group:            System Environment/Base
@@ -374,7 +347,7 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
+for file in libsoftokn3.so libfreebl3.so libnss3.so \
             libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
@@ -427,6 +400,39 @@ done
 %{__install} -p ./mozilla/dist/pkgconfig/nss-softokn.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-softokn.pc
 %{__install} -p ./mozilla/dist/pkgconfig/nss-softokn-config $RPM_BUILD_ROOT/%{_bindir}/nss-softokn-config
 
+#remove the nss-util-devel headers
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/ciferfam.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64t.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslocks.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilock.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilckt.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlk.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlkt.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nssutil.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11f.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11n.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11p.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11t.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11u.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/portreg.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1t.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/seccomon.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secder.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secdert.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secdig.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secdigt.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secerr.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secitem.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secoid.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
+
+
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
@@ -468,49 +474,6 @@ done
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
 
-%files util
-%defattr(-,root,root)
-/%{_lib}/libnssutil3.so
-
-%files util-devel
-%defattr(-,root,root)
-%{_libdir}/libnssutil3.so
-%{_libdir}/pkgconfig/nss-util.pc
-%{_bindir}/nss-util-config
-
-%dir %{_includedir}/nss3
-# these are marked as public export in
-# mozilla/security/nss/lib/util/manifest.mk
-%{_includedir}/nss3/base64.h
-%{_includedir}/nss3/ciferfam.h
-%{_includedir}/nss3/nssb64.h
-%{_includedir}/nss3/nssb64t.h
-%{_includedir}/nss3/nsslocks.h
-%{_includedir}/nss3/nssilock.h
-%{_includedir}/nss3/nssilckt.h
-%{_includedir}/nss3/nssrwlk.h
-%{_includedir}/nss3/nssrwlkt.h
-%{_includedir}/nss3/nssutil.h
-%{_includedir}/nss3/pkcs11.h
-%{_includedir}/nss3/pkcs11f.h
-%{_includedir}/nss3/pkcs11n.h
-%{_includedir}/nss3/pkcs11p.h
-%{_includedir}/nss3/pkcs11t.h
-%{_includedir}/nss3/pkcs11u.h
-%{_includedir}/nss3/portreg.h
-%{_includedir}/nss3/secasn1.h
-%{_includedir}/nss3/secasn1t.h
-%{_includedir}/nss3/seccomon.h
-%{_includedir}/nss3/secder.h
-%{_includedir}/nss3/secdert.h
-%{_includedir}/nss3/secdig.h
-%{_includedir}/nss3/secdigt.h
-%{_includedir}/nss3/secerr.h
-%{_includedir}/nss3/secitem.h
-%{_includedir}/nss3/secoid.h
-%{_includedir}/nss3/secoidt.h
-%{_includedir}/nss3/secport.h
-%{_includedir}/nss3/utilrename.h
 
 %files softokn
 %defattr(-,root,root)
@@ -606,6 +569,7 @@ done
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
 
+
 %{_includedir}/nss3/cert.h
 %{_includedir}/nss3/certdb.h
 %{_includedir}/nss3/certt.h
@@ -674,6 +638,9 @@ done
 
 
 %changelog
+* Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-12
+- kill off the nss-util nss-util-devel subpackages
+
 * Sun Aug 23 2009 Elio Maldonado+emaldona@redhat.com - 3.12.3.99.3-11
 - split off nss-softokn and nss-util as subpackages with their own rpms
 - first phase of splitting nss-softokn and nss-util as their own packages
