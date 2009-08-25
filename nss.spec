@@ -6,15 +6,13 @@
     %{?__debug_package:%{__debug_install_post}} \
     %{__arch_install_post} \
     %{__os_install_post} \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libnssdbm3.so \
 %{nil}
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          14%{?dist}
+Release:          15%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -40,8 +38,6 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source20:         nss-softokn.pc.in
-Source21:         nss-softokn-config.in
 Source12:         %{name}-pem-20090622.tar.bz2
 Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
@@ -57,47 +53,6 @@ support cross-platform development of security-enabled client and
 server applications. Applications built with NSS can support SSL v2
 and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
 v3 certificates, and other security standards.
-
-%package softokn
-Summary:          Network Security Services Soktoken Module
-Group:            System Environment/Base
-Conflicts:        nss < 3.12.3.99.3-8
-#Provides:         nss
-#Provides:	  	  libsoftokn3.so, shlibsign
-Requires:         sqlite
-Requires:         nss-util >= %{version}
-Requires:         nss-softokn-freebl >= %{version}
-
-%description softokn
-Network Security Services Softoken Cryptographic Module
-
-%package softokn-freebl
-Summary:          Freebl library for the Network Security Services
-Group:            System Environment/Base
-Conflicts:        nss < 3.12.2.99.3-5
-
-%description softokn-freebl
-Network Security Services (NSS) is a set of libraries designed to
-support cross-platform development of security-enabled client and
-server applications. Applications built with NSS can support SSL v2
-and v3, TLS, PKCS #5, PKCS #7, PKCS #11, PKCS #12, S/MIME, X.509
-v3 certificates, and other security standards.
-
-Install the nss-softokn-freebl package if you need the freebl 
-library.
-
-%package softokn-devel
-Summary:          Development libraries for Network Security Services
-Group:            Development/Libraries
-Conflicts:        nss-devel < 3.12.3.99.3-8
-#Provides:         nss-devel >= 3.12.3.99.3-11
-Requires:         nss-softokn = %{version}-%{release}
-Requires:         nspr-devel >= %{nspr_version}
-Requires:         nss-util-devel
-Requires:         pkgconfig
-
-%description softokn-devel
-Header and Library files for doing development with Network Security Services.
 
 %package tools
 Summary:          Tools for the Network Security Services
@@ -222,38 +177,6 @@ export NSS_VPATCH
 
 chmod 755 ./mozilla/dist/pkgconfig/nss-config
 
-# Set up our package file
-%{__mkdir_p} ./mozilla/dist/pkgconfig
-
-# Set up our package file
-%{__mkdir_p} ./mozilla/dist/pkgconfig
-%{__cat} %{SOURCE20} | sed -e "s,%%libdir%%,%{_libdir},g" \
-                          -e "s,%%prefix%%,%{_prefix},g" \
-                          -e "s,%%exec_prefix%%,%{_prefix},g" \
-                          -e "s,%%includedir%%,%{_includedir}/nss3,g" \
-                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%SOFTKN_VERSION%%,%{version},g" > \
-                          ./mozilla/dist/pkgconfig/nss-softokn.pc
-
-SOFTOKEN_VMAJOR=`cat mozilla/security/nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VMAJOR" | awk '{print $3}'`
-SOFTOKEN_VMINOR=`cat mozilla/security/nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VMINOR" | awk '{print $3}'`
-SOFTOKEN_VPATCH=`cat mozilla/security/nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VPATCH" | awk '{print $3}'`
-
-export SOFTOKEN_VMAJOR 
-export SOFTOKEN_VMINOR 
-export SOFTOKEN_VPATCH
-
-%{__cat} %{SOURCE21} | sed -e "s,@libdir@,%{_libdir},g" \
-                          -e "s,@prefix@,%{_prefix},g" \
-                          -e "s,@exec_prefix@,%{_prefix},g" \
-                          -e "s,@includedir@,%{_includedir}/nss3,g" \
-                          -e "s,@MOD_MAJOR_VERSION@,$SOFTOKEN_VMAJOR,g" \
-                          -e "s,@MOD_MINOR_VERSION@,$SOFTOKEN_VMINOR,g" \
-                          -e "s,@MOD_PATCH_VERSION@,$SOFTOKEN_VPATCH,g" \
-                          > ./mozilla/dist/pkgconfig/nss-softokn-config
-
-chmod 755 ./mozilla/dist/pkgconfig/nss-softokn-config
-
 
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
@@ -319,15 +242,14 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libsoftokn3.so libfreebl3.so libnss3.so \
-            libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
+for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
 # Make sure chk files can be found in both places
-for file in libsoftokn3.chk libfreebl3.chk libnssdbm3.chk
+for file in libnssdbm3.chk
 do
   ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
@@ -367,8 +289,6 @@ done
 # Copy the package configuration files
 %{__install} -p ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
 %{__install} -p ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
-%{__install} -p ./mozilla/dist/pkgconfig/nss-softokn.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-softokn.pc
-%{__install} -p ./mozilla/dist/pkgconfig/nss-softokn-config $RPM_BUILD_ROOT/%{_bindir}/nss-softokn-config
 
 #remove the nss-util-devel headers
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
@@ -406,24 +326,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
 
-%post softokn
-/sbin/ldconfig >/dev/null 2>/dev/null
-
-%post softokn-freebl
-/sbin/ldconfig >/dev/null 2>/dev/null
-
-
 %postun
-/sbin/ldconfig >/dev/null 2>/dev/null
-
-%postun softokn
-/sbin/ldconfig >/dev/null 2>/dev/null
-
-%postun softokn-freebl
 /sbin/ldconfig >/dev/null 2>/dev/null
 
 %files
@@ -437,63 +343,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
-
-
-%files softokn
-%defattr(-,root,root)
-/%{_lib}/libnssdbm3.so
-/%{_lib}/libnssdbm3.chk
-/%{_lib}/libsoftokn3.so
-/%{_lib}/libsoftokn3.chk
-# shared with nss-tools
-%dir %{_libdir}/nss
-#%dir %{saved_files_dir}
-%dir %{unsupported_tools_directory}
-%{unsupported_tools_directory}/shlibsign
-#%{saved_files_dir}/nss-softokn-prelink.conf
-# we don't own %{_sysconfdir}/prelink.conf.d and
-# must rely on triggers to install and remove our
-# configuration file
-#%{_sysconfdir}/prelink.conf.d/nss-softokn-prelink.conf
-%dir %{_sysconfdir}/prelink.conf.d
-%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
-
-%files softokn-freebl
-%defattr(-,root,root)
-/%{_lib}/libfreebl3.so
-/%{_lib}/libfreebl3.chk
-
-%files softokn-devel
-%defattr(-,root,root)
-%{_libdir}/libsoftokn3.so
-%{_libdir}/libsoftokn3.chk
-%{_libdir}/libfreebl3.so
-%{_libdir}/libfreebl3.chk
-%{_libdir}/libnssdbm3.so
-%{_libdir}/libnssdbm3.chk
-%{_libdir}/pkgconfig/nss-softokn.pc
-%{_bindir}/nss-softokn-config
-#
-# The following headers are those exported public in
-# mozilla/security/nss/lib/freebl/manifest.mn and
-# mozilla/security/nss/lib/softoken/manifest.mn
-#
-# The following list is short because many headers, such as
-# the pkcs #11 ones, have been provided by nss-util-devel
-# which installed them before us.
-#
-%{_includedir}/nss3/blapit.h
-%{_includedir}/nss3/ecl-exp.h
-%{_includedir}/nss3/hasht.h
-%{_includedir}/nss3/sechash.h
-%{_includedir}/nss3/nsslowhash.h
-%{_includedir}/nss3/secmodt.h
-%{_includedir}/nss3/shsign.h
-
-%files softokn-freebl
-%defattr(-,root,root)
-/%{_lib}/libfreebl3.so
-/%{_lib}/libfreebl3.chk
 
 %files tools
 %defattr(-,root,root)
@@ -523,12 +372,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%{_libdir}/libsoftokn3.so
-%{_libdir}/libsoftokn3.chk
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
-%{_libdir}/libfreebl3.so
-%{_libdir}/libfreebl3.chk
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
@@ -599,6 +444,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
 
 %changelog
+* Tue Aug 25 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-15
+- remove the softokn subpackages
+
 * Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-14
 - don install the nss-util pkgconfig bits
 
