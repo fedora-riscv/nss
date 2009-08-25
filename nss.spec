@@ -1,18 +1,10 @@
 %global nspr_version 4.7
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
-# Produce .chk files for the final stripped binaries
-%define __spec_install_post \
-    %{?__debug_package:%{__debug_install_post}} \
-    %{__arch_install_post} \
-    %{__os_install_post} \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libnssdbm3.so \
-%{nil}
-
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          15%{?dist}
+Release:          16%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -23,6 +15,8 @@ Requires:         nss-softokn-freebl%{_isa} >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
+BuildRequires:    nss-softokn-devel >= 3.12.3.99.3-14                                                   
+BuildRequires:    nss-util-devel >= 3.12.3.99.3-10
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -141,9 +135,10 @@ USE_64=1
 export USE_64
 %endif
 
-# NSS_ENABLE_ECC=1
-# export NSS_ENABLE_ECC
-
+# We only ship the nss proper libraries, no softoken nor util, yet we                                   
+# must compile everything and usiee the entire source tree because nss                                  
+# needs the private exports from util.
+#     
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
 %{__make} -C ./mozilla/security/nss
@@ -242,30 +237,22 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so libnssdbm3.so
+for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
-# Make sure chk files can be found in both places
-for file in libnssdbm3.chk
-do
-  ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
-done
-
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
-%{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
-%{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
-%{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d
-%{__install} -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
-
+%{__install} -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
+%{__install} -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
+%{__install} -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+     
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
@@ -275,7 +262,7 @@ do
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -322,6 +309,14 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
+#remove header shipped in nss-softokn-devel
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/sechash.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secmodt.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/shsign.h
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -369,7 +364,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
-%{_libdir}/libnssdbm3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %{_libdir}/libnssckbi.so
@@ -378,7 +372,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
 
-
+%dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
 %{_includedir}/nss3/certdb.h
 %{_includedir}/nss3/certt.h
@@ -400,7 +394,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 %{_includedir}/nss3/keythi.h
 %{_includedir}/nss3/nss.h
 %{_includedir}/nss3/nssckbi.h
-%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/ocsp.h
 %{_includedir}/nss3/ocspt.h
@@ -444,6 +437,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
 
 %changelog
+* Tue Aug 25 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-16
+- cleanups for softokn
+
 * Tue Aug 25 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-15
 - remove the softokn subpackages
 
