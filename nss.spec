@@ -40,8 +40,6 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source10:         nss-util.pc.in
-Source11:         nss-util-config.in
 Source20:         nss-softokn.pc.in
 Source21:         nss-softokn-config.in
 Source12:         %{name}-pem-20090622.tar.bz2
@@ -226,32 +224,6 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 
 # Set up our package file
 %{__mkdir_p} ./mozilla/dist/pkgconfig
-%{__cat} %{SOURCE10} | sed -e "s,%%libdir%%,%{_libdir},g" \
-                          -e "s,%%prefix%%,%{_prefix},g" \
-                          -e "s,%%exec_prefix%%,%{_prefix},g" \
-                          -e "s,%%includedir%%,%{_includedir}/nss3,g" \
-                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%NSSUTIL_VERSION%%,%{version},g" > \
-                          ./mozilla/dist/pkgconfig/nss-util.pc
-
-NSSUTIL_VMAJOR=`cat mozilla/security/nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VMAJOR" | awk '{print $3}'`
-NSSUTIL_VMINOR=`cat mozilla/security/nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VMINOR" | awk '{print $3}'`
-NSSUTIL_VPATCH=`cat mozilla/security/nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VPATCH" | awk '{print $3}'`
-
-export NSSUTIL_VMAJOR 
-export NSSUTIL_VMINOR 
-export NSSUTIL_VPATCH
-
-%{__cat} %{SOURCE11} | sed -e "s,@libdir@,%{_libdir},g" \
-                          -e "s,@prefix@,%{_prefix},g" \
-                          -e "s,@exec_prefix@,%{_prefix},g" \
-                          -e "s,@includedir@,%{_includedir}/nss3,g" \
-                          -e "s,@MOD_MAJOR_VERSION@,$NSSUTIL_VMAJOR,g" \
-                          -e "s,@MOD_MINOR_VERSION@,$NSSUTIL_VMINOR,g" \
-                          -e "s,@MOD_PATCH_VERSION@,$NSSUTIL_VPATCH,g" \
-                          > ./mozilla/dist/pkgconfig/nss-util-config
-
-chmod 755 ./mozilla/dist/pkgconfig/nss-util-config
 
 # Set up our package file
 %{__mkdir_p} ./mozilla/dist/pkgconfig
@@ -395,8 +367,6 @@ done
 # Copy the package configuration files
 %{__install} -p ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
 %{__install} -p ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
-%{__install} -p ./mozilla/dist/pkgconfig/nss-util.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-util.pc
-%{__install} -p ./mozilla/dist/pkgconfig/nss-util-config $RPM_BUILD_ROOT/%{_bindir}/nss-util-config
 %{__install} -p ./mozilla/dist/pkgconfig/nss-softokn.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-softokn.pc
 %{__install} -p ./mozilla/dist/pkgconfig/nss-softokn-config $RPM_BUILD_ROOT/%{_bindir}/nss-softokn-config
 
@@ -629,6 +599,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
 
 %changelog
+* Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-14
+- don install the nss-util pkgconfig bits
+
 * Mon Aug 24 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-13
 - remove from -devel the 3 headers that ship in nss-util-devel
 
