@@ -15,7 +15,7 @@ Requires:         nss-softokn-freebl%{_isa} >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= 3.12.3.99.3-14                                                   
+BuildRequires:    nss-softokn-devel >= 3.12.3.99.3-12                                                  
 BuildRequires:    nss-util-devel >= 3.12.3.99.3-10
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
