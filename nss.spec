@@ -1,10 +1,10 @@
-%global nspr_version 4.7
+%global nspr_version 4.8
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          18%{?dist}
+Release:          19%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,9 +37,7 @@ Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
-Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nss-stubs-bug502133.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -93,9 +91,7 @@ low level services.
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch1 -p0
-%patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .502133
 
 #need newer certs to make test suite work
 #remove once we update to NSS 3.12.4
@@ -115,9 +111,6 @@ export BUILD_OPT
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
 
-#export NSPR_INCLUDE_DIR=`nspr-config --includedir`
-#export NSPR_LIB_DIR=`nspr-config --libdir`
-
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
@@ -135,9 +128,10 @@ USE_64=1
 export USE_64
 %endif
 
-# We only ship the nss proper libraries, no softoken nor util, yet we                                   
-# must compile everything and usiee the entire source tree because nss                                  
-# needs the private exports from util.
+# We only ship the nss proper libraries, no softoken nor util, yet                                   
+# we must compile with the entire source tree because nss needs                               
+# private exports from util. The install section will ensure not
+# to override nss-util and nss-softoken headers already installed.
 #     
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
@@ -274,8 +268,8 @@ do
 done
 
 # Copy the package configuration files
-%{__install} -p ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
-%{__install} -p ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
+%{__install} -p -m 644 ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+%{__install} -p -m 755 ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 #remove the nss-util-devel headers
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
@@ -437,6 +431,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-19
+- remove patches that are now in nss-softokn and
+- remove spurious exec-permissions for nss.pc per rpmlint
+- single requires line in nss.pc.in
+
 * Wed Aug 26 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-18
 - Fix BuildRequires: nss-softokn-devel release number
 
