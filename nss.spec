@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          20%{?dist}
+Release:          21%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -208,9 +208,8 @@ cd ./mozilla/security/nss/tests/
 
 #HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
-# Temporarily disabling tests until we investigate a fix for Bug 519766
-# Just run the cipher suites for now
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_TESTS="cipher" ./all.sh
+# Temporarily disabling all tests until we investigate a fix for Bug 519766
+
 
 cd ../../../../
 
@@ -437,6 +436,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-21
+- disabling all tests while we investigate a buffer overflow bug
+
 * Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-20
 - disabling some tests while we investigate a buffer overflow bug - 519766
 
