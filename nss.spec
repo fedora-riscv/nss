@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          22%{?dist}
+Release:          23%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -15,10 +15,10 @@ Requires:         nss-softokn-freebl%{_isa} >= %{version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn >= 3.12.3.99.3-12                                                  
-BuildRequires:    nss-util >= 3.12.3.99.3-10
-BuildRequires:    nss-softokn-devel >= 3.12.3.99.3-12                                                  
-BuildRequires:    nss-util-devel >= 3.12.3.99.3-10
+BuildRequires:    nss-softokn >= %{version}                                                  
+BuildRequires:    nss-util >= %{version}
+BuildRequires:    nss-softokn-devel >= %{version}                                                  
+BuildRequires:    nss-util-devel >= %{version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -436,6 +436,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-23
+- Bump the release number for a chained build of nss-util, nss-softokn and nss
+
 * Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-22
 - Fix nss-config not to include nssutil
 - Add BuildRequires on nss-softokn and nss-util since build also runs the test suite
