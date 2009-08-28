@@ -4,7 +4,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          24%{?dist}
+Release:          25%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -35,7 +35,6 @@ Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source8:          nss-prelink.conf
 Source12:         %{name}-pem-20090622.tar.bz2
 Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
@@ -440,6 +439,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Aug 28 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-25
+- Remove nss-prelink.conf as signed all shared libraries moved to nss-softokn
+- Add a temprary hack to nss.pc.in to unblock builds
+
 * Fri Aug 28 2009 Warren Togami <wtogami@redhat.com> - 3.12.3.99.3-24
 - caolan's nss.pc patch
 
