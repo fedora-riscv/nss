@@ -6,6 +6,7 @@ includedir=%includedir%
 Name: NSS
 Description: Network Security Services
 Version: %NSS_VERSION%
-Requires: nspr >= %NSPR_VERSION%, nss-util >= %NSSUTIL_VERSION%, nss-softokn >= %SOFTOKEN_VERSION%
+Requires: nspr >= %NSPR_VERSION%
+# nss-util >= %NSSUTIL_VERSION%, nss-softokn >= %SOFTOKEN_VERSION%
 Libs: -lssl3 -lsmime3 -lnss3
 Cflags: -I${includedir}
