@@ -4,11 +4,13 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          23%{?dist}
+Release:          24%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
+# FIXME: Due to nss.pc.in substitutions in the %%build section, these Requires must
+# be exactly matching versions?
 Requires:         nss-util >= %{version}
 Requires:         nss-softokn >= %{version}
 Requires:         nss-softokn-freebl%{_isa} >= %{version}
@@ -145,8 +147,10 @@ export USE_64
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
+                          -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%NSS_VERSION%%,%{version},g" > \
+                          -e "s,%%NSSUTIL_VERSION%%,%{version},g" \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -436,6 +440,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Aug 28 2009 Warren Togami <wtogami@redhat.com> - 3.12.3.99.3-24
+- caolan's nss.pc patch
+
 * Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-23
 - Bump the release number for a chained build of nss-util, nss-softokn and nss
 
