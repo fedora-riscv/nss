@@ -9,4 +9,4 @@ Version: %NSS_VERSION%
 Requires: nspr >= %NSPR_VERSION%
 # nss-util >= %NSSUTIL_VERSION%, nss-softokn >= %SOFTOKEN_VERSION%
 Libs: -lssl3 -lsmime3 -lnss3
-Cflags: -I${includedir}
+Cflags: -I${includedir} -L${libdir}
