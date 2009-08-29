@@ -1,26 +1,26 @@
 %global nspr_version 4.8
+%global nss_util_version 3.12.3.99.3
+%global nss_softokn_version 3.12.3.99.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          25%{?dist}
+Release:          26%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-# FIXME: Due to nss.pc.in substitutions in the %%build section, these Requires must
-# be exactly matching versions?
-Requires:         nss-util >= %{version}
-Requires:         nss-softokn >= %{version}
-Requires:         nss-softokn-freebl%{_isa} >= %{version}
+Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-softokn >= %{nss_softokn_version}
+Requires:         nss-softokn-freebl%{_isa} >= %{nss_softokn_version}
 Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn >= %{version}                                                  
-BuildRequires:    nss-util >= %{version}
+BuildRequires:    nss-softokn >= %{nss_softokn_version}                                                  
+BuildRequires:    nss-util >= %{nss_util_version}
 BuildRequires:    nss-softokn-devel >= %{version}                                                  
-BuildRequires:    nss-util-devel >= %{version}
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -141,6 +141,8 @@ export USE_64
 %{__make} -C ./mozilla/security/nss
 
 # Set up our package file
+# The nspr_version and nss_{util|softokn}_version globals used
+# here match the ones nss has for its Requires. 
 %{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
@@ -148,8 +150,8 @@ export USE_64
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%NSSUTIL_VERSION%%,%{version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{version},g" > \
+                          -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -170,7 +172,6 @@ export NSS_VPATCH
                           > ./mozilla/dist/pkgconfig/nss-config
 
 chmod 755 ./mozilla/dist/pkgconfig/nss-config
-
 
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
@@ -439,6 +440,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Aug 29 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-26
+- Ensure versions in the requires match those used when creating nss.pc
+
 * Fri Aug 28 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-25
 - Remove nss-prelink.conf as signed all shared libraries moved to nss-softokn
 - Add a temprary hack to nss.pc.in to unblock builds
