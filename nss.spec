@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          26%{?dist}
+Release:          27%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -14,7 +14,6 @@ Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn >= %{nss_softokn_version}
 Requires:         nss-softokn-freebl%{_isa} >= %{nss_softokn_version}
-Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    nss-softokn >= %{nss_softokn_version}                                                  
@@ -440,6 +439,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Aug 29 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-27
+- Don't require sqlite for nss
+
 * Sat Aug 29 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-26
 - Ensure versions in the requires match those used when creating nss.pc
 
