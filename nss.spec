@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          28%{?dist}
+Release:          29%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -40,7 +40,9 @@ Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
 
 Patch1:           nss-no-rpath.patch
+Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nss-stubs-bug502133.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -94,7 +96,9 @@ low level services.
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch1 -p0
+%patch2 -p0
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .502133
 
 #need newer certs to make test suite work
 #remove once we update to NSS 3.12.4
@@ -440,6 +444,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Aug 30 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-29
+- Restoring patches 2 and 7 as we still compile all sources
+- Applying the nss-nolocalsql.patch solves nss-tools sqlite dependency problems
+
 * Sun Aug 30 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-28
 - restore require sqlite
 
