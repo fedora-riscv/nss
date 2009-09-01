@@ -6,19 +6,15 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          29%{?dist}
+Release:          30%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn >= %{nss_softokn_version}
-Requires:         nss-softokn-freebl%{_isa} >= %{nss_softokn_version}
-Requires:         sqlite
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn >= %{nss_softokn_version}                                                  
-BuildRequires:    nss-util >= %{nss_util_version}
 BuildRequires:    nss-softokn-devel >= %{version}                                                  
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
@@ -216,8 +212,7 @@ rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
 
-#HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
-# Temporarily disabling all tests until we investigate a fix for Bug 519766
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
 cd ../../../../
 
@@ -444,6 +439,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 31 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-30
+- Fix FORTIFY_SOURCE buffer overflows in test suite on ppc and ppc64 - bug 519766
+- Fixed requires and buildrequires as per recommendations in spec file review
+
 * Sun Aug 30 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-29
 - Restoring patches 2 and 7 as we still compile all sources
 - Applying the nss-nolocalsql.patch solves nss-tools sqlite dependency problems
