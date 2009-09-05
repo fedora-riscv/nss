@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -232,7 +232,6 @@ echo "test suite completed"
 for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
-  ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
 # Install the empty NSS db files
@@ -355,11 +354,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %files devel
 %defattr(-,root,root)
-%{_libdir}/libnss3.so
-%{_libdir}/libssl3.so
-%{_libdir}/libsmime3.so
-%{_libdir}/libnssckbi.so
-%{_libdir}/libnsspem.so
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
@@ -429,6 +423,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Sep 05 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-2
+- Remove symbolic links to shared libraries from devel - 521155
+- No rpath-link in nss-softokn-config
+
 * Tue Sep 01 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-1
 - Update to 3.12.4
 
