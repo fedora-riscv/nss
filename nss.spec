@@ -1,12 +1,12 @@
 %global nspr_version 4.8
-%global nss_util_version 3.12.3.99.3
-%global nss_softokn_version 3.12.3.99.3
+%global nss_util_version 3.12.4
+%global nss_softokn_version 3.12.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.3.99.3
-Release:          30%{?dist}
+Version:          3.12.4
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -32,13 +32,9 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source12:         %{name}-pem-20090622.tar.bz2
-Source13:         PayPalEE.cert
-Source14:         PayPalICA.cert
 
-Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nss-stubs-bug502133.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -91,14 +87,8 @@ low level services.
 %setup -q
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch1 -p0
 %patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .502133
-
-#need newer certs to make test suite work
-#remove once we update to NSS 3.12.4
-cp %{SOURCE13} %{SOURCE14} mozilla/security/nss/tests/libpkix/certs
 
 
 %build
@@ -439,6 +429,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Sep 01 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-1
+- Update to 3.12.4
+
 * Mon Aug 31 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-30
 - Fix FORTIFY_SOURCE buffer overflows in test suite on ppc and ppc64 - bug 519766
 - Fixed requires and buildrequires as per recommendations in spec file review
