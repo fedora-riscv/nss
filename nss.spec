@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -31,11 +31,10 @@ Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
-Source12:         %{name}-pem-20090622.tar.bz2
+Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nss-pem-509705.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -90,7 +89,6 @@ low level services.
 
 %patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .509705
 
 %build
 
@@ -424,6 +422,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-4
+- Update pem enabling source tar with latest fixes (509705, 51209)
+
 * Sun Sep 06 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-3
 - PEM module implements memory management for internal objects - 509705
 - PEM module doesn't crash when processing malformed key files - 512019
