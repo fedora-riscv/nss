@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -422,6 +422,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-5
+- Retagging to pick up new sources
+
 * Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-4
 - Update pem enabling source tar with latest fixes (509705, 51209)
 
