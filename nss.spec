@@ -1,4 +1,4 @@
-%global nspr_version 4.7
+%global nspr_version 4.8
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 # Produce .chk files for the final stripped binaries
@@ -12,8 +12,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.3.99.3
-Release:          2.11.4%{?dist}
+Version:          3.12.4
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,14 +37,10 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20090622.tar.bz2
-Source13:         PayPalEE.cert
-Source14:         PayPalICA.cert
+Source12:         %{name}-pem-20090907.tar.bz2
 
-Patch1:           nss-no-rpath.patch
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nss-stubs-bug502133.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -111,14 +107,8 @@ low level services.
 %setup -q
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch1 -p0
 %patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .502133
-
-#need newer certs to make test suite work
-#remove once we update to NSS 3.12.4
-cp %{SOURCE13} %{SOURCE14} mozilla/security/nss/tests/libpkix/certs
 
 
 %build
@@ -133,9 +123,6 @@ export BUILD_OPT
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
-
-#export NSPR_INCLUDE_DIR=`nspr-config --includedir`
-#export NSPR_LIB_DIR=`nspr-config --libdir`
 
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
@@ -228,7 +215,9 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
+
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+
 cd ../../../../
 
 killall $RANDSERV || :
@@ -269,51 +258,48 @@ done
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
-%{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
-%{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
-%{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+%{__install} -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
+%{__install} -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
+%{__install} -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d
-%{__install} -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
+%{__install} -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
-  %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
 # Copy the package configuration files
-%{__install} -p ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
-%{__install} -p ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
+%{__install} -p -m 644 ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+%{__install} -p -m 755 ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
 
-
 %postun
 /sbin/ldconfig >/dev/null 2>/dev/null
-
 
 %files
 %defattr(-,root,root)
@@ -362,7 +348,6 @@ done
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
-
 
 %files devel
 %defattr(-,root,root)
@@ -483,6 +468,13 @@ done
 
 
 %changelog
+* Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-1
+- Update to 3.12.4
+- Update the nss pem enabling source archive to roll in bug fixes
+- pem module implements memory management for internal objects - 509705
+- pem module doesn't crash when processing malformed key files - 512019
+- preserve timestamps and ensure proper execute bits on installed files
+
 * Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.11.4
 - Fixed problems uncovered by mass rebuild with new version of rpmbuild
 * Mon Jun 22 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.11.3
