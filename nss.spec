@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -223,14 +223,14 @@ echo "test suite completed"
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_lib}
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
 for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
 do
-  %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_lib}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Install the empty NSS db files
@@ -319,11 +319,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %files
 %defattr(-,root,root)
-/%{_lib}/libnss3.so
-/%{_lib}/libssl3.so
-/%{_lib}/libsmime3.so
-/%{_lib}/libnssckbi.so
-/%{_lib}/libnsspem.so
+%{_libdir}/libnss3.so
+%{_libdir}/libssl3.so
+%{_libdir}/libsmime3.so
+%{_libdir}/libnssckbi.so
+%{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
@@ -422,6 +422,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Sep 08 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-6
+- Installing shared libraries to %%{_libdir}
+
 * Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-5
 - Retagging to pick up new sources
 
