@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -35,6 +35,8 @@ Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           newargs.patch
+Patch8:           sysinit.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -59,6 +61,17 @@ v3 certificates, and other security standards.
 Install the nss-tools package if you need command-line tools to
 manipulate the NSS certificate and key database.
 
+%package sysinit
+Summary:          System NSS Initilization
+Group:            System Environment/Base
+Provides:         nss-sysinit = %{version}-%{release}
+Requires:         nss = %{version}-%{release}
+
+%description sysinit
+Default Operating System module that manages applications loading
+NSS globally on the system. This module loads the system defined
+PKCS #11 modules for NSS and chains with other NSS modules to load
+any system or user configured modules.
 
 %package devel
 Summary:          Development libraries for Network Security Services
@@ -89,6 +102,8 @@ low level services.
 
 %patch2 -p0
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .newargs
+%patch8 -p0 -b .sysinit
 
 %build
 
@@ -114,6 +129,12 @@ NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
 
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
+
+NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
+NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
+
+export NSS_INCLUDE_DIR
+export NSS_LIB_DIR
 
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
@@ -228,7 +249,7 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
-for file in libnss3.so libssl3.so libsmime3.so libnssckbi.so libnsspem.so
+for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -329,6 +350,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
 
+%files sysinit
+%defattr(-,root,root)
+%{_libdir}/libnsssysinit.so
+
 %files tools
 %defattr(-,root,root)
 %{_bindir}/certutil
@@ -422,6 +447,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Sep 08 2009 Elio Maldonado<emaldona@redhat.com - 3.12.4-7
+- Add the nss-sysinit subpackage
+
 * Tue Sep 08 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-6
 - Installing shared libraries to %%{_libdir}
 
