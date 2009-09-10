@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -447,6 +447,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Sep 10 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-8
+- Restoring nssutil and -rpath-link to nss-config for now - 522477
+
 * Tue Sep 08 2009 Elio Maldonado<emaldona@redhat.com - 3.12.4-7
 - Add the nss-sysinit subpackage
 
