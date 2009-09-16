@@ -2,10 +2,20 @@
 %define unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %define ckbi_version 1.73
 
+# Produce .chk files for the final stripped binaries
+%define __spec_install_post \
+    %{?__debug_package:%{__debug_install_post}} \
+    %{__arch_install_post} \
+    %{__os_install_post} \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libnssdbm3.so \
+%{nil}
+
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.10.4%{?dist}
+Release:          2.10.5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -106,9 +116,6 @@ export BUILD_OPT
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
 
-#export NSPR_INCLUDE_DIR=`nspr-config --includedir`
-#export NSPR_LIB_DIR=`nspr-config --libdir`
-
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
@@ -134,14 +141,14 @@ export USE_64
 %{__make} -C ./mozilla/security/nss
 
 # Set up our package file
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSS_VERSION%%,%{version},g" > \
-                          $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+                          ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
 NSS_VMINOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
@@ -151,7 +158,6 @@ export NSS_VMAJOR
 export NSS_VMINOR 
 export NSS_VPATCH
 
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
@@ -159,9 +165,9 @@ export NSS_VPATCH
                           -e "s,@MOD_MAJOR_VERSION@,$NSS_VMAJOR,g" \
                           -e "s,@MOD_MINOR_VERSION@,$NSS_VMINOR,g" \
                           -e "s,@MOD_PATCH_VERSION@,$NSS_VPATCH,g" \
-                          > $RPM_BUILD_ROOT/%{_bindir}/nss-config
+                          > ./mozilla/dist/pkgconfig/nss-config
 
-chmod 755 $RPM_BUILD_ROOT/%{_bindir}/nss-config
+chmod 755 ./mozilla/dist/pkgconfig/nss-config
 
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
@@ -201,7 +207,9 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND ./all.sh
+
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+
 cd ../../../../
 
 killall $RANDSERV || :
@@ -216,12 +224,15 @@ echo "test suite completed"
 
 %install
 
+%{__rm} -rf $RPM_BUILD_ROOT
+
 # There is no make install target so we'll do it ourselves.
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_lib}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Copy the binary libraries we want
 for file in libsoftokn3.so libfreebl3.so libnss3.so libnssutil3.so \
@@ -231,75 +242,72 @@ do
   ln -sf ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
-# These ghost files will be generated in the post step
 # Make sure chk files can be found in both places
-for file in libsoftokn3.chk libfreebl3.chk
+for file in libsoftokn3.chk libfreebl3.chk libnssdbm3.chk
 do
-  touch $RPM_BUILD_ROOT/%{_lib}/$file
   ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
 
 # Install the empty NSS db files
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
-%{__install} -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
-%{__install} -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
-%{__install} -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+%{__install} -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
+%{__install} -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
+%{__install} -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d
-%{__install} -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
+%{__install} -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/prelink.conf.d/nss-prelink.conf
 
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in atob btoa derdump ocspclnt pp selfserv shlibsign strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
 do
-  %{__install} -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
+# Copy the package configuration files
+%{__install} -p -m 644 ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+%{__install} -p -m 755 ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-
 %post
 /sbin/ldconfig >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libsoftokn3.so >/dev/null 2>/dev/null
-%{unsupported_tools_directory}/shlibsign -i /%{_lib}/libfreebl3.so >/dev/null 2>/dev/null
-
 
 %postun
 /sbin/ldconfig >/dev/null 2>/dev/null
-
 
 %files
 %defattr(-,root,root)
 /%{_lib}/libnss3.so
 /%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
+/%{_lib}/libnssdbm3.chk
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
 /%{_lib}/libsoftokn3.so
+/%{_lib}/libsoftokn3.chk
 /%{_lib}/libnssckbi.so
 /%{_lib}/libnsspem.so
 /%{_lib}/libfreebl3.so
+/%{_lib}/libfreebl3.chk
 %{unsupported_tools_directory}/shlibsign
-%ghost /%{_lib}/libsoftokn3.chk
-%ghost /%{_lib}/libfreebl3.chk
 %dir %{_libdir}/nss
 %dir %{unsupported_tools_directory}
 %dir %{_sysconfdir}/pki/nssdb
@@ -331,12 +339,12 @@ done
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
 
-
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libnss3.so
 %{_libdir}/libnssutil3.so
 %{_libdir}/libnssdbm3.so
+%{_libdir}/libnssdbm3.chk
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %{_libdir}/libsoftokn3.so
@@ -450,6 +458,9 @@ done
 
 
 %changelog
+* Wed Sep 16 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-2.10.5
+- Fix inability to toggle fips mode, rhbz#513133
+
 * Tue Jun 23 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.10.4
 - updated source12 to refer to new pem source tar ball
 * Tue Jun 23 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-2.10.3
