@@ -8,12 +8,13 @@
     %{__os_install_post} \
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libsoftokn3.so \
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_lib}/libfreebl3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libnssdbm3.so \
 %{nil}
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -251,7 +252,7 @@ do
 done
 
 # Make sure chk files can be found in both places
-for file in libsoftokn3.chk libfreebl3.chk
+for file in libsoftokn3.chk libfreebl3.chk libnssdbm3.chk
 do
   ln -s ../../%{_lib}/$file $RPM_BUILD_ROOT/%{_libdir}/$file
 done
@@ -306,6 +307,7 @@ done
 /%{_lib}/libnss3.so
 /%{_lib}/libnssutil3.so
 /%{_lib}/libnssdbm3.so
+/%{_lib}/libnssdbm3.chk
 /%{_lib}/libssl3.so
 /%{_lib}/libsmime3.so
 /%{_lib}/libsoftokn3.so
@@ -354,6 +356,7 @@ done
 %{_libdir}/libnss3.so
 %{_libdir}/libnssutil3.so
 %{_libdir}/libnssdbm3.so
+%{_libdir}/libnssdbm3.chk
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %{_libdir}/libsoftokn3.so
@@ -468,6 +471,9 @@ done
 
 
 %changelog
+* Tue Sep 15 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-2
+- Fix inability to toggle fips mode when using legacy db - 483855
+
 * Mon Sep 07 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-1
 - Update to 3.12.4
 - Update the nss pem enabling source archive to roll in bug fixes
