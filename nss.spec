@@ -15,7 +15,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.3.99.3
-Release:          2.10.5%{?dist}
+Release:          2.10.6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -39,7 +39,7 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20090622.tar.bz2
+Source12:         %{name}-pem-20090907.tar.bz2
 Source13:         PayPalEE.cert
 Source14:         PayPalICA.cert
 
@@ -458,6 +458,11 @@ done
 
 
 %changelog
+* Thu Sep 17 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-2.10.6
+- Add nssdbm3.so to nss-prelink.conf, rhbz#524075
+- pem module implements memory management for internal objects, rhbz#509705
+- pem module doesn't crash when processing malformed key files, rhbz#512019
+
 * Wed Sep 16 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-2.10.5
 - Fix inability to toggle fips mode, rhbz#513133
 
