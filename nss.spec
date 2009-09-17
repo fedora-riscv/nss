@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -471,6 +471,9 @@ done
 
 
 %changelog
+* Thu Sep 17 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-3
+- Add nssdbm3.so to nss-prelink.conf, rhbz#524075
+
 * Tue Sep 15 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-2
 - Fix inability to toggle fips mode when using legacy db - 483855
 
