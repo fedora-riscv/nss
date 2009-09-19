@@ -4,7 +4,7 @@ RCS file: /cvsroot/mozilla/security/nss/cmd/manifest.mn,v
 retrieving revision 1.27
 diff -u -p -r1.27 manifest.mn
 --- ./mozilla/security/nss/cmd/manifest.mn	4 Sep 2008 22:15:21 -0000	1.27
-+++ ./mozilla/security/nss/cmd/manifest.mn	9 Sep 2009 03:40:50 -0000
++++ ./mozilla/security/nss/cmd/manifest.mn	18 Sep 2009 23:38:36 -0000
 @@ -75,6 +75,7 @@ DIRS = lib  \
   ssltap  \
   strsclnt \
@@ -18,7 +18,7 @@ Index: mozilla/security/nss/cmd/sysinit/Makefile
 RCS file: security/nss/cmd/sysinit/Makefile
 diff -N security/nss/cmd/sysinit/Makefile
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/Makefile	1 Sep 2009 22:47:51 -0000
++++ ./mozilla/security/nss/cmd/sysinit/Makefile	18 Sep 2009 23:38:36 -0000
 @@ -0,0 +1,80 @@
 +#! gmake
 +#
@@ -105,7 +105,7 @@ Index: mozilla/security/nss/cmd/sysinit/config.mk
 RCS file: security/nss/cmd/sysinit/config.mk
 diff -N security/nss/cmd/sysinit/config.mk
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/config.mk	1 Sep 2009 22:47:51 -0000
++++ ./mozilla/security/nss/cmd/sysinit/config.mk	18 Sep 2009 23:38:36 -0000
 @@ -0,0 +1,121 @@
 +#
 +# ***** BEGIN LICENSE BLOCK *****
@@ -233,7 +233,7 @@ Index: mozilla/security/nss/cmd/sysinit/manifest.mn
 RCS file: security/nss/cmd/sysinit/manifest.mn
 diff -N security/nss/cmd/sysinit/manifest.mn
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/manifest.mn	1 Sep 2009 22:47:51 -0000
++++ ./mozilla/security/nss/cmd/sysinit/manifest.mn	18 Sep 2009 23:38:36 -0000
 @@ -0,0 +1,50 @@
 +#
 +# ***** BEGIN LICENSE BLOCK *****
@@ -290,8 +290,8 @@ Index: mozilla/security/nss/cmd/sysinit/nsssysinit.c
 RCS file: security/nss/cmd/sysinit/nsssysinit.c
 diff -N security/nss/cmd/sysinit/nsssysinit.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/nsssysinit.c	1 Sep 2009 22:47:51 -0000
-@@ -0,0 +1,329 @@
++++ ./mozilla/security/nss/cmd/sysinit/nsssysinit.c	18 Sep 2009 23:38:36 -0000
+@@ -0,0 +1,356 @@
 +/* ***** BEGIN LICENSE BLOCK *****
 + * Version: MPL 1.1/GPL 2.0/LGPL 2.1
 + *
@@ -420,13 +420,7 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +#endif
 +#endif
 +
-+#ifdef XP_LINUX
-+PRBool getFIPSMode()
-+{
-+}
-+
-+#else
-+PRBool getFIPSMode()
++static PRBool getFIPSEnv()
 +{
 +    char *fipsEnv = getenv("NSS_FIPS");
 +    if (!fipsEnv) {
@@ -439,6 +433,35 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +	 return 1;
 +    }
 +    return 0;
++}
++#ifdef XP_LINUX
++
++PRBool getFIPSMode()
++{
++    FILE *f;
++    char d;
++    size_t size;
++
++    f = fopen("/proc/sys/crypto/fips_enabled", "r");
++    if (!f) {
++	/* if we don't have a proc flag, fall back to the 
++	 * environment variable */
++	return getFIPSEnv();
++    }
++
++    size = fread(&d, 1, 1, f);
++    fclose(f);
++    if (size != 1)
++        return 0;
++    if (d != '1')
++        return 0;
++    return 1;
++}
++
++#else
++static PRBool getFIPSMode()
++{
++    return getFIPSEnv();
 +}
 +#endif
 +
@@ -457,6 +480,7 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 + * it is running in the process of the application for which it is making 
 + * decisions, so it's possible to acquire the application name as part of
 + * the decision making process.
++ *
 + */
 +static char **
 +get_list(char *filename, char *stripped_parameters)
@@ -537,6 +561,9 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +    *target = 0;
 +}
 +
++/* determine what options the user was trying to open this database with */
++/* filename is the directory pointed to by configdir= */
++/* stripped is the rest of the paramters with configdir= stripped out */
 +static SECStatus
 +parse_paramters(char *parameters, char **filename, char **stripped)
 +{
@@ -566,6 +593,7 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +	PORT_Free(newStripped);
 +	return SECFailure;
 +    }
++    /* strip off any directives from the filename */
 +    if (strncmp("sql:", *filename, 4) == 0) {
 +	safestrcpy(*filename, (*filename)+4);
 +    } else if (strncmp("dbm:", *filename, 4) == 0) {
@@ -581,7 +609,6 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +char **
 +NSS_ReturnModuleSpecData(unsigned long function, char *parameters, void *args)
 +{
-+    static char *chain = "Chain";
 +    char *filename = NULL;
 +    char *stripped = NULL;
 +    char **retString = NULL;
@@ -607,10 +634,10 @@ diff -N security/nss/cmd/sysinit/nsssysinit.c
 +    case SECMOD_MODULE_DB_FUNCTION_RELEASE:
 +	retString = release_list((char **)args);
 +	break;
-+    /* forward add/del to child */
++    /* can't add or delete from this module DB */
 +    case SECMOD_MODULE_DB_FUNCTION_ADD:
 +    case SECMOD_MODULE_DB_FUNCTION_DEL:
-+	retString = &chain;
++	retString = NULL;
 +	break;
 +    default:
 +	retString = NULL;
