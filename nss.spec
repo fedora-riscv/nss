@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -31,6 +31,9 @@ Source2:          nss-config.in
 Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
+Source6:          blank-cert9.db
+Source7:          blank-key4.db
+Source8:          system-pkcs11.txt
 Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
@@ -255,10 +258,15 @@ do
 done
 
 # Install the empty NSS db files
+# Legacy db
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
 %{__install} -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
 %{__install} -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
 %{__install} -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+# Shared db
+%{__install} -p -m 644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert9.db
+%{__install} -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key4.db
+%{__install} -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.txt
      
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
@@ -332,11 +340,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-%post
-/sbin/ldconfig >/dev/null 2>/dev/null
+%post -p /sbin/ldconfig 
 
-%postun
-/sbin/ldconfig >/dev/null 2>/dev/null
+%postun -p /sbin/ldconfig 
 
 %files
 %defattr(-,root,root)
@@ -353,6 +359,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %files sysinit
 %defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
+%config(noreplace) %{_sysconfdir}/pki/nssdb/cert9.db
+%config(noreplace) %{_sysconfdir}/pki/nssdb/key4.db
+%config(noreplace) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 
 %files tools
 %defattr(-,root,root)
@@ -447,6 +456,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Sep 18 2009 Elio Maldonado<emaldona@redhat.com - 3.12.4-9
+- Install blank databases and configuration file for system shared database
+- nsssysinit queries system for fips mode before relying on environment variable
+
 * Thu Sep 10 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-8
 - Restoring nssutil and -rpath-link to nss-config for now - 522477
 
