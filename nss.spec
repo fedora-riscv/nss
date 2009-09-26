@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -34,6 +34,7 @@ Source5:          blank-secmod.db
 Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
+Source9:          setup-nsssysinit.sh
 Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
@@ -186,6 +187,9 @@ export NSS_VPATCH
 
 chmod 755 ./mozilla/dist/pkgconfig/nss-config
 
+%{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
+chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
+
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
@@ -295,6 +299,8 @@ done
 # Copy the package configuration files
 %{__install} -p -m 644 ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
 %{__install} -p -m 755 ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
+# Copy the pkcs #11 configuration script
+%{__install} -p -m 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
 
 #remove the nss-util-devel headers
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
@@ -340,9 +346,15 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
 
-%post -p /sbin/ldconfig 
+%post -p /sbin/ldconfig
 
-%postun -p /sbin/ldconfig 
+%postun -p /sbin/ldconfig
+
+%post sysinit
+%{_bindir}/setup-nsssysinit.sh on
+
+%preun sysinit
+%{_bindir}/setup-nsssysinit.sh off
 
 %files
 %defattr(-,root,root)
@@ -362,6 +374,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %config(noreplace) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%{_bindir}/setup-nsssysinit.sh
 
 %files tools
 %defattr(-,root,root)
@@ -456,6 +469,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Sep 26 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-10
+- Add nss-sysinit activation/deactivation script
+
 * Fri Sep 18 2009 Elio Maldonado<emaldona@redhat.com - 3.12.4-9
 - Install blank databases and configuration file for system shared database
 - nsssysinit queries system for fips mode before relying on environment variable
