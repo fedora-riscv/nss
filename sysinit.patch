@@ -1,24 +1,24 @@
-Index: ./mozilla/security/nss/cmd/manifest.mn
+Index: ./mozilla/security/nss/lib/manifest.mn
 ===================================================================
-RCS file: /cvsroot/mozilla/security/nss/cmd/manifest.mn,v
-retrieving revision 1.27
-diff -u -p -r1.27 manifest.mn
---- ./mozilla/security/nss/cmd/manifest.mn	4 Sep 2008 22:15:21 -0000	1.27
-+++ ./mozilla/security/nss/cmd/manifest.mn	18 Sep 2009 23:38:36 -0000
-@@ -75,6 +75,7 @@ DIRS = lib  \
-  ssltap  \
-  strsclnt \
-  symkeyutil \
-+ sysinit \
-  tests \
-  tstclnt  \
-  vfychain \
-Index: mozilla/security/nss/cmd/sysinit/Makefile
+RCS file: /cvsroot/mozilla/security/nss/lib/manifest.mn,v
+retrieving revision 1.19
+diff -u -p -r1.19 manifest.mn
+--- ./mozilla/security/nss/lib/manifest.mn	16 Nov 2007 05:29:23 -0000	1.19
++++ ./mozilla/security/nss/lib/manifest.mn	27 Sep 2009 16:38:49 -0000
+@@ -56,6 +56,7 @@ DIRS =  util freebl softoken \
+ 	pkcs12 pkcs7 smime \
+ 	crmf jar \
+ 	ckfw      \
++	sysinit \
+ 	$(NULL)
+ 
+ #  fortcrypt  is no longer built
+Index: ./mozilla/security/nss/lib/sysinit/Makefile
 ===================================================================
-RCS file: security/nss/cmd/sysinit/Makefile
-diff -N security/nss/cmd/sysinit/Makefile
+RCS file: ./mozilla/security/nss/lib/sysinit/Makefile
+diff -N ./mozilla/security/nss/lib/sysinit/Makefile
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/Makefile	18 Sep 2009 23:38:36 -0000
++++ ./mozilla/security/nss/lib/sysinit/Makefile	27 Sep 2009 16:38:50 -0000
 @@ -0,0 +1,80 @@
 +#! gmake
 +#
@@ -100,12 +100,12 @@ diff -N security/nss/cmd/sysinit/Makefile
 +
 +#include ../platrules.mk
 +
-Index: mozilla/security/nss/cmd/sysinit/config.mk
+Index: ./mozilla/security/nss/lib/sysinit/config.mk
 ===================================================================
-RCS file: security/nss/cmd/sysinit/config.mk
-diff -N security/nss/cmd/sysinit/config.mk
+RCS file: ./mozilla/security/nss/lib/sysinit/config.mk
+diff -N ./mozilla/security/nss/lib/sysinit/config.mk
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/config.mk	18 Sep 2009 23:38:36 -0000
++++ ./mozilla/security/nss/lib/sysinit/config.mk	27 Sep 2009 16:38:50 -0000
 @@ -0,0 +1,121 @@
 +#
 +# ***** BEGIN LICENSE BLOCK *****
@@ -228,12 +228,12 @@ diff -N security/nss/cmd/sysinit/config.mk
 +DLLFLAGS += -EXPORT:mktemp=nss_mktemp,PRIVATE
 +endif
 +endif
-Index: mozilla/security/nss/cmd/sysinit/manifest.mn
+Index: ./mozilla/security/nss/lib/sysinit/manifest.mn
 ===================================================================
-RCS file: security/nss/cmd/sysinit/manifest.mn
-diff -N security/nss/cmd/sysinit/manifest.mn
+RCS file: ./mozilla/security/nss/lib/sysinit/manifest.mn
+diff -N ./mozilla/security/nss/lib/sysinit/manifest.mn
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/manifest.mn	18 Sep 2009 23:38:36 -0000
++++ ./mozilla/security/nss/lib/sysinit/manifest.mn	27 Sep 2009 16:38:50 -0000
 @@ -0,0 +1,50 @@
 +#
 +# ***** BEGIN LICENSE BLOCK *****
@@ -285,12 +285,12 @@ diff -N security/nss/cmd/sysinit/manifest.mn
 +LIBRARY_NAME = nsssysinit
 +#LIBRARY_VERSION = 3
 +
-Index: mozilla/security/nss/cmd/sysinit/nsssysinit.c
+Index: ./mozilla/security/nss/lib/sysinit/nsssysinit.c
 ===================================================================
-RCS file: security/nss/cmd/sysinit/nsssysinit.c
-diff -N security/nss/cmd/sysinit/nsssysinit.c
+RCS file: ./mozilla/security/nss/lib/sysinit/nsssysinit.c
+diff -N ./mozilla/security/nss/lib/sysinit/nsssysinit.c
 --- /dev/null	1 Jan 1970 00:00:00 -0000
-+++ ./mozilla/security/nss/cmd/sysinit/nsssysinit.c	18 Sep 2009 23:38:36 -0000
++++ ./mozilla/security/nss/lib/sysinit/nsssysinit.c	27 Sep 2009 16:38:50 -0000
 @@ -0,0 +1,356 @@
 +/* ***** BEGIN LICENSE BLOCK *****
 + * Version: MPL 1.1/GPL 2.0/LGPL 2.1
