@@ -46,7 +46,7 @@ if [ on = "1" ]; then
 else
   if [ `grep "^library=libnsssysinit" ${p11conf}` == ""]; then
     exit 0
-  if
+  fi
   cat ${p11conf} | sed -e 's/^library=libnsssysinit.so/library=/' \
                        -e 'g/^NSS/ s; Flags=internal,moduleDBOnly,critical; Flags=internal,critical;' > \
                        ${p11conf}.off
