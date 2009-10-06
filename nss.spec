@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          12%{?dist}
+Release:          13%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -469,6 +469,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Oct 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13
+- User no longer prompted for a password when listing keys an empty system db (#527048)
+- Fix setup-nsssysinit to handle more general formats (#527051)
+
 * Sun Sep 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-12
 - Fix syntax error in setup-nsssysinit.sh
 
