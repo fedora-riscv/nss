@@ -22,13 +22,6 @@ if test $# -eq 0; then
   usage 1 1>&2
 fi
 
-on="1"
-case "$1" in
-  on  | ON )  on="1";;
-  off | OFF ) on="";;
-  * )         usage 1 1>&2;;
-esac
-
 # the system-wide configuration file
 p11conf="/etc/pki/nssdb/pkcs11.txt"
 # must exist, otherwise report it and exit with failure
@@ -37,19 +30,28 @@ if [ ! -f $p11conf ]; then
   exit 1
 fi
 
-# turn on or off
-if [ on = "1" ]; then 
-  cat ${p11conf} | sed -e 's/^library=$/library=libnsssysinit.so/' \
-                       -e 'g/^NSS/ s; Flags=internal,critical; Flags=internal,moduleDBOnly,critical;' > \
-                       ${p11conf}.on
-  mv ${p11conf}.on ${p11conf}
-else
-  if [ `grep "^library=libnsssysinit" ${p11conf}` == ""]; then
-    exit 0
-  fi
-  cat ${p11conf} | sed -e 's/^library=libnsssysinit.so/library=/' \
-                       -e 'g/^NSS/ s; Flags=internal,moduleDBOnly,critical; Flags=internal,critical;' > \
-                       ${p11conf}.off
-  mv ${p11conf}.off ${p11conf}
-fi
-
+on="1"
+case "$1" in
+  on | ON )
+    cat ${p11conf} | \
+     sed -e 's/^library=$/library=libnsssysinit.so/' \
+         -e '/^NSS/s/Flags=internal,critical/Flags=internal,moduleDBOnly,critical/' \
+         -e '/^NSS/s/Flags=internal,FIPS,critical/Flags=internal,moduleDBOnly,FIPS,critical/' > \
+    ${p11conf}.on
+    mv ${p11conf}.on ${p11conf}
+    ;;
+  off | OFF )
+    if [ ! `grep "^library=libnsssysinit" ${p11conf}` ]; then
+      exit 0
+    fi
+    cat ${p11conf} | \
+    sed -e 's/^library=libnsssysinit.so/library=/' \
+        -e '/^NSS/s/Flags=internal,moduleDBOnly,critical/Flags=internal,critical/'   \
+        -e '/^NSS/s/Flags=internal,moduleDBOnly,FIPS,critical/Flags=internal,FIPS,critical/' > \
+        ${p11conf}.off
+    mv ${p11conf}.off ${p11conf}
+    ;;
+  * )
+    usage 1 1>&2
+    ;;
+esac
