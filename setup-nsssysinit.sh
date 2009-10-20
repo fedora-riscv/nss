@@ -35,8 +35,7 @@ case "$1" in
   on | ON )
     cat ${p11conf} | \
      sed -e 's/^library=$/library=libnsssysinit.so/' \
-         -e '/^NSS/s/Flags=internal,critical/Flags=internal,moduleDBOnly,critical/' \
-         -e '/^NSS/s/Flags=internal,FIPS,critical/Flags=internal,moduleDBOnly,FIPS,critical/' > \
+         -e '/^NSS/s/\(Flags=internal\)\(,[^m]\)/\1,moduleDBOnly\2/' > \
     ${p11conf}.on
     mv ${p11conf}.on ${p11conf}
     ;;
@@ -46,8 +45,7 @@ case "$1" in
     fi
     cat ${p11conf} | \
     sed -e 's/^library=libnsssysinit.so/library=/' \
-        -e '/^NSS/s/Flags=internal,moduleDBOnly,critical/Flags=internal,critical/'   \
-        -e '/^NSS/s/Flags=internal,moduleDBOnly,FIPS,critical/Flags=internal,FIPS,critical/' > \
+        -e '/^NSS/s/Flags=internal,moduleDBOnly/Flags=internal/' > \
         ${p11conf}.off
     mv ${p11conf}.off ${p11conf}
     ;;
