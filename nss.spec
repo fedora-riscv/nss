@@ -6,13 +6,13 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          13%{?dist}
+Release:          13.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
-Requires:         nss-softokn >= %{nss_softokn_version}
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    nss-softokn-devel >= %{version}                                                  
@@ -469,6 +469,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Oct 20 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13.1
+- Require nss-softoken of same architecture as nss (#527867)
+- Merge setup-nsssysinit.sh improvements from F-12 (#527051)
+
 * Mon Oct 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13
 - User no longer prompted for a password when listing keys an empty system db (#527048)
 - Fix setup-nsssysinit to handle more general formats (#527051)
