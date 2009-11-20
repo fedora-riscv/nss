@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.4
-Release:          13.1%{?dist}
+Release:          17%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -469,6 +469,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Nov 20 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-14.1
+- Retagging
+
 * Tue Oct 20 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13.1
 - Require nss-softoken of same architecture as nss (#527867)
 - Merge setup-nsssysinit.sh improvements from F-12 (#527051)
