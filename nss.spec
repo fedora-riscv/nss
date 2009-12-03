@@ -1,18 +1,19 @@
 %global nspr_version 4.8
-%global nss_util_version 3.12.4
+%global nss_util_version 3.12.5
 %global nss_softokn_version 3.12.4
+%global nss_softokn_fips_version 3.12.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.4
-Release:          17%{?dist}
+Version:          3.12.5
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
+Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    nss-softokn-devel >= %{version}                                                  
@@ -39,8 +40,7 @@ Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           newargs.patch
-Patch8:           sysinit.patch
+Patch7:           533125-ammend.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -106,8 +106,7 @@ low level services.
 
 %patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .newargs
-%patch8 -p0 -b .sysinit
+%patch7 -p0 -b .533125-ammend
 
 %build
 
@@ -469,6 +468,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Dec 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1
+- Update to 3.12.5
+- Patch to allow ssl/tls clients to interoperate with servers that require renogiation
+
 * Fri Nov 20 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-14.1
 - Retagging
 
