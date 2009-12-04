@@ -1,21 +1,23 @@
 %global nspr_version 4.8
-%global nss_util_version 3.12.4
+%global nss_util_version 3.12.5
 %global nss_softokn_version 3.12.4
+%global nss_softokn_fips_version 3.12.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.4
-Release:          15%{?dist}
+Version:          3.12.5
+Release:          1%{?dist}.2
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
+Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
+Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{version}                                                  
+BuildRequires:    nss-softokn-devel = %{nss_softokn_version}                                                  
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -39,8 +41,8 @@ Source12:         %{name}-pem-20090907.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           newargs.patch
-Patch8:           sysinit.patch
+Patch7:           533125-ammend.patch
+Patch8:           nss-sysinit.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -68,7 +70,7 @@ manipulate the NSS certificate and key database.
 %package sysinit
 Summary:          System NSS Initilization
 Group:            System Environment/Base
-Provides:         nss-sysinit = %{version}-%{release}
+Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
 
 %description sysinit
@@ -106,7 +108,7 @@ low level services.
 
 %patch2 -p0
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .newargs
+%patch7 -p0 -b .533125
 %patch8 -p0 -b .sysinit
 
 %build
@@ -137,8 +139,8 @@ export NSPR_LIB_DIR
 NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
 NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
 
-export NSS_INCLUDE_DIR
-export NSS_LIB_DIR
+#export NSS_INCLUDE_DIR
+#export NSS_LIB_DIR
 
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
@@ -469,6 +471,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Dec 04 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.2
+- Update to 3.12.5
+- CVE-2009-3555 TLS: MITM attacks via session renegotiation
+
 * Mon Oct 26 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-15
 - Require nss-softoken of same arch as nss (#527867)
 
