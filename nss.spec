@@ -14,9 +14,10 @@ Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
+Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{version}                                                  
+BuildRequires:    nss-softokn-devel = %{nss_softokn_version}                                                  
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -41,6 +42,7 @@ Source12:         %{name}-pem-20090907.tar.bz2
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           533125-ammend.patch
+Patch8:           nss-sysinit.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -68,7 +70,7 @@ manipulate the NSS certificate and key database.
 %package sysinit
 Summary:          System NSS Initilization
 Group:            System Environment/Base
-Provides:         nss-sysinit = %{version}-%{release}
+Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
 
 %description sysinit
@@ -107,6 +109,7 @@ low level services.
 %patch2 -p0
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .533125-ammend
+%patch8 -p0 -b .sysinit
 
 %build
 
@@ -136,8 +139,8 @@ export NSPR_LIB_DIR
 NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
 NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
 
-export NSS_INCLUDE_DIR
-export NSS_LIB_DIR
+#export NSS_INCLUDE_DIR
+#export NSS_LIB_DIR
 
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
