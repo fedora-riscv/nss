@@ -4,35 +4,12 @@ RCS file: /cvsroot/mozilla/security/nss/lib/manifest.mn,v
 retrieving revision 1.20
 diff -u -p -r1.20 manifest.mn
 --- mozilla/security/nss/lib/manifest.mn	7 Nov 2009 05:57:41 -0000	1.20
-+++ mozilla/security/nss/lib/manifest.mn	4 Dec 2009 02:27:20 -0000
++++ mozilla/security/nss/lib/manifest.mn	9 Dec 2009 21:37:15 -0000
 @@ -56,6 +56,7 @@ DIRS =  util freebl softoken \
  	pkcs12 pkcs7 smime \
  	crmf jar \
  	ckfw      \
-+	sysinit \
++	sysinit      \
  	$(NULL)
  
  #  fortcrypt  is no longer built
-Index: mozilla/security/nss/lib/nss/nssinit.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/nss/nssinit.c,v
-retrieving revision 1.103
-diff -u -p -r1.103 nssinit.c
---- mozilla/security/nss/lib/nss/nssinit.c	29 Oct 2009 21:33:10 -0000	1.103
-+++ mozilla/security/nss/lib/nss/nssinit.c	4 Dec 2009 01:25:06 -0000
-@@ -52,6 +52,7 @@
- #include "secoid.h"
- #include "nss.h"
- #include "pk11func.h"
-+#include "pk11priv.h"
- #include "secerr.h"
- #include "nssbase.h"
- #include "pkixt.h"
-@@ -64,6 +65,7 @@
- #include "ocspti.h"
- #include "ocspi.h"
- 
-+
- /*
-  * On Windows nss3.dll needs to export the symbol 'mktemp' to be
-  * fully backward compatible with the nss3.dll in NSS 3.2.x and
