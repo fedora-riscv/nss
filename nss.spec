@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.4
+Release:          1%{?dist}.5
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -43,6 +43,7 @@ Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           533125-ammend.patch
 Patch8:           nss-sysinit.patch
+Patch9:           nsssysinit.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -110,6 +111,7 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .533125-ammend
 %patch8 -p0 -b .sysinit
+%patch9 -p0 -b .nsssysinit
 
 %build
 
@@ -471,7 +473,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Wed Dec 09 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-2.1
+* Thu Dec 10 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.5
+- Fix nsssysinit to set the default flags on the crypto module (#545779)
+- Remove redundant header from the pem module
+
+* Wed Dec 09 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.1
 - Remove unneeded patch
 
 * Thu Dec 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.1

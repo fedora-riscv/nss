@@ -1,0 +1,49 @@
+Index: mozilla/security/nss/lib/sysinit/nsssysinit.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/lib/sysinit/nsssysinit.c,v
+retrieving revision 1.1
+diff -u -p -r1.1 nsssysinit.c
+--- mozilla/security/nss/lib/sysinit/nsssysinit.c	8 Oct 2009 17:08:36 -0000	1.1
++++ mozilla/security/nss/lib/sysinit/nsssysinit.c	12 Dec 2009 03:34:17 -0000
+@@ -198,11 +198,20 @@ getFIPSMode(void)
+  * the decision making process.
+  *
+  */
++static const char *nssDefaultFlags = "trustOrder=75 cipherOrder=100 \
++slotParams={0x00000001=[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM \
++askpw=any timeout=30 ] }  ";
++static const char *nssDefaultFIPSFlags = "trustOrder=75 cipherOrder=100 \
++slotParams={0x00000003=[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM \
++askpw=any timeout=30 ] }  ";
++
+ static char **
+ get_list(char *filename, char *stripped_parameters)
+ {
+     char **module_list = PORT_ZNewArray(char *, 4);
+     char *userdb;
++    int isFIPS = getFIPSMode();
++    const char *nssflags = isFIPS ? nssDefaultFIPSFlags : nssDefaultFlags;
+     int next = 0;
+ 
+     /* can't get any space */
+@@ -217,8 +226,9 @@ get_list(char *filename, char *stripped_
+ 	    "library= "
+ 	    "module=\"NSS User database\" "
+ 	    "parameters=\"configdir='sql:%s' %s\" "
+-	    "NSS=\"flags=internal%s\"", 
+-		userdb, stripped_parameters, getFIPSMode() ? ",FIPS" : "");
++        "NSS=\"%sflags=internal%s\"",
++        userdb, stripped_parameters, nssflags,
++        isFIPS ? ",FIPS" : "");
+ 
+ 	/* now open the user's defined PKCS #11 modules */
+ 	/* skip the local user DB entry */
+@@ -235,7 +245,7 @@ get_list(char *filename, char *stripped_
+ 	"library= "
+ 	"module=\"NSS system database\" "
+ 	"parameters=\"configdir='sql:%s' tokenDescription='NSS system database' flags=readonly\" "
+-	"NSS=\"flags=internal,critical\"",filename);
++    "NSS=\"%sflags=internal,critical\"",filename, nssDefaultFlags);
+ 
+     /* that was the last module */
+     module_list[next] = 0;
