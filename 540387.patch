@@ -1,0 +1,17 @@
+diff --git a/mozilla/security/nss/lib/pk11wrap/pk11pars.c b/mozilla/security/nss/lib/pk11wrap/pk11pars.c
+index c36cd25..5855084 100644
+--- a/mozilla/security/nss/lib/pk11wrap/pk11pars.c
++++ b/mozilla/security/nss/lib/pk11wrap/pk11pars.c
+@@ -1134,6 +1134,12 @@ SECMOD_LoadModule(char *modulespec,SECMODModule *parent, PRBool recurse)
+ 
+ 	    for (; *index; index++) {
+ 		SECMODModule *child;
++		if (0 == PORT_Strcmp(*index, modulespec)) {
++		    /* avoid trivial infinite recursion */
++		    PORT_SetError(SEC_ERROR_NO_MODULE);
++		    rv = SECFailure;
++		    break;
++		}
+ 		child = SECMOD_LoadModule(*index,module,PR_TRUE);
+ 		if (!child) break;
+ 		if (child->isCritical && !child->loaded) {
