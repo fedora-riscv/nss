@@ -1,15 +1,7 @@
---- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.546221	2009-12-17 23:52:17.543895890 -0800
-+++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2009-12-17 23:54:48.488895967 -0800
-@@ -37,8 +37,6 @@
- #include "prio.h"
- #include "prprf.h"
- 
--
--
- /*
-  * The following provides a default example for operating systems to set up
-  * and manage applications loading NSS on their OS globally.
-@@ -54,6 +52,8 @@
+diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.546221 nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.546221	2009-12-18 10:48:35.969726219 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2009-12-18 10:51:05.866851066 -0800
+@@ -54,6 +54,8 @@
  #ifdef XP_UNIX
  #include <sys/stat.h>
  #include <sys/types.h>
@@ -18,7 +10,7 @@
  
  static int 
  testdir(char *dir)
-@@ -208,8 +208,8 @@ askpw=any timeout=30 ] }  ";
+@@ -208,8 +210,8 @@ askpw=any timeout=30 ] }  ";
  static char **
  get_list(char *filename, char *stripped_parameters)
  {
@@ -29,12 +21,13 @@
      int isFIPS = getFIPSMode();
      const char *nssflags = isFIPS ? nssDefaultFIPSFlags : nssDefaultFlags;
      int next = 0;
-@@ -219,13 +219,20 @@ get_list(char *filename, char *stripped_
+@@ -219,17 +221,25 @@ get_list(char *filename, char *stripped_
  	return NULL;
      }
  
-+    sysdb = getSystemDB();
-     userdb  = getUserDB();
+-    userdb  = getUserDB();
++    userdb = getSystemDB();
++    userdb = getUserDB();
 +
 +    if (sysdb && !strcmp(filename, sysdb))
 +	    filename = NULL;
@@ -51,7 +44,45 @@
          "NSS=\"%sflags=internal%s\"",
          userdb, stripped_parameters, nssflags,
          isFIPS ? ",FIPS" : "");
-@@ -251,6 +258,7 @@ get_list(char *filename, char *stripped_
+ 
++/*	fprintf(stderr, "%s\n\n", module_list[next-1]); */
+ 	/* now open the user's defined PKCS #11 modules */
+ 	/* skip the local user DB entry */
+ 	module_list[next++] = PR_smprintf(
+@@ -238,19 +248,35 @@ get_list(char *filename, char *stripped_
+ 	    "parameters=\"configdir='sql:%s' %s\" "
+ 	    "NSS=\"flags=internal,moduleDBOnly,defaultModDB,skipFirst\"", 
+ 		userdb, stripped_parameters);
++/*	fprintf(stderr, "%s\n\n", module_list[next-1]); */
+    }
+ 
++    if (filename && 0 /* This doesn't actually work. If we register
++			 both this and the sysdb (in either order)
++			 then only one of them actually shows up */) {
++	    module_list[next++] = PR_smprintf(
++	      "library= "
++	      "module=\"NSS database\" "
++	      "parameters=\"configdir='sql:%s' tokenDescription='NSS database sql:%s'\" "
++	      "NSS=\"%sflags=internal\"",filename, filename, nssflags);
++	    fprintf(stderr, "%s\n\n", module_list[next-1]);
++    }
++
+     /* now the system database (always read only) */
+-    module_list[next++] = PR_smprintf(
+-	"library= "
+-	"module=\"NSS system database\" "
+-	"parameters=\"configdir='sql:%s' tokenDescription='NSS system database' flags=readonly\" "
+-    "NSS=\"%sflags=internal,critical\"",filename, nssDefaultFlags);
++    if (sysdb) {
++	    module_list[next++] = PR_smprintf(
++	      "library= "
++	      "module=\"NSS system database\" "
++	      "parameters=\"configdir='sql:%s' tokenDescription='NSS system database' flags=readonly\" "
++	      "NSS=\"%sflags=internal,critical\"",sysdb, nssflags);
++	    fprintf(stderr, "%s\n\n", module_list[next-1]);
++    }
+ 
+     /* that was the last module */
      module_list[next] = 0;
  
      PORT_Free(userdb);
