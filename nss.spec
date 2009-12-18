@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.5
+Release:          1%{?dist}.8
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,12 +37,15 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source12:         %{name}-pem-20090907.tar.bz2
+Source12:         %{name}-pem-20091210.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           533125-ammend.patch
 Patch8:           nss-sysinit.patch
+Patch9:           540387.patch
+Patch10:          545779.patch
+Patch11:          546221.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -72,6 +75,7 @@ Summary:          System NSS Initilization
 Group:            System Environment/Base
 Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
+Requires(post):   coreutils
 
 %description sysinit
 Default Operating System module that manages applications loading
@@ -110,6 +114,9 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .533125
 %patch8 -p0 -b .sysinit
+%patch9 -p1 -b .540387
+%patch10 -p0 -b .545779
+%patch11 -p1 -b .546221
 
 %build
 
@@ -471,6 +478,13 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Dec 17 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.8
+- Fix nsssysinit to set the default flags on the crypto module (#545779)
+- Fix nsssysinit to enable applications to use the system database (#546221)
+- Fix segmentation when listing keys or certs in the database (#540387)
+- Sysinit requires coreutils for post install scriplet (#547067)
+- Remove redundant header from the pem module
+
 * Wed Dec 09 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-2.1
 - Remove unneeded patch
 
