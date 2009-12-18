@@ -1,0 +1,61 @@
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.546221	2009-12-17 23:52:17.543895890 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2009-12-17 23:54:48.488895967 -0800
+@@ -37,8 +37,6 @@
+ #include "prio.h"
+ #include "prprf.h"
+ 
+-
+-
+ /*
+  * The following provides a default example for operating systems to set up
+  * and manage applications loading NSS on their OS globally.
+@@ -54,6 +52,8 @@
+ #ifdef XP_UNIX
+ #include <sys/stat.h>
+ #include <sys/types.h>
++#include <stdio.h>
++#include <stdarg.h>
+ 
+ static int 
+ testdir(char *dir)
+@@ -208,8 +208,8 @@ askpw=any timeout=30 ] }  ";
+ static char **
+ get_list(char *filename, char *stripped_parameters)
+ {
+-    char **module_list = PORT_ZNewArray(char *, 4);
+-    char *userdb;
++    char **module_list = PORT_ZNewArray(char *, 5);
++    char *userdb, *sysdb;
+     int isFIPS = getFIPSMode();
+     const char *nssflags = isFIPS ? nssDefaultFIPSFlags : nssDefaultFlags;
+     int next = 0;
+@@ -219,13 +219,20 @@ get_list(char *filename, char *stripped_
+ 	return NULL;
+     }
+ 
++    sysdb = getSystemDB();
+     userdb  = getUserDB();
++
++    if (sysdb && !strcmp(filename, sysdb))
++	    filename = NULL;
++    if (userdb && !strcmp(filename, userdb))
++	    filename = NULL;
++
+     if (userdb != NULL) {
+ 	/* return a list of databases to open. First the user Database */
+ 	module_list[next++] = PR_smprintf(
+ 	    "library= "
+ 	    "module=\"NSS User database\" "
+-	    "parameters=\"configdir='sql:%s' %s\" "
++	    "parameters=\"configdir='sql:%s' %s tokenDescription='NSS user database'\" "
+         "NSS=\"%sflags=internal%s\"",
+         userdb, stripped_parameters, nssflags,
+         isFIPS ? ",FIPS" : "");
+@@ -251,6 +258,7 @@ get_list(char *filename, char *stripped_
+     module_list[next] = 0;
+ 
+     PORT_Free(userdb);
++    PORT_Free(sysdb);
+ 
+     return module_list;
+ }
