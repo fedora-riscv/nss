@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.7
+Release:          1%{?dist}.9
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -115,7 +115,7 @@ low level services.
 %patch7 -p0 -b .533125
 %patch8 -p0 -b .sysinit
 %patch9 -p1 -b .540387
-%patch10 -p0 -b .nsssyinit
+%patch10 -p0 -b .545779
 %patch11 -p1 -b .546221
 
 %build
@@ -478,13 +478,16 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Dec 19 2009 Elio maldonado<emaldona@redhat.com> - 3.12.5-1.9
+- Remove left over trace statements from nsssysinit patching
+
 * Fri Dec 18 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-2.7
 - Fix a misconstructed patch
 
 * Thu Dec 17 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.6
-- Fix nsssysinit to enable applications to use the system database (#546221)
+- Fix nsssysinit to enable apps to use system cert store, patch contributed by David Woodhouse (#546221)
 - Fix spec so sysinit requires coreutils for post install scriplet (#547067)
-- Fix segmentation fault when listing keys or certs in the database (#540387)
+- Fix segmentation fault when listing keys or certs in the database, patch contributed by Kamil Dudka (#540387)
 
 * Thu Dec 10 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.5
 - Fix nsssysinit to set the default flags on the crypto module (#545779)
