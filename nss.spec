@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.9
+Release:          1%{?dist}.11
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -478,6 +478,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Dec 25 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.11
+- Fix an error introduced when adapting the patch for
+  rhbz #546211
+
 * Sat Dec 19 2009 Elio maldonado<emaldona@redhat.com> - 3.12.5-1.9
 - Remove left over trace statements from nsssysinit patching
 
