@@ -44,7 +44,7 @@ Patch6:           nss-enable-pem.patch
 Patch7:           533125-ammend.patch
 Patch8:           nss-sysinit.patch
 Patch9:           540387.patch
-Patch10:          nsssysinit.patch
+Patch10:          545779.patch
 Patch11:          546221.patch
 
 %description
@@ -479,8 +479,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %changelog
 * Fri Dec 25 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.11
-- Fix an error introduced when adapting the patch for
-  rhbz #546211
+- Fix an error introduced when adapting the patch for rhbz #546211
 
 * Sat Dec 19 2009 Elio maldonado<emaldona@redhat.com> - 3.12.5-1.9
 - Remove left over trace statements from nsssysinit patching
