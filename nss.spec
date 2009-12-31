@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.13
+Release:          1%{?dist}.13.1
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -239,6 +239,16 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
+
+#  don't run all the tests when testing packaging
+#  nss_cycles: standard pkix upgradedb sharedb
+#  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
+#  nss_ssl_run: cov auth stress
+
+# Temporarily disabling the ssl tests
+%global nss_ssl_tests " "
+%global nss_ssl_run " "
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -480,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Dec 31 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.13.1
+- Temporarily disabling the ssl tests
+
 * Sat Dec 26 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.13
 - Fix nsssysinit to allow root to modify the nss system database (#547860)
 
