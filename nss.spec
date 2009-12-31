@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.11
+Release:          1%{?dist}.13
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -46,6 +46,7 @@ Patch8:           nss-sysinit.patch
 Patch9:           540387.patch
 Patch10:          545779.patch
 Patch11:          546221.patch
+Patch12:          547860.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -117,6 +118,7 @@ low level services.
 %patch9 -p1 -b .540387
 %patch10 -p0 -b .545779
 %patch11 -p1 -b .546221
+%patch12 -p1 -b .547860
 
 %build
 
@@ -478,6 +480,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Dec 26 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.13
+- Fix nsssysinit to allow root to modify the nss system database (#547860)
+
 * Fri Dec 25 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.11
 - Fix an error introduced when adapting the patch for rhbz #546211
 

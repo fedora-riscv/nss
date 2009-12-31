@@ -1,0 +1,93 @@
+diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860 nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860	2009-12-26 19:26:47.688694605 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2009-12-26 19:36:21.817699009 -0800
+@@ -50,6 +50,7 @@
+  */
+ 
+ #ifdef XP_UNIX
++#include <unistd.h>
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ 
+@@ -108,12 +109,18 @@ getSystemDB(void) {
+    return PORT_Strdup(NSS_DEFAULT_SYSTEM);
+ }
+ 
++static PRBool
++userCanModifySystemDB()
++{
++   return (access(NSS_DEFAULT_SYSTEM, W_OK) == 0);
++}
++
+ #else
+ #ifdef XP_WIN
+ static char *
+ getUserDB(void)
+ {
+-   /* use the registry to find the user's NSS_DIR. if no entry exists, creaate
++   /* use the registry to find the user's NSS_DIR. if no entry exists, create
+     * one in the users Appdir location */
+    return NULL;
+ }
+@@ -121,13 +128,21 @@ getUserDB(void)
+ static char *
+ getSystemDB(void)
+ {
+-   /* use the registry to find the system's NSS_DIR. if no entry exists, creaate
++   /* use the registry to find the system's NSS_DIR. if no entry exists, create
+     * one based on the windows system data area */
+    return NULL;
+ }
+ 
++static PRBool
++userCanModifySystemDB()
++{
++   /* use the registry to find if the user has administrative privilege 
++    * to modify the system's nss database. */
++   return PR_FALSE
++}
++
+ #else
+-#error "Need to write getUserDB and get SystemDB functions"
++#error "Need to write getUserDB, SystemDB and userCanModifySystemDB functions"
+ #endif
+ #endif
+ 
+@@ -206,7 +221,7 @@ askpw=any timeout=30 ] }  ";
+ static char **
+ get_list(char *filename, char *stripped_parameters)
+ {
+-    char **module_list = PORT_ZNewArray(char *, 5);
++    char **module_list = PORT_ZNewArray(char *, 4);
+     char *userdb, *sysdb;
+     int isFIPS = getFIPSMode();
+     const char *nssflags = isFIPS ? nssDefaultFIPSFlags : nssDefaultFlags;
+@@ -245,23 +260,14 @@ get_list(char *filename, char *stripped_
+ 		userdb, stripped_parameters);
+ 	}
+ 
+-    if (filename && 0 /* This doesn't actually work. If we register
+-			 both this and the sysdb (in either order)
+-			 then only one of them actually shows up */) {
+-	    module_list[next++] = PR_smprintf(
+-	      "library= "
+-	      "module=\"NSS database\" "
+-	      "parameters=\"configdir='sql:%s' tokenDescription='NSS database sql:%s'\" "
+-	      "NSS=\"%sflags=internal\"",filename, filename, nssflags);
+-    }
+-
+-    /* now the system database (always read only) */
++    /* now the system database (always read only unless it's root) */
+     if (sysdb) {
+-	    module_list[next++] = PR_smprintf(
++	const char *readonly = userCanModifySystemDB() ? "" : "flags=readonly";
++	module_list[next++] = PR_smprintf(
+ 	      "library= "
+ 	      "module=\"NSS system database\" "
+-	      "parameters=\"configdir='sql:%s' tokenDescription='NSS system database' flags=readonly\" "
+-	      "NSS=\"%sflags=internal,critical\"",sysdb, nssflags);
++	      "parameters=\"configdir='sql:%s' tokenDescription='NSS system database' %s\" "
++	      "NSS=\"%sflags=internal,critical\"",sysdb, readonly, nssflags);
+     }
+ 
+     /* that was the last module */
