@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -217,6 +217,11 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
+
+# Temporarily disabling the ssl test suites
+# until bug 539183 gets resolved
+%global nss_ssl_tests " "
+%global nss_ssl_run " "
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -472,6 +477,9 @@ done
 
 
 %changelog
+* Thu Jan 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-3
+- Temporarily disabling ssl tests until bug 539183 gets resolved
+
 * Thu Jan 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-2
 - rebuilt with properly formatted release number
 
