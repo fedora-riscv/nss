@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.3
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -472,6 +472,9 @@ done
 
 
 %changelog
+* Thu Jan 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-2
+- rebuilt with properly formatted release number
+
 * Fri Dec 06 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1
 - Update to 3.12.5
 
