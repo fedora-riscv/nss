@@ -1,6 +1,6 @@
 diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860 nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c
---- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860	2009-12-26 19:26:47.688694605 -0800
-+++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2009-12-26 19:36:21.817699009 -0800
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860	2010-01-06 17:57:30.722388282 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2010-01-06 18:20:59.713397530 -0800
 @@ -50,6 +50,7 @@
   */
  
@@ -9,10 +9,18 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860 nss-3.1
  #include <sys/stat.h>
  #include <sys/types.h>
  
-@@ -108,12 +109,18 @@ getSystemDB(void) {
+@@ -108,12 +109,26 @@ getSystemDB(void) {
     return PORT_Strdup(NSS_DEFAULT_SYSTEM);
  }
  
++static PRBool
++userIsRoot()
++{
++   /* this works for linux and all unixes that we know off
++	  though it isn't stated as such in POSIX documentation */
++   return getuid() == 0;
++}
++
 +static PRBool
 +userCanModifySystemDB()
 +{
@@ -29,7 +37,7 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860 nss-3.1
      * one in the users Appdir location */
     return NULL;
  }
-@@ -121,13 +128,21 @@ getUserDB(void)
+@@ -121,13 +136,28 @@ getUserDB(void)
  static char *
  getSystemDB(void)
  {
@@ -40,42 +48,50 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.547860 nss-3.1
  }
  
 +static PRBool
++userIsRoot()
++{
++   /* use the registry to find if the user is the system administrator. */
++   return PR_FALSE;
++}
++
++static PRBool
 +userCanModifySystemDB()
 +{
 +   /* use the registry to find if the user has administrative privilege 
 +    * to modify the system's nss database. */
-+   return PR_FALSE
++   return PR_FALSE;
 +}
 +
  #else
 -#error "Need to write getUserDB and get SystemDB functions"
-+#error "Need to write getUserDB, SystemDB and userCanModifySystemDB functions"
++#error "Need to write getUserDB, SystemDB, userIsRoot, and userCanModifySystemDB functions"
  #endif
  #endif
  
-@@ -206,7 +221,7 @@ askpw=any timeout=30 ] }  ";
- static char **
- get_list(char *filename, char *stripped_parameters)
- {
--    char **module_list = PORT_ZNewArray(char *, 5);
-+    char **module_list = PORT_ZNewArray(char *, 4);
-     char *userdb, *sysdb;
-     int isFIPS = getFIPSMode();
-     const char *nssflags = isFIPS ? nssDefaultFIPSFlags : nssDefaultFlags;
-@@ -245,23 +260,14 @@ get_list(char *filename, char *stripped_
+@@ -225,7 +255,8 @@ get_list(char *filename, char *stripped_
+     if (userdb && !strcmp(filename, userdb))
+ 	    filename = NULL;
+ 
+-    if (userdb != NULL) {
++    /* Don't open root's user DB */
++    if (userdb != NULL && !userIsRoot()) {
+ 	/* return a list of databases to open. First the user Database */
+ 	module_list[next++] = PR_smprintf(
+ 	    "library= "
+@@ -245,7 +276,8 @@ get_list(char *filename, char *stripped_
  		userdb, stripped_parameters);
  	}
  
 -    if (filename && 0 /* This doesn't actually work. If we register
--			 both this and the sysdb (in either order)
--			 then only one of them actually shows up */) {
--	    module_list[next++] = PR_smprintf(
--	      "library= "
--	      "module=\"NSS database\" "
--	      "parameters=\"configdir='sql:%s' tokenDescription='NSS database sql:%s'\" "
--	      "NSS=\"%sflags=internal\"",filename, filename, nssflags);
--    }
--
++    if (filename && !userIsRoot() && 0
++		/* This doesn't actually work. If we register
+ 			 both this and the sysdb (in either order)
+ 			 then only one of them actually shows up */) {
+ 	    module_list[next++] = PR_smprintf(
+@@ -255,13 +287,14 @@ get_list(char *filename, char *stripped_
+ 	      "NSS=\"%sflags=internal\"",filename, filename, nssflags);
+     }
+ 
 -    /* now the system database (always read only) */
 +    /* now the system database (always read only unless it's root) */
      if (sysdb) {

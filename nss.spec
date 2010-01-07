@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          1%{?dist}.13.1
+Release:          1%{?dist}.13.2
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -240,13 +240,8 @@ rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
 
-#  don't run all the tests when testing packaging
-#  nss_cycles: standard pkix upgradedb sharedb
-#  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
-#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
-#  nss_ssl_run: cov auth stress
-
-# Temporarily disabling the ssl tests
+# Temporarily disabling the ssl test suites
+# until bug 539183 gets resolved
 %global nss_ssl_tests " "
 %global nss_ssl_run " "
 
@@ -490,6 +485,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Jan 06 2010 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.13.2
+- New version of patch to allow root to modify ystem database (#547860)
+
 * Thu Dec 31 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.5-1.13.1
 - Temporarily disabling the ssl tests
 
