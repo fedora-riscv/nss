@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          3%{?dist}
+Release:          3.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -38,7 +38,7 @@ Source3:          blank-cert8.db
 Source4:          blank-key3.db
 Source5:          blank-secmod.db
 Source8:          nss-prelink.conf
-Source12:         %{name}-pem-20090907.tar.bz2
+Source12:         %{name}-pem-20091210.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch6:           nss-enable-pem.patch
@@ -477,6 +477,10 @@ done
 
 
 %changelog
+* Tue Jan 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-3.1
+- Update to latest pem module sources
+- Get the blank databases from the lookaside cache
+
 * Thu Jan 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-3
 - Temporarily disabling ssl tests until bug 539183 gets resolved
 
