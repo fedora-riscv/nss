@@ -1,0 +1,104 @@
+diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638 nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638	2010-01-12 19:44:44.772770237 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2010-01-12 19:47:41.906770758 -0800
+@@ -36,6 +36,7 @@
+ #include "seccomon.h"
+ #include "prio.h"
+ #include "prprf.h"
++#include "plhash.h"
+ 
+ /*
+  * The following provides a default example for operating systems to set up
+@@ -212,6 +213,25 @@ getFIPSMode(void)
+ 
+ #define NSS_DEFAULT_FLAGS "flags=readonly"
+ 
++/* configuration flags according to
++ * https://developer.mozilla.org/en/PKCS11_Module_Specs
++ * As stated there the slotParams start with a slot name which is a slotID
++ * Slots 1 through 3 are reserved for the nss internal modules as follows:
++ * 1 for crypto operations slot non-fips,
++ * 2 for the key slot, and
++ * 3 for the crypto operations slot fips
++ */
++#define ORDER_FLAGS "trustOrder=75 cipherOrder=100"
++#define SLOT_FLAGS \
++	"[slotFags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM" \
++        " askpw=any timeout=30 ]"
++ 
++static const char *nssDefaultFlags =
++	ORDER_FLAGS " slotParams={0x00000001=" SLOT_FLAGS " }  ";
++
++static const char *nssDefaultFIPSFlags =
++	ORDER_FLAGS " slotParams={0x00000003=" SLOT_FLAGS " }  ";
++
+ /*
+  * This function builds the list of databases and modules to load, and sets
+  * their configuration. For the sample we have a fixed set.
+@@ -226,13 +246,6 @@ getFIPSMode(void)
+  * the decision making process.
+  *
+  */
+-static const char *nssDefaultFlags = "trustOrder=75 cipherOrder=100 \
+-slotParams={0x00000001=[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM \
+-askpw=any timeout=30 ] }  ";
+-static const char *nssDefaultFIPSFlags = "trustOrder=75 cipherOrder=100 \
+-slotParams={0x00000003=[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM \
+-askpw=any timeout=30 ] }  ";
+-
+ static char **
+ get_list(char *filename, char *stripped_parameters)
+ {
+@@ -250,10 +263,15 @@ get_list(char *filename, char *stripped_
+     sysdb = getSystemDB();
+     userdb = getUserDB();
+ 
+-    if (sysdb && !strcmp(filename, sysdb))
+-	    filename = NULL;
+-    if (userdb && !strcmp(filename, userdb))
+-	    filename = NULL;
++    /* Using a NULL filename as a Boolean flag to
++     * prevent registering both an application-defined
++     * db and the system db. rhbz #546211.
++     */
++    PORT_Assert(filename);
++    if (sysdb && PL_CompareStrings(filename, sysdb))
++        filename = NULL;
++    else if (userdb && PL_CompareStrings(filename, userdb))
++        filename = NULL;
+ 
+     /* Don't open root's user DB */
+     if (userdb != NULL && !userIsRoot()) {
+@@ -262,9 +280,9 @@ get_list(char *filename, char *stripped_
+ 	    "library= "
+ 	    "module=\"NSS User database\" "
+ 	    "parameters=\"configdir='sql:%s' %s tokenDescription='NSS user database'\" "
+-        "NSS=\"%sflags=internal%s\"",
+-        userdb, stripped_parameters, nssflags,
+-        isFIPS ? ",FIPS" : "");
++            "NSS=\"%sflags=internal%s\"",
++	    userdb, stripped_parameters, nssflags,
++            isFIPS ? ",FIPS" : "");
+ 
+ 	/* now open the user's defined PKCS #11 modules */
+ 	/* skip the local user DB entry */
+@@ -273,14 +291,14 @@ get_list(char *filename, char *stripped_
+ 	    "module=\"NSS User database\" "
+ 	    "parameters=\"configdir='sql:%s' %s\" "
+ 	    "NSS=\"flags=internal,moduleDBOnly,defaultModDB,skipFirst\"", 
+-		userdb, stripped_parameters);
++            userdb, stripped_parameters);
+ 	}
+ 
+     if (filename && !userIsRoot() && 0
+-		/* This doesn't actually work. If we register
+-			 both this and the sysdb (in either order)
+-			 then only one of them actually shows up */) {
+-	    module_list[next++] = PR_smprintf(
++	/* This doesn't actually work. If we register
++	   both this and the sysdb (in either order)
++	   then only one of them actually shows up */) {
++	module_list[next++] = PR_smprintf(
+ 	      "library= "
+ 	      "module=\"NSS database\" "
+ 	      "parameters=\"configdir='sql:%s' tokenDescription='NSS database sql:%s'\" "
