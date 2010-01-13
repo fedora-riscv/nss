@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.5
-Release:          2.1%{?dist}
+Release:          4.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -487,6 +487,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Jan 13 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-4.1
+- Fix tag
+
 * Tue Jan 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-2.1
 - Fix SIGSEGV on call of NSS_Initialize (#553638)
 
