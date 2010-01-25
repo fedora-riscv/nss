@@ -1,6 +1,6 @@
 diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638 nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c
---- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638	2010-01-12 19:44:44.772770237 -0800
-+++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2010-01-12 19:47:41.906770758 -0800
+--- nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638	2010-01-25 08:58:42.358325102 -0800
++++ nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c	2010-01-25 09:07:20.028324059 -0800
 @@ -36,6 +36,7 @@
  #include "seccomon.h"
  #include "prio.h"
@@ -23,8 +23,8 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638 nss-3.1
 + */
 +#define ORDER_FLAGS "trustOrder=75 cipherOrder=100"
 +#define SLOT_FLAGS \
-+	"[slotFags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM" \
-+        " askpw=any timeout=30 ]"
++	"[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM" \
++	" askpw=any timeout=30 ]"
 + 
 +static const char *nssDefaultFlags =
 +	ORDER_FLAGS " slotParams={0x00000001=" SLOT_FLAGS " }  ";
@@ -49,7 +49,7 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638 nss-3.1
  static char **
  get_list(char *filename, char *stripped_parameters)
  {
-@@ -250,10 +263,15 @@ get_list(char *filename, char *stripped_
+@@ -250,11 +263,6 @@ get_list(char *filename, char *stripped_
      sysdb = getSystemDB();
      userdb = getUserDB();
  
@@ -57,48 +57,41 @@ diff -up nss-3.12.5/mozilla/security/nss/lib/sysinit/nsssysinit.c.553638 nss-3.1
 -	    filename = NULL;
 -    if (userdb && !strcmp(filename, userdb))
 -	    filename = NULL;
+-
+     /* Don't open root's user DB */
+     if (userdb != NULL && !userIsRoot()) {
+ 	/* return a list of databases to open. First the user Database */
+@@ -276,16 +284,29 @@ get_list(char *filename, char *stripped_
+ 		userdb, stripped_parameters);
+ 	}
+ 
+-    if (filename && !userIsRoot() && 0
+-		/* This doesn't actually work. If we register
+-			 both this and the sysdb (in either order)
+-			 then only one of them actually shows up */) {
++#if 0
++	/* This doesn't actually work. If we register
++		both this and the sysdb (in either order)
++		then only one of them actually shows up */
++
 +    /* Using a NULL filename as a Boolean flag to
 +     * prevent registering both an application-defined
 +     * db and the system db. rhbz #546211.
 +     */
 +    PORT_Assert(filename);
 +    if (sysdb && PL_CompareStrings(filename, sysdb))
-+        filename = NULL;
++	    filename = NULL;
 +    else if (userdb && PL_CompareStrings(filename, userdb))
-+        filename = NULL;
- 
-     /* Don't open root's user DB */
-     if (userdb != NULL && !userIsRoot()) {
-@@ -262,9 +280,9 @@ get_list(char *filename, char *stripped_
- 	    "library= "
- 	    "module=\"NSS User database\" "
- 	    "parameters=\"configdir='sql:%s' %s tokenDescription='NSS user database'\" "
--        "NSS=\"%sflags=internal%s\"",
--        userdb, stripped_parameters, nssflags,
--        isFIPS ? ",FIPS" : "");
-+            "NSS=\"%sflags=internal%s\"",
-+	    userdb, stripped_parameters, nssflags,
-+            isFIPS ? ",FIPS" : "");
- 
- 	/* now open the user's defined PKCS #11 modules */
- 	/* skip the local user DB entry */
-@@ -273,14 +291,14 @@ get_list(char *filename, char *stripped_
- 	    "module=\"NSS User database\" "
- 	    "parameters=\"configdir='sql:%s' %s\" "
- 	    "NSS=\"flags=internal,moduleDBOnly,defaultModDB,skipFirst\"", 
--		userdb, stripped_parameters);
-+            userdb, stripped_parameters);
- 	}
- 
-     if (filename && !userIsRoot() && 0
--		/* This doesn't actually work. If we register
--			 both this and the sysdb (in either order)
--			 then only one of them actually shows up */) {
--	    module_list[next++] = PR_smprintf(
-+	/* This doesn't actually work. If we register
-+	   both this and the sysdb (in either order)
-+	   then only one of them actually shows up */) {
-+	module_list[next++] = PR_smprintf(
++	    filename = NULL;
++
++    if (filename && !userIsRoot()) {
+ 	    module_list[next++] = PR_smprintf(
  	      "library= "
  	      "module=\"NSS database\" "
  	      "parameters=\"configdir='sql:%s' tokenDescription='NSS database sql:%s'\" "
+ 	      "NSS=\"%sflags=internal\"",filename, filename, nssflags);
+     }
++#endif
+ 
+     /* now the system database (always read only unless it's root) */
+     if (sysdb) {
