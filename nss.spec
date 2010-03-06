@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          1%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -484,6 +484,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.1
+- Using SSL_RENEGOTIATE_TRANSITIONAL as default while on transition period
+- Disabling ssl tests suites until bug 539183 is resolved
+
 * Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1
 - Update to 3.12.6
 - Reactivate all tests
