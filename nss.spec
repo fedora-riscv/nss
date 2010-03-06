@@ -1,24 +1,24 @@
-%global nspr_version 4.8
-%global nss_util_version 3.12.5
+%global nspr_version 4.8.4
+%global nss_util_version 3.12.6
 %global nss_softokn_version 3.12.4
 %global nss_softokn_fips_version 3.12.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.5
-Release:          8%{?dist}
+Version:          3.12.6
+Release:          1.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-util = %{nss_util_version}
 Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 BuildRequires:    nss-softokn-devel = %{nss_softokn_version}                                                  
-BuildRequires:    nss-util-devel >= %{nss_util_version}
+BuildRequires:    nss-util-devel = %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -40,14 +40,9 @@ Source9:          setup-nsssysinit.sh
 Source12:         %{name}-pem-20091210.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
+Patch3:           renegotiate-transitional.patch
+Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           533125-ammend.patch
-Patch8:           nss-sysinit.patch
-Patch9:           540387.patch
-Patch10:          545779.patch
-Patch11:          546221.patch
-Patch12:          547860.patch
-Patch13:          553638.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -112,15 +107,11 @@ low level services.
 %setup -q
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch2 -p0
+%patch2 -p0 -b .nolocalsql
+%patch3 -p0 -b .transitional
+%patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .533125
-%patch8 -p0 -b .sysinit
-%patch9 -p1 -b .540387
-%patch10 -p0 -b .545779
-%patch11 -p1 -b .546221
-%patch12 -p1 -b .547860
-%patch13 -p1 -b .553638
+
 
 %build
 
@@ -241,6 +232,12 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
+
+#  don't need to run all the tests when testing packaging
+#  nss_cycles: standard pkix upgradedb sharedb
+#  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
+#  nss_ssl_run: cov auth stress
 
 # Temporarily disabling the ssl test suites
 # until bug 539183 gets resolved
@@ -487,6 +484,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.1
+- Update to 3.12.6
+- Using SSL_RENEGOTIATE_TRANSITIONAL as default while on transition period
+- Patch tools to validate command line options arguments
+
 * Mon Jan 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-8
 - Fix curl related regression and general patch code clean up
 
