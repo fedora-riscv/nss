@@ -14,7 +14,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          1.1%{?dist}
+Release:          1.2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -229,8 +229,8 @@ cd ./mozilla/security/nss/tests/
 
 # Temporarily disabling the ssl test suites
 # until bug 539183 gets resolved
-%global nss_ssl_tests " "
-%global nss_ssl_run " "
+#%global nss_ssl_tests " "
+#%global nss_ssl_run " "
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -486,6 +486,9 @@ done
 
 
 %changelog
+* Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.2
+- Rebuilt with all tests enabled
+
 * Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.1
 - Update to 3.12.6
 - Using SSL_RENEGOTIATE_TRANSITIONAL as default while on transition period
