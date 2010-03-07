@@ -1,4 +1,4 @@
-%global nspr_version 4.8
+%global nspr_version 4.8.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 # Produce .chk files for the final stripped binaries
@@ -13,8 +13,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.5
-Release:          3.1%{?dist}
+Version:          3.12.6
+Release:          1.1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -41,8 +41,9 @@ Source8:          nss-prelink.conf
 Source12:         %{name}-pem-20091210.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
+Patch3:           renegotiate-transitional.patch
+Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           533125-ammend.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -109,9 +110,11 @@ low level services.
 %setup -q
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch2 -p0
+%patch2 -p0 -b .nolocalsql
+%patch3 -p0 -b .transitional
+%patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .533125
+
 
 %build
 
@@ -217,6 +220,12 @@ killall $RANDSERV || :
 rm -rf ./mozilla/tests_results
 cd ./mozilla/security/nss/tests/
 # all.sh is the test suite script
+
+#  don't need to run all the tests when testing packaging
+#  nss_cycles: standard pkix upgradedb sharedb
+#  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
+#  nss_ssl_run: cov auth stress
 
 # Temporarily disabling the ssl test suites
 # until bug 539183 gets resolved
@@ -477,6 +486,11 @@ done
 
 
 %changelog
+* Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.1
+- Update to 3.12.6
+- Using SSL_RENEGOTIATE_TRANSITIONAL as default while on transition period
+- Patch some tools to validate command line options arguments
+
 * Tue Jan 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.5-3.1
 - Update to latest pem module sources
 - Get the blank databases from the lookaside cache
