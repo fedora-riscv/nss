@@ -1,0 +1,720 @@
+Index: ./mozilla/security/nss/cmd/p7content/p7content.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/p7content/p7content.c,v
+retrieving revision 1.12
+diff -u -p -r1.12 p7content.c
+--- ./mozilla/security/nss/cmd/p7content/p7content.c	4 Aug 2008 22:58:31 -0000	1.12
++++ ./mozilla/security/nss/cmd/p7content/p7content.c	2 Mar 2010 18:29:48 -0000
+@@ -64,7 +64,7 @@ extern int fprintf(FILE *, char *, ...);
+ 
+ 
+ static void
+-Usage(char *progName)
++Usage(const char *progName)
+ {
+     fprintf(stderr,
+ 	    "Usage:  %s [-d dbdir] [-i input] [-o output]\n",
+@@ -195,6 +195,15 @@ DecodeAndPrintFile(FILE *out, PRFileDesc
+     return 0;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ /*
+  * Print the contents of a PKCS7 message, indicating signatures, etc.
+  */
+@@ -222,10 +231,12 @@ main(int argc, char **argv)
+     while ((status = PL_GetNextOpt(optstate)) == PL_OPT_OK) {
+ 	switch (optstate->option) {
+ 	  case 'd':
++           REQUIRE_ARG(optstate->option, optstate->value);
+ 	    SECU_ConfigDirectory(optstate->value);
+ 	    break;
+ 
+ 	  case 'i':
++           REQUIRE_ARG(optstate->option, optstate->value);
+ 	    inFile = PR_Open(optstate->value, PR_RDONLY, 0);
+ 	    if (!inFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for reading\n",
+@@ -235,6 +246,7 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'o':
++           REQUIRE_ARG(optstate->option, optstate->value);
+ 	    outFile = fopen(optstate->value, "w");
+ 	    if (!outFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for writing\n",
+@@ -244,11 +256,13 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'p':
++            REQUIRE_ARG(optstate->option, optstate->value);
+             pwdata.source = PW_PLAINTEXT;
+             pwdata.data = PORT_Strdup (optstate->value);
+             break;
+ 
+           case 'f':
++            REQUIRE_ARG(optstate->option, optstate->value);
+             pwdata.source = PW_FROMFILE;
+             pwdata.data = PORT_Strdup (optstate->value);
+             break;
+Index: ./mozilla/security/nss/cmd/p7env/p7env.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/p7env/p7env.c,v
+retrieving revision 1.10
+diff -u -p -r1.10 p7env.c
+--- ./mozilla/security/nss/cmd/p7env/p7env.c	11 Feb 2010 02:39:47 -0000	1.10
++++ ./mozilla/security/nss/cmd/p7env/p7env.c	2 Mar 2010 18:29:48 -0000
+@@ -63,7 +63,7 @@ extern int fprintf(FILE *, char *, ...);
+ 
+ 
+ static void
+-Usage(char *progName)
++Usage(const char *progName)
+ {
+     fprintf(stderr,
+ 	    "Usage:  %s -r recipient [-d dbdir] [-i input] [-o output]\n",
+@@ -159,6 +159,15 @@ EncryptFile(FILE *outFile, FILE *inFile,
+     return 0;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int
+ main(int argc, char **argv)
+ {
+@@ -194,10 +203,12 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'd':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    SECU_ConfigDirectory(optstate->value);
+ 	    break;
+ 
+ 	  case 'i':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    inFile = fopen(optstate->value, "r");
+ 	    if (!inFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for reading\n",
+@@ -207,6 +218,7 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'o':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    outFile = fopen(optstate->value, "wb");
+ 	    if (!outFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for writing\n",
+@@ -216,6 +228,7 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'r':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    if (rcpt == NULL) {
+ 		recipients = rcpt = PORT_Alloc (sizeof(struct recipient));
+ 	    } else {
+Index: ./mozilla/security/nss/cmd/p7sign/p7sign.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/p7sign/p7sign.c,v
+retrieving revision 1.14
+diff -u -p -r1.14 p7sign.c
+--- ./mozilla/security/nss/cmd/p7sign/p7sign.c	4 Aug 2008 22:58:28 -0000	1.14
++++ ./mozilla/security/nss/cmd/p7sign/p7sign.c	2 Mar 2010 18:29:48 -0000
+@@ -67,7 +67,7 @@ extern int fprintf(FILE *, char *, ...);
+ static secuPWData  pwdata          = { PW_NONE, 0 };
+ 
+ static void
+-Usage(char *progName)
++Usage(const char *progName)
+ {
+     fprintf(stderr,
+ 	    "Usage:  %s -k keyname [-d keydir] [-i input] [-o output]\n",
+@@ -173,6 +173,15 @@ SignFile(FILE *outFile, PRFileDesc *inFi
+     return 0;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int
+ main(int argc, char **argv)
+ {
+@@ -210,10 +219,12 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'd':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    SECU_ConfigDirectory(optstate->value);
+ 	    break;
+ 
+ 	  case 'i':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    inFile = PR_Open(optstate->value, PR_RDONLY, 0);
+ 	    if (!inFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for reading\n",
+@@ -223,10 +234,12 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'k':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    keyName = strdup(optstate->value);
+ 	    break;
+ 
+ 	  case 'o':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    outFile = fopen(optstate->value, "wb");
+ 	    if (!outFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for writing\n",
+@@ -235,11 +248,13 @@ main(int argc, char **argv)
+ 	    }
+ 	    break;
+ 	  case 'p':
++            REQUIRE_ARG(optstate->option, optstate->value);
+             pwdata.source = PW_PLAINTEXT;
+             pwdata.data = strdup (optstate->value);
+             break;
+ 
+ 	  case 'f':
++              REQUIRE_ARG(optstate->option, optstate->value);
+               pwdata.source = PW_FROMFILE;
+               pwdata.data = PORT_Strdup (optstate->value);
+               break;
+Index: ./mozilla/security/nss/cmd/p7verify/p7verify.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/p7verify/p7verify.c,v
+retrieving revision 1.10
+diff -u -p -r1.10 p7verify.c
+--- ./mozilla/security/nss/cmd/p7verify/p7verify.c	8 Aug 2008 23:47:57 -0000	1.10
++++ ./mozilla/security/nss/cmd/p7verify/p7verify.c	2 Mar 2010 18:29:48 -0000
+@@ -126,7 +126,7 @@ DigestFile(unsigned char *digest, unsign
+ 
+ 
+ static void
+-Usage(char *progName)
++Usage(const char *progName)
+ {
+     fprintf(stderr,
+ 	    "Usage:  %s -c content -s signature [-d dbdir] [-u certusage]\n",
+@@ -209,6 +209,14 @@ HashDecodeAndVerify(FILE *out, FILE *con
+     return 0;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,arg) if (!(arg)) PrintMsgAndExit(progName, opt)
+ 
+ int
+ main(int argc, char **argv)
+@@ -239,6 +247,7 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'c':
++        REQUIRE_ARG(optstate->option, optstate->value);
+ 	    contentFile = fopen(optstate->value, "r");
+ 	    if (!contentFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for reading\n",
+@@ -248,10 +257,12 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 'd':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    SECU_ConfigDirectory(optstate->value);
+ 	    break;
+ 
+ 	  case 'o':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    outFile = fopen(optstate->value, "w");
+ 	    if (!outFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for writing\n",
+@@ -261,6 +272,7 @@ main(int argc, char **argv)
+ 	    break;
+ 
+ 	  case 's':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    signatureFile = PR_Open(optstate->value, PR_RDONLY, 0);
+ 	    if (!signatureFile) {
+ 		fprintf(stderr, "%s: unable to open \"%s\" for reading\n",
+@@ -271,7 +283,7 @@ main(int argc, char **argv)
+ 
+ 	  case 'u': {
+ 	    int usageType;
+-
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    usageType = atoi (strdup(optstate->value));
+ 	    if (usageType < certUsageSSLClient || usageType > certUsageAnyCA)
+ 		return -1;
+Index: ./mozilla/security/nss/cmd/strsclnt/strsclnt.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/strsclnt/strsclnt.c,v
+retrieving revision 1.66
+diff -u -p -r1.66 strsclnt.c
+--- ./mozilla/security/nss/cmd/strsclnt/strsclnt.c	10 Feb 2010 18:07:20 -0000	1.66
++++ ./mozilla/security/nss/cmd/strsclnt/strsclnt.c	2 Mar 2010 18:29:51 -0000
+@@ -1325,6 +1325,15 @@ done:
+     return rv;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int
+ main(int argc, char **argv)
+ {
+@@ -1364,33 +1373,57 @@ main(int argc, char **argv)
+ 
+ 	case 'B': bypassPKCS11 = PR_TRUE; break;
+ 
+-	case 'C': cipherString = optstate->value; break;
++	case 'C': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    cipherString = optstate->value;
++	    break;
+ 
+ 	case 'D': NoDelay = PR_TRUE; break;
+ 
+ 	case 'N': NoReuse = 1; break;
+         
+-	case 'P': fullhs = PORT_Atoi(optstate->value); break;
++	case 'P': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    fullhs = PORT_Atoi(optstate->value);
++	    break;
+ 
+ 	case 'T': disableTLS = PR_TRUE; break;
+             
+ 	case 'U': ThrottleUp = PR_TRUE; break;
+ 
+-	case 'a': sniHostName = PL_strdup(optstate->value); break;
++	case 'a': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    sniHostName = PL_strdup(optstate->value);
++	    break;
+ 
+-	case 'c': connections = PORT_Atoi(optstate->value); break;
++	case 'c': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    connections = PORT_Atoi(optstate->value); 
++	    break;
+ 
+-	case 'd': dir = optstate->value; break;
++	case 'd': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    dir = optstate->value;
++	    break;
+ 
+-	case 'f': fileName = optstate->value; break;
++	case 'f': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    fileName = optstate->value;
++	    break;
+ 
+ 	case 'i': ignoreErrors = PR_TRUE; break;
+ 
+-        case 'n': nickName = PL_strdup(optstate->value); break;
++        case 'n': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    nickName = PL_strdup(optstate->value);
++	    break;
+ 
+ 	case 'o': MakeCertOK++; break;
+ 
+-	case 'p': port = PORT_Atoi(optstate->value); break;
++	case 'p': 
++	    REQUIRE_ARG(optstate->option, optstate->value);
++	    port = PORT_Atoi(optstate->value);
++	    break;
+ 
+ 	case 'q': QuitOnTimeout = PR_TRUE; break;
+ 
+@@ -1407,11 +1440,13 @@ main(int argc, char **argv)
+ 	case 'v': verbose++; break;
+ 
+         case 'w':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+             pwdata.source = PW_PLAINTEXT;
+             pwdata.data = PL_strdup(optstate->value);
+             break;
+ 
+         case 'W':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+             pwdata.source = PW_FROMFILE;
+             pwdata.data = PL_strdup(optstate->value);
+             break;
+@@ -1419,6 +1454,7 @@ main(int argc, char **argv)
+ 	case 'z': enableCompression = PR_TRUE; break;
+ 
+ 	case 0:   /* positional parameter */
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    if (hostName) {
+ 		Usage(progName);
+ 	    }
+Index: ./mozilla/security/nss/cmd/tests/remtest.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/tests/remtest.c,v
+retrieving revision 1.5
+diff -u -p -r1.5 remtest.c
+--- ./mozilla/security/nss/cmd/tests/remtest.c	8 Aug 2008 23:48:09 -0000	1.5
++++ ./mozilla/security/nss/cmd/tests/remtest.c	2 Mar 2010 18:29:51 -0000
+@@ -69,6 +69,15 @@ Usage(char *progName) 
+     exit(1);
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int main(int argc, char **argv)
+ {
+     char *             certDir  =  NULL;
+@@ -92,10 +101,12 @@ int main(int argc, char **argv)
+ 	switch (optstate->option) {
+ 
+ 	  case 'd':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    certDir = strdup(optstate->value);
+ 	    certDir = SECU_ConfigDirectory(certDir);
+ 	    break;
+ 	  case 't':
++	    REQUIRE_ARG(optstate->option, optstate->value);
+ 	    tokenName = strdup(optstate->value);
+ 	    break;
+ 	  case 'r':
+Index: ./mozilla/security/nss/cmd/tstclnt/tstclnt.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/tstclnt/tstclnt.c,v
+retrieving revision 1.62
+diff -u -p -r1.62 tstclnt.c
+--- ./mozilla/security/nss/cmd/tstclnt/tstclnt.c	10 Feb 2010 18:07:21 -0000	1.62
++++ ./mozilla/security/nss/cmd/tstclnt/tstclnt.c	2 Mar 2010 18:29:51 -0000
+@@ -497,6 +497,15 @@ separateReqHeader(const PRFileDesc* outF
+ 	Usage(progName); \
+     }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int main(int argc, char **argv)
+ {
+     PRFileDesc *       s;
+@@ -563,38 +572,56 @@ int main(int argc, char **argv)
+ 
+           case 'B': bypassPKCS11 = 1; 			break;
+ 
+-          case 'S': skipProtoHeader = PR_TRUE;                 break;
++          case 'S': skipProtoHeader = PR_TRUE;  break;
+ 
+           case 'T': disableTLS  = 1; 			break;
+ 
+-          case 'a': if (!hs1SniHostName) {
+-                        hs1SniHostName = PORT_Strdup(optstate->value);
+-                    } else if (!hs2SniHostName) {
+-                        hs2SniHostName =  PORT_Strdup(optstate->value);
+-                    } else {
+-                        Usage(progName);
+-                    }
+-                    break;
+-
+-          case 'c': cipherString = PORT_Strdup(optstate->value); break;
+-
+-          case 'd': certDir = PORT_Strdup(optstate->value);   break;
++          case 'a':
++              REQUIRE_ARG(optstate->option, optstate->value);
++              if (!hs1SniHostName) {
++                  hs1SniHostName = PORT_Strdup(optstate->value);
++              } else if (!hs2SniHostName) {
++                  hs2SniHostName =  PORT_Strdup(optstate->value);
++              } else {
++                  Usage(progName);
++              }
++              break;
++
++          case 'c':
++              REQUIRE_ARG(optstate->option,optstate->value);
++              cipherString = PORT_Strdup(optstate->value);
++              break;
++
++          case 'd':
++              REQUIRE_ARG(optstate->option,optstate->value);
++              certDir = PORT_Strdup(optstate->value);
++              break;
+ 
+           case 'f': clientSpeaksFirst = PR_TRUE;        break;
+ 
+-          case 'h': host = PORT_Strdup(optstate->value);	break;
++          case 'h':
++              REQUIRE_ARG(optstate->option,optstate->value);
++              host = PORT_Strdup(optstate->value);
++              break;
+ 
+ 	  case 'm':
++	    REQUIRE_ARG(optstate->option,optstate->value);
+ 	    multiplier = atoi(optstate->value);
+ 	    if (multiplier < 0)
+ 	    	multiplier = 0;
+ 	    break;
+ 
+-	  case 'n': nickname = PORT_Strdup(optstate->value);	break;
++	  case 'n':
++	      REQUIRE_ARG(optstate->option,optstate->value);
++          nickname = PORT_Strdup(optstate->value);
++          break;
+ 
+ 	  case 'o': override = 1; 			break;
+ 
+-	  case 'p': portno = (PRUint16)atoi(optstate->value);	break;
++	  case 'p':
++	      REQUIRE_ARG(optstate->option,optstate->value);
++          portno = (PRUint16)atoi(optstate->value);
++          break;
+ 
+ 	  case 'q': pingServerFirst = PR_TRUE;          break;
+ 
+@@ -604,17 +631,22 @@ int main(int argc, char **argv)
+ 
+ 	  case 'v': verbose++;	 			break;
+ 
+-	  case 'r': renegotiationsToDo = atoi(optstate->value);	break;
+-
+-          case 'w':
+-                pwdata.source = PW_PLAINTEXT;
+-		pwdata.data = PORT_Strdup(optstate->value);
+-		break;
+-
+-          case 'W':
+-                pwdata.source = PW_FROMFILE;
+-                pwdata.data = PORT_Strdup(optstate->value);
+-                break;
++	  case 'r':
++	      REQUIRE_ARG(optstate->option,optstate->value);
++          renegotiationsToDo = atoi(optstate->value);
++          break;
++
++      case 'w':
++          REQUIRE_ARG(optstate->option,optstate->value);
++          pwdata.source = PW_PLAINTEXT;
++          pwdata.data = PORT_Strdup(optstate->value);
++          break;
++
++      case 'W':
++          REQUIRE_ARG(optstate->option,optstate->value);
++          pwdata.source = PW_FROMFILE;
++          pwdata.data = PORT_Strdup(optstate->value);
++          break;
+ 
+ 	  case 'x': useExportPolicy = 1; 		break;
+ 
+Index: ./mozilla/security/nss/cmd/vfychain/vfychain.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/vfychain/vfychain.c,v
+retrieving revision 1.30
+diff -u -p -r1.30 vfychain.c
+--- ./mozilla/security/nss/cmd/vfychain/vfychain.c	1 Apr 2009 20:41:29 -0000	1.30
++++ ./mozilla/security/nss/cmd/vfychain/vfychain.c	2 Mar 2010 18:29:52 -0000
+@@ -432,6 +432,15 @@ isOCSPEnabled()
+     return PR_FALSE;
+ }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int
+ main(int argc, char *argv[], char *envp[])
+ {
+@@ -469,12 +478,19 @@ main(int argc, char *argv[], char *envp[
+ 	switch(optstate->option) {
+ 	case  0  : /* positional parameter */  goto breakout;
+ 	case 'a' : isAscii  = PR_TRUE;                        break;
+-	case 'b' : secStatus = DER_AsciiToTime(&time, optstate->value);
+-	           if (secStatus != SECSuccess) Usage(progName); break;
+-	case 'd' : certDir  = PL_strdup(optstate->value);     break;
++	case 'b' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
++	           secStatus = DER_AsciiToTime(&time, optstate->value);
++	           if (secStatus != SECSuccess) Usage(progName);
++	           break;
++	case 'd' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
++	           certDir  = PL_strdup(optstate->value);
++	           break;
+ 	case 'e' : ocsp_fetchingFailureIsAFailure = PR_FALSE;  break;
+ 	case 'f' : certFetching = PR_TRUE;                    break;
+ 	case 'g' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
+                    if (revMethodsData[revDataIndex].testTypeStr ||
+                        revMethodsData[revDataIndex].methodTypeStr) {
+                        revDataIndex += 1;
+@@ -489,11 +505,13 @@ main(int argc, char *argv[], char *envp[
+                    revMethodsData[revDataIndex].
+                        testTypeStr = PL_strdup(optstate->value); break;
+ 	case 'h' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
+                    revMethodsData[revDataIndex].
+                        testFlagsStr = PL_strdup(optstate->value);break;
+         case 'i' : vfyCounts = PORT_Atoi(optstate->value);       break;
+                    break;
+ 	case 'm' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
+                    if (revMethodsData[revDataIndex].methodTypeStr) {
+                        revDataIndex += 1;
+                        if (revDataIndex == REV_METHOD_INDEX_MAX) {
+@@ -506,24 +524,33 @@ main(int argc, char *argv[], char *envp[
+                    useDefaultRevFlags = PR_FALSE;
+                    revMethodsData[revDataIndex].
+                        methodTypeStr = PL_strdup(optstate->value); break;
+-	case 'o' : oidStr = PL_strdup(optstate->value);       break;
++	case 'o' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
++	           oidStr = PL_strdup(optstate->value);
++	           break;
+ 	case 'p' : usePkix += 1;                              break;
+ 	case 'r' : isAscii  = PR_FALSE;                       break;
+ 	case 's' : 
++	           REQUIRE_ARG(optstate->option, optstate->value);
+                    revMethodsData[revDataIndex].
+-                       methodFlagsStr = PL_strdup(optstate->value); break;
++                       methodFlagsStr = PL_strdup(optstate->value);
++	           break;
+ 	case 't' : trusted  = PR_TRUE;                        break;
+-	case 'u' : usage    = PORT_Atoi(optstate->value);
++	case 'u' : 
++	           REQUIRE_ARG(optstate->option,optstate->value);
++	           usage    = PORT_Atoi(optstate->value);
+ 	           if (usage < 0 || usage > 62) Usage(progName);
+ 		   certUsage = ((SECCertificateUsage)1) << usage; 
+ 		   if (certUsage > certificateUsageHighest) Usage(progName);
+ 		   break;
+         case 'w':
++	          REQUIRE_ARG(optstate->option,optstate->value);
+                   pwdata.source = PW_PLAINTEXT;
+                   pwdata.data = PORT_Strdup(optstate->value);
+                   break;
+ 
+         case 'W':
++	          REQUIRE_ARG(optstate->option, optstate->value);
+                   pwdata.source = PW_FROMFILE;
+                   pwdata.data = PORT_Strdup(optstate->value);
+                   break;
+Index: ./mozilla/security/nss/cmd/vfyserv/vfyserv.c
+===================================================================
+RCS file: /cvsroot/mozilla/security/nss/cmd/vfyserv/vfyserv.c,v
+retrieving revision 1.17
+diff -u -p -r1.17 vfyserv.c
+--- ./mozilla/security/nss/cmd/vfyserv/vfyserv.c	8 Aug 2008 23:48:12 -0000	1.17
++++ ./mozilla/security/nss/cmd/vfyserv/vfyserv.c	2 Mar 2010 18:29:52 -0000
+@@ -419,6 +419,15 @@ client_main(unsigned short      port, 
+ 	Usage(progName); \
+     }
+ 
++static void
++PrintMsgAndExit(const char *progName, char opt)
++{
++    fprintf(stderr, "%s: option -%c requires argument\n", progName, opt);
++    Usage(progName);	
++}
++
++#define REQUIRE_ARG(opt,value) if (!(value)) PrintMsgAndExit(progName, opt)
++
+ int
+ main(int argc, char **argv)
+ {
+@@ -442,23 +451,43 @@ main(int argc, char **argv)
+ 	optstate = PL_CreateOptState(argc, argv, "C:cd:f:l:n:p:ot:w:");
+ 	while ((status = PL_GetNextOpt(optstate)) == PL_OPT_OK) {
+ 		switch(optstate->option) {
+-		case 'C' : cipherString = PL_strdup(optstate->value); break;
+- 		case 'c' : dumpChain = PR_TRUE;                       break;
+-		case 'd' : certDir = PL_strdup(optstate->value);      break;
+-		case 'l' : respUrl = PL_strdup(optstate->value);      break;
+-		case 'p' : port = PORT_Atoi(optstate->value);         break;
+-		case 'o' : doOcspCheck = PR_TRUE;                     break;
+-		case 't' : respCertName = PL_strdup(optstate->value); break;
+-                case 'w':
++		case 'C' : 
++                           REQUIRE_ARG(optstate->option, optstate->value);
++                           cipherString = PL_strdup(optstate->value);
++                           break;
++ 		case 'c' : dumpChain = PR_TRUE;
++                           break;
++		case 'd' : 
++                           REQUIRE_ARG(optstate->option, optstate->value);
++                           certDir = PL_strdup(optstate->value);
++                           break;
++		case 'l' : 
++                           REQUIRE_ARG(optstate->option, optstate->value);
++                           respUrl = PL_strdup(optstate->value);
++                           break;
++		case 'p' : 
++                           REQUIRE_ARG(optstate->option,optstate->value);
++                           port = PORT_Atoi(optstate->value);
++                           break;
++		case 'o' : doOcspCheck = PR_TRUE;
++                           break;
++		case 't' : 
++                           REQUIRE_ARG(optstate->option, optstate->value);
++                           respCertName = PL_strdup(optstate->value);
++                           break;
++                case 'w' :
++                           REQUIRE_ARG(optstate->option, optstate->value);
+                            pwdata.source = PW_PLAINTEXT;
+                            pwdata.data = PORT_Strdup(optstate->value);
+                            break;
+-
+                 case 'f':
++                           REQUIRE_ARG(optstate->option, optstate->value);
+                            pwdata.source = PW_FROMFILE;
+                            pwdata.data = PORT_Strdup(optstate->value);
+                            break;
+-		case '\0': hostName = PL_strdup(optstate->value);     break;
++		case '\0': 
++                           REQUIRE_ARG(optstate->option,optstate->value);
++                           hostName = PL_strdup(optstate->value);     break;
+ 		default  : Usage(progName);
+ 		}
+ 	}
