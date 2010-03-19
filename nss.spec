@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          1.2%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -484,6 +484,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Mar 19 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-2
+- Fix nss.pc to not require nss-softokn (#575001)
+
 * Sat Mar 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-1.2
 - Rebuilt with all tests enabled
 
