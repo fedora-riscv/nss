@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -72,7 +72,7 @@ Summary:          System NSS Initilization
 Group:            System Environment/Base
 Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
-Requires(post):   coreutils
+Requires(post):   coreutils, sed
 
 %description sysinit
 Default Operating System module that manages applications loading
@@ -484,6 +484,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Mar 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-3
+- Add sed to sysinit requires as setup-nsssysinit.sh requires it - (#576071)
+
 * Thu Mar 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-2
 - Fix ns.spec to not require nss-softokn (#575001)
 
