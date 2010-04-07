@@ -484,8 +484,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Tue Mar 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-3
-- Add sed to sysinit requires as setup-nsssysinit.sh requires it - (#576071)
+* Wed Apr 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-3
+- Add sed to sysinit requires as setup-nsssysinit.sh requires it (#576071)
+- Update PayPalEE test cert with unexpired one (#580207)
 
 * Thu Mar 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-2
 - Fix ns.spec to not require nss-softokn (#575001)
