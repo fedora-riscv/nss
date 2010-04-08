@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -486,6 +486,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Apr 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-4
+- Retagging
+
 * Wed Apr 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-3
 - Add sed to sysinit requires as setup-nsssysinit.sh requires it (#576071)
 - Update PayPalEE test cert with unexpired one (#580207)
