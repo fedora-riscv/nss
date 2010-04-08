@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,6 +37,7 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
+Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20091210.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
@@ -72,7 +73,7 @@ Summary:          System NSS Initilization
 Group:            System Environment/Base
 Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
-Requires(post):   coreutils
+Requires(post):   coreutils, sed
 
 %description sysinit
 Default Operating System module that manages applications loading
@@ -105,6 +106,7 @@ low level services.
 
 %prep
 %setup -q
+%{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .nolocalsql
@@ -484,6 +486,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Apr 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-3
+- Add sed to sysinit requires as setup-nsssysinit.sh requires it (#576071)
+- Update PayPalEE test cert with unexpired one (#580207)
+
 * Fri Mar 19 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-2
 - Fix nss.pc to not require nss-softokn (#575001)
 
