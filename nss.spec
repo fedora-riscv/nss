@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -38,7 +38,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20091210.tar.bz2
+Source12:         %{name}-pem-20100412.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
@@ -486,6 +486,12 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Apr 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-5
+- Update pem source tar to pick up the following bug fixes:
+- PEM - Allow collect objects to search through all objects
+- PEM - Make CopyObject return a new shallow copy
+- PEM - Fix memory leak in pem_mdCryptoOperationRSAPriv
+
 * Wed Apr 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-4
 - Update the test cert in the setup phase
 
