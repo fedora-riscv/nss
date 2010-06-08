@@ -1,23 +1,22 @@
 %global nspr_version 4.8.4
 %global nss_util_version 3.12.6
-%global nss_softokn_version 3.12.4
-%global nss_softokn_fips_version 3.12.4
+%global nss_softokn_version 3.12.6
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          5%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util = %{nss_util_version}
-Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
+Requires:         nss-softokn%{_isa} = %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel = %{nss_softokn_version}                                                  
+BuildRequires:    nss-softokn-devel = 3.12.4
 BuildRequires:    nss-util-devel = %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -44,6 +43,7 @@ Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
 Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nsspem-596674.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -113,6 +113,7 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .596674
 
 
 %build
@@ -486,6 +487,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Jun 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-7
+- Require nss-softoken-version 3.12.6
+- Fix SIGSEGV within CreateObject (#596674)
+
 * Sat Apr 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-5
 - Update pem source tar to pick up the following bug fixes:
 - PEM - Allow collect objects to search through all objects
