@@ -487,7 +487,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us. - 3.12.6-8
+* Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us> - 3.12.6-8
 - Require and BuildRequire >= the listed version not =
 
 * Tue Jun 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-7
