@@ -6,18 +6,18 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util = %{nss_util_version}
-Requires:         nss-softokn%{_isa} = %{nss_softokn_version}
+Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel = 3.12.4
-BuildRequires:    nss-util-devel = %{nss_util_version}
+BuildRequires:    nss-softokn-devel >= 3.12.4
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -487,6 +487,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us. - 3.12.6-8
+- Require and BuildRequire >= the listed version not =
+
 * Tue Jun 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-7
 - Require nss-softoken 3.12.6
 
