@@ -1,23 +1,22 @@
 %global nspr_version 4.8.4
 %global nss_util_version 3.12.6
-%global nss_softokn_version 3.12.4
-%global nss_softokn_fips_version 3.12.4
+%global nss_softokn_version 3.12.6
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util = %{nss_util_version}
-Requires:         nss-softokn%{_isa} = %{nss_softokn_fips_version}
+Requires:         nss-softokn%{_isa} = %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel = %{nss_softokn_version}                                                  
+BuildRequires:    nss-softokn-devel = 3.12.4
 BuildRequires:    nss-util-devel = %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -488,6 +487,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Jun 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-7
+- Require nss-softoken 3.12.6
+
 * Sun Jun 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-6
 - Fix SIGSEGV within CreateObject (#596674)
 
