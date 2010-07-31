@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -44,6 +44,7 @@ Patch3:           renegotiate-transitional.patch
 Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
+Patch8:           nss-sysinit-userdb-first.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -114,6 +115,7 @@ low level services.
 %patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
+%patch8 -p0 -b .603313
 
 
 %build
@@ -241,9 +243,8 @@ cd ./mozilla/security/nss/tests/
 #  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
-
-# Temporarily disabling the ssl test suites
-# until bug 539183 gets resolved
+#  For example, to disable the ssl test suites
+#  you would uncomment the following lines
 #%global nss_ssl_tests " "
 #%global nss_ssl_run " "
 
@@ -487,6 +488,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Jul 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-9
+- Fix nsssysinit to return userdb ahead of systemdb (#603313)
+
 * Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us> - 3.12.6-8
 - Require and BuildRequire >= the listed version not =
 
