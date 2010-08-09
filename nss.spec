@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,7 +37,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20100412.tar.bz2
+Source12:         %{name}-pem-20100809.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
@@ -488,6 +488,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-10
+- Add support for PKCS#8 encoded PEM RSA private key files (#614532)
+
 * Fri Jul 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-9
 - Fix nsssysinit to return userdb ahead of systemdb (#603313)
 
