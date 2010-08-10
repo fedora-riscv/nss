@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          10%{?dist}
+Release:          11%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -488,6 +488,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-11
+- Removed pem sourecs as they are in the cache
+
 * Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-10
 - Add support for PKCS#8 encoded PEM RSA private key files (#614532)
 
