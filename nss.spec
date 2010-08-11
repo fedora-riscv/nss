@@ -6,18 +6,18 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          7%{?dist}
+Release:          11%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util = %{nss_util_version}
-Requires:         nss-softokn%{_isa} = %{nss_softokn_version}
+Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel = 3.12.4
-BuildRequires:    nss-util-devel = %{nss_util_version}
+BuildRequires:    nss-softokn-devel >= 3.12.4
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -37,13 +37,14 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20100412.tar.bz2
+Source12:         %{name}-pem-20100809.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
 Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
+Patch8:           nss-sysinit-userdb-first.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -114,6 +115,7 @@ low level services.
 %patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
+%patch8 -p0 -b .603313
 
 
 %build
@@ -241,9 +243,8 @@ cd ./mozilla/security/nss/tests/
 #  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
-
-# Temporarily disabling the ssl test suites
-# until bug 539183 gets resolved
+#  For example, to disable the ssl test suites
+#  you would uncomment the following lines
 #%global nss_ssl_tests " "
 #%global nss_ssl_run " "
 
@@ -487,8 +488,20 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-11
+- Removed pem sourecs as they are in the cache
+
+* Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-10
+- Add support for PKCS#8 encoded PEM RSA private key files (#614532)
+
+* Fri Jul 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-9
+- Fix nsssysinit to return userdb ahead of systemdb (#603313)
+
+* Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us> - 3.12.6-8
+- Require and BuildRequire >= the listed version not =
+
 * Tue Jun 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-7
-- Require nss-softoken-version 3.12.6
+- Require nss-softoken 3.12.6
 - Fix SIGSEGV within CreateObject (#596674)
 
 * Sat Apr 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-5
