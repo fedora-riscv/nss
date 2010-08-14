@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.6
-Release:          11%{?dist}
+Release:          12%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -45,6 +45,8 @@ Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
 Patch8:           nss-sysinit-userdb-first.patch
+Patch9:           0001-Add-support-for-PKCS-8-encoded-private-keys.patch
+Patch10:          0001-Do-not-define-SEC_SkipTemplate.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -116,6 +118,8 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
 %patch8 -p0 -b .603313
+%patch9 -p1 -b .pkcs8privatekey
+%patch10 -p1 -b .noskiptemplate
 
 
 %build
@@ -243,10 +247,10 @@ cd ./mozilla/security/nss/tests/
 #  nss_tests: cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
-#  For example, to disable the ssl test suites
-#  you would uncomment the following lines
-#%global nss_ssl_tests " "
-#%global nss_ssl_run " "
+#
+#  Disable the ssl test suites untl Bug 539183 gets resolved
+%global nss_ssl_tests " "
+%global nss_ssl_run " "
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -488,6 +492,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Aug 14 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-12
+- Apply the patches to fix rhbz#614532
+
 * Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-11
 - Removed pem sourecs as they are in the cache
 
