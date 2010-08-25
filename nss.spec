@@ -1,12 +1,12 @@
-%global nspr_version 4.8.4
-%global nss_util_version 3.12.6
-%global nss_softokn_version 3.12.6
+%global nspr_version 4.8.6
+%global nss_util_version 3.12.7
+%global nss_softokn_version 3.12.7
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.6
-Release:          12%{?dist}
+Version:          3.12.7
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -41,7 +41,6 @@ Source12:         %{name}-pem-20100809.tar.bz2
 
 Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
-Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
 Patch8:           nss-sysinit-userdb-first.patch
@@ -114,7 +113,6 @@ low level services.
 
 %patch2 -p0 -b .nolocalsql
 %patch3 -p0 -b .transitional
-%patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
 %patch8 -p0 -b .603313
@@ -492,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 16 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-1
+- Update to 3.12.7
+
 * Sat Aug 14 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-12
 - Apply the patches to fix rhbz#614532
 
