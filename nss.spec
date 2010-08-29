@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.7
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,7 +16,7 @@ Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= 3.12.4
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}                                                  
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -39,7 +39,6 @@ Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20100809.tar.bz2
 
-Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
@@ -73,6 +72,8 @@ manipulate the NSS certificate and key database.
 %package sysinit
 Summary:          System NSS Initilization
 Group:            System Environment/Base
+# providing nss-system-init without version so that it can
+# be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
 Requires(post):   coreutils, sed
@@ -111,7 +112,6 @@ low level services.
 %{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch2 -p0 -b .nolocalsql
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
@@ -148,8 +148,8 @@ export NSPR_LIB_DIR
 NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
 NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
 
-#export NSS_INCLUDE_DIR
-#export NSS_LIB_DIR
+NSS_USE_SYSTEM_SQLITE=1
+export NSS_USE_SYSTEM_SQLITE
 
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
@@ -490,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-2
+- Define NSS_USE_SYSTEM_SQLITE and remove unneeded patch
+
 * Mon Aug 16 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-1
 - Update to 3.12.7
 
