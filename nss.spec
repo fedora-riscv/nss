@@ -492,6 +492,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %changelog
 * Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-2
 - Define NSS_USE_SYSTEM_SQLITE and remove unneeded patch
+- Add comments regarding an unverioned provides which triggers rpmlint warning
+- Build requires nss-softokn-devel >= 3.12.7
 
 * Mon Aug 16 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-1
 - Update to 3.12.7
