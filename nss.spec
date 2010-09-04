@@ -1,14 +1,14 @@
 %global nspr_version 4.8.6
-%global nss_util_version 3.12.7
-%global nss_util_build_version 3.12.6
-%global nss_softokn_version 3.12.6
-%global nss_softokn_build_version 3.12.6
+%global nss_util_version 3.12.8
+%global nss_util_build_version 3.12.7
+%global nss_softokn_version 3.12.8
+%global nss_softokn_build_version 3.12.7
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.7
-Release:          3%{?dist}
+Version:          3.12.7.99.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -491,10 +491,13 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Sat Sep 04 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.3-1
+- NSS 3.12.8 Beta3
+- Fix unclosed comment in renegotiate-transitional.patch
+
 * Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-3
 - Change BuildRequries to available version of nss-util-devel
 
-%changelog
 * Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-2
 - Define NSS_USE_SYSTEM_SQLITE and remove unneeded patch
 - Add comments regarding an unverioned provides which triggers rpmlint warning
