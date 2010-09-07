@@ -10,7 +10,7 @@ diff -u -p -r1.66 sslsock.c
      PR_FALSE,   /* enableSessionTickets */
      PR_FALSE,   /* enableDeflate      */
 -    2,          /* enableRenegotiation (default: requires extension) */
-+    3,          /* enableRenegotiation (default: transitional)
++    3,          /* enableRenegotiation (default: transitional) */
      PR_FALSE,   /* requireSafeNegotiation */
  };
  
