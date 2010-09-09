@@ -1,12 +1,14 @@
-%global nspr_version 4.8.4
-%global nss_util_version 3.12.6
-%global nss_softokn_version 3.12.6
+%global nspr_version 4.8.6
+%global nss_util_version 3.12.7
+%global nss_util_build_version 3.12.6
+%global nss_softokn_version 3.12.7
+%global nss_softokn_build_version 3.12.6
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.6
-Release:          12%{?dist}
+Version:          3.12.7
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,8 +18,8 @@ Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= 3.12.4
-BuildRequires:    nss-util-devel >= %{nss_util_version}
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_build_version}                                                  
+BuildRequires:    nss-util-devel >= %{nss_util_build_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -39,9 +41,7 @@ Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20100809.tar.bz2
 
-Patch2:           nss-nolocalsql.patch
 Patch3:           renegotiate-transitional.patch
-Patch4:           validate-arguments.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
 Patch8:           nss-sysinit-userdb-first.patch
@@ -74,6 +74,8 @@ manipulate the NSS certificate and key database.
 %package sysinit
 Summary:          System NSS Initilization
 Group:            System Environment/Base
+# providing nss-system-init without version so that it can
+# be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
 Requires:         nss = %{version}-%{release}
 Requires(post):   coreutils, sed
@@ -112,9 +114,7 @@ low level services.
 %{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
-%patch2 -p0 -b .nolocalsql
 %patch3 -p0 -b .transitional
-%patch4 -p0 -b .validate
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
 %patch8 -p0 -b .603313
@@ -150,8 +150,8 @@ export NSPR_LIB_DIR
 NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
 NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
 
-#export NSS_INCLUDE_DIR
-#export NSS_LIB_DIR
+NSS_USE_SYSTEM_SQLITE=1
+export NSS_USE_SYSTEM_SQLITE
 
 %ifarch x86_64 ppc64 ia64 s390x sparc64
 USE_64=1
@@ -490,8 +490,21 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
-
 %changelog
+* Mon Sep 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-4
+- Fix unclosed comment in renegotiate-transitional.patch
+
+* Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-3
+- Change BuildRequries to available version of nss-util-devel
+
+* Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-2
+- Define NSS_USE_SYSTEM_SQLITE and remove unneeded patch
+- Add comments regarding an unversioned provides which triggers rpmlint warning
+- Build requires nss-softokn-devel >= 3.12.7
+
+* Mon Aug 16 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-1
+- Update to 3.12.7
+
 * Sat Aug 14 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-12
 - Apply the patches to fix rhbz#614532
 
