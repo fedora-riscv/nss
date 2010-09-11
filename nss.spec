@@ -1,14 +1,14 @@
 %global nspr_version 4.8.6
 %global nss_util_version 3.12.7
-%global nss_util_build_version 3.12.6
+%global nss_util_build_version 3.12.7
 %global nss_softokn_version 3.12.7
-%global nss_softokn_build_version 3.12.6
+%global nss_softokn_build_version 3.12.7
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.7
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -491,6 +491,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Sat Sep 11 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-5
+- Bump nss_util_build_version and nss_softokn_build_version to 3.12.7
+
 * Mon Sep 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-4
 - Fix unclosed comment in renegotiate-transitional.patch
 
