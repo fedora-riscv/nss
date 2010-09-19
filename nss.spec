@@ -1,14 +1,12 @@
 %global nspr_version 4.8.6
 %global nss_util_version 3.12.7.99.3
-%global nss_util_build_version 3.12.7
 %global nss_softokn_version 3.12.7.99.3
-%global nss_softokn_build_version 3.12.7
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.7.99.3
-Release:          2%{?dist}
+Version:          3.12.7.99.4
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -18,8 +16,8 @@ Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_build_version}                                                  
-BuildRequires:    nss-util-devel >= %{nss_util_build_version}
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}                                                  
+BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -491,6 +489,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Sat Sep 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.4-1
+- NSS 3.12.8 RC0
+
 * Sun Sep 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.3-2
 - Fix nss-util_version and nss_softokn_version required to be 3.12.7.99.3
 
