@@ -1,6 +1,6 @@
 %global nspr_version 4.8.6
-%global nss_util_version 3.12.7.99.3
-%global nss_softokn_version 3.12.7.99.3
+%global nss_util_version 3.12.8
+%global nss_softokn_version 3.12.8
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
