@@ -5,7 +5,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.7.99.4
+Version:          3.12.8
 Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -375,7 +375,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_bindir}/setup-nsssysinit.sh on
 
 %preun sysinit
-%{_bindir}/setup-nsssysinit.sh off
+
 
 %files
 %defattr(-,root,root)
@@ -489,6 +489,12 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Thu Sep 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
+- Update to 3.12.8
+- Prevent disabling of nss-sysinit on package upgrade (#636787)
+- Create pkcs11.txt with correct permissions regardless of umask (#636792) 
+- Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
+
 * Sat Sep 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.4-1
 - NSS 3.12.8 RC0
 
