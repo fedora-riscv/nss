@@ -100,6 +100,7 @@ Header and Library files for doing development with Network Security Services.
 %package pkcs11-devel
 Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
+Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
 
 %description pkcs11-devel
@@ -494,6 +495,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Prevent disabling of nss-sysinit on package upgrade (#636787)
 - Create pkcs11.txt with correct permissions regardless of umask (#636792) 
 - Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
+- Added provides pkcs11-devel-static to comply with packaging guidelines (#609612)
 
 * Sat Sep 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.4-1
 - NSS 3.12.8 RC0
