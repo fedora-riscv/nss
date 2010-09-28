@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,7 +16,7 @@ Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}                                                  
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -372,11 +372,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %postun -p /sbin/ldconfig
 
-%post sysinit
-%{_bindir}/setup-nsssysinit.sh on
-
-%preun sysinit
-
+# Prevent disabling of nss-sysinit on nss package upgrade caused
+# by faulty preun sysinit scriplet from a previous version nss.spec.
+# It will be eventually removed.
+%posttrans sysinit
+[ -e /etc/pki/nssdb/pkcs11.txt ] && /usr/bin/setup-nsssysinit.sh on
 
 %files
 %defattr(-,root,root)
@@ -490,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Mon Sep 27 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-2
+- Add posttrans scriptlet (#636787)
+
 * Thu Sep 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
 - Update to 3.12.8
 - Prevent disabling of nss-sysinit on package upgrade (#636787)
