@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.7
-Release:          6%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,7 +16,7 @@ Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}                                         
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -100,6 +100,7 @@ Header and Library files for doing development with Network Security Services.
 %package pkcs11-devel
 Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
+Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
 
 %description pkcs11-devel
@@ -371,11 +372,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %postun -p /sbin/ldconfig
 
-%post sysinit
-%{_bindir}/setup-nsssysinit.sh on
+# Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
+# from previous versions of nss.spec
+%triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
+/usr/bin/setup-nsssysinit.sh on
 
-%preun sysinit
-%{_bindir}/setup-nsssysinit.sh off
 
 %files
 %defattr(-,root,root)
@@ -489,6 +490,16 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Wed Sep 29 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-8
+- Replace posttrans sysinit scriptlet with a triggerpostun one (#636787)
+- Fix and cleanup the setup-nsssysinit.sh script (#636792, #636801)
+
+* Tue Sep 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-7
+- Prevent of nss-sysinit disabling on package upgrade (#636787)
+- Create pkcs11.txt with correct permissions regardless of umask (#636792) 
+- Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
+- Add provides nss-pkcs11-devel-static to comply with packaging guidelines (#609612)
+
 * Sun Sep 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-6
 - Remove {nss_util|nss_softokn}_build_version, BuildRequires must match Requires
 
