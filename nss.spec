@@ -1,12 +1,12 @@
 %global nspr_version 4.8.6
-%global nss_util_version 3.12.7
-%global nss_softokn_version 3.12.7
+%global nss_util_version 3.12.8
+%global nss_softokn_version 3.12.8
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.7
-Release:          9%{?dist}
+Version:          3.12.8
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -372,9 +372,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %postun -p /sbin/ldconfig
 
+%triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
 # Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
 # from previous versions of nss.spec
-%triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.7-9
 /usr/bin/setup-nsssysinit.sh on
 
 
@@ -490,6 +490,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Tue Oct 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
+- Update to 3.12.8
+- Fix invalid %postun scriptlet (#639248)
+
 * Thu Sep 30 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-9
 - Fix version on triggerpostun scriplet (#636787)
 
