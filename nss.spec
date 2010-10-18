@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -42,9 +42,10 @@ Source12:         %{name}-pem-20100809.tar.bz2
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-596674.patch
-Patch8:           nss-sysinit-userdb-first.patch
 Patch9:           0001-Add-support-for-PKCS-8-encoded-private-keys.patch
 Patch10:          0001-Do-not-define-SEC_SkipTemplate.patch
+Patch11:          nss-sysinit-fix-trustorder.patch
+Patch12:          nss-sysinit-userdb-first.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -116,9 +117,10 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .596674
-%patch8 -p0 -b .603313
 %patch9 -p1 -b .pkcs8privatekey
 %patch10 -p1 -b .noskiptemplate
+%patch11 -p1 -b .643134
+%patch12 -p0 -b .603313
 
 
 %build
@@ -490,6 +492,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Wed Oct 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-6
+- Fix certificates trust order (#643134)
+- Apply nss-sysinit-userdb-first.patch last
+
 * Wed Oct 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-5
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
 
