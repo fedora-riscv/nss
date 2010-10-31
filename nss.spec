@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -388,16 +388,16 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
 
 %files sysinit
 %defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert9.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key4.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %{_bindir}/setup-nsssysinit.sh
 
 %files tools
@@ -492,6 +492,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Sun Oct 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-7
+- Tell rpm not to verify md5, size, and modtime of configurations file
+
 * Wed Oct 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-6
 - Fix certificates trust order (#643134)
 - Apply nss-sysinit-userdb-first.patch last
