@@ -491,7 +491,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %changelog
 * Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
-- Update test certificate which had expired
+- Update test certificate which had expired (#650197)
 
 * Wed Oct 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-2
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
