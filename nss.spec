@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -490,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
+- Update test certificate which had expired
+
 * Wed Oct 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-2
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
 
