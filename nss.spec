@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -492,6 +492,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-8
+- Update PayPalEE.cert test certificate which had expired
+
 * Sun Oct 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-7
 - Tell rpm not to verify md5, size, and modtime of configurations file
 
