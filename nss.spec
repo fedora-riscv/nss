@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,13 +37,10 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20100809.tar.bz2
+Source12:         %{name}-pem-20101125.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nsspem-596674.patch
-Patch9:           0001-Add-support-for-PKCS-8-encoded-private-keys.patch
-Patch10:          0001-Do-not-define-SEC_SkipTemplate.patch
 Patch11:          nss-sysinit-fix-trustorder.patch
 Patch12:          nss-sysinit-userdb-first.patch
 
@@ -116,9 +113,6 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .596674
-%patch9 -p1 -b .pkcs8privatekey
-%patch10 -p1 -b .noskiptemplate
 %patch11 -p1 -b .643134
 %patch12 -p0 -b .603313
 
@@ -492,6 +486,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-9
+- Update pem source tar with fixes for 614532 and 596674
+- Remove no longer needed patches
+
 * Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-8
 - Update PayPalEE.cert test certificate which had expired
 
