@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,14 +37,11 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20100809.tar.bz2
+Source12:         %{name}-pem-20101125.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nsspem-596674.patch
 Patch8:           nss-sysinit-userdb-first.patch
-Patch9:           0001-Add-support-for-PKCS-8-encoded-private-keys.patch
-Patch10:          0001-Do-not-define-SEC_SkipTemplate.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -115,10 +112,7 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .596674
 %patch8 -p0 -b .603313
-%patch9 -p1 -b .pkcs8privatekey
-%patch10 -p1 -b .noskiptemplate
 
 
 %build
@@ -386,16 +380,16 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
 
 %files sysinit
 %defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert9.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key4.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %{_bindir}/setup-nsssysinit.sh
 
 %files tools
@@ -490,6 +484,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
+- Update pem source tar with fixes for 614532 and 596674
+- Remove patches which we no longer need
+- Tell rpm not to verify md5, size, and modtime of configurations file
+
 * Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
 - Update test certificate which had expired
 
