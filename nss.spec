@@ -1,12 +1,12 @@
-%global nspr_version 4.8.6
-%global nss_util_version 3.12.8
-%global nss_softokn_version 3.12.8
+%global nspr_version 4.8.6.99.1
+%global nss_util_version 3.12.8.99.1
+%global nss_softokn_version 3.12.8.99.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.8
-Release:          9%{?dist}
+Version:          3.12.8.99.1
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -486,6 +486,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Wed Dec 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.1-1
+- Update to NSS_3_12_9_BETA1
+
 * Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-9
 - Update pem source tar with fixes for 614532 and 596674
 - Remove no longer needed patches
