@@ -1,11 +1,11 @@
-%global nspr_version 4.8.6.99.1
-%global nss_util_version 3.12.8.99.1
-%global nss_softokn_version 3.12.8.99.1
+%global nspr_version 4.8.6.99.2
+%global nss_util_version 3.12.8.99.2
+%global nss_softokn_version 3.12.8.99.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.8.99.1
+Version:          3.12.8.99.2
 Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -41,6 +41,7 @@ Source12:         %{name}-pem-20101125.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nsspem-642433.patch
 Patch11:          nss-sysinit-fix-trustorder.patch
 Patch12:          nss-sysinit-userdb-first.patch
 
@@ -113,6 +114,7 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
 %patch12 -p0 -b .603313
 
@@ -125,6 +127,10 @@ export FREEBL_NO_DEPEND
 # Enable compiler optimizations and disable debugging code
 BUILD_OPT=1
 export BUILD_OPT
+
+# Uncomment to disable optimizations
+#RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
+#export RPM_OPT_FLAGS
 
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
@@ -486,6 +492,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Fri Dec 10 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.2-1
+- Update to NSS_3_12_9_BETA2
+- Fix libpnsspem crash when cacert dir contains other directories (#642433)
+
 * Wed Dec 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.1-1
 - Update to NSS_3_12_9_BETA1
 
