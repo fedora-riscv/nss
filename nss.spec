@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.8
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -41,6 +41,7 @@ Source12:         %{name}-pem-20101125.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
+Patch7:           nsspem-642433.patch
 Patch8:           nss-sysinit-userdb-first.patch
 
 %description
@@ -112,6 +113,7 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
+%patch7 -p0 -b .642433
 %patch8 -p0 -b .603313
 
 
@@ -123,6 +125,10 @@ export FREEBL_NO_DEPEND
 # Enable compiler optimizations and disable debugging code
 BUILD_OPT=1
 export BUILD_OPT
+
+# Uncomment to disable optimizations
+#RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
+#export RPM_OPT_FLAGS
 
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
@@ -484,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Fri Dec 10 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-5
+- Fix libpnsspem crash when cacert dir contains other directories (#642433)
+
 * Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
 - Update pem source tar with fixes for 614532 and 596674
 - Remove patches which we no longer need
