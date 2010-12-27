@@ -1,12 +1,12 @@
-%global nspr_version 4.8.6.99.2
-%global nss_util_version 3.12.8.99.2
-%global nss_softokn_version 3.12.8.99.2
+%global nspr_version 4.8.7
+%global nss_util_version 3.12.9
+%global nss_softokn_version 3.12.9
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.8.99.2
-Release:          1%{?dist}
+Version:          3.12.9
+Release:          0.1.beta2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -492,6 +492,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Mon Dec 27 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.9-0.1.beta2
+- Rebuilt according to fedora pre-release package naming guidelines
+
 * Fri Dec 10 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.2-1
 - Update to NSS_3_12_9_BETA2
 - Fix libpnsspem crash when cacert dir contains other directories (#642433)
