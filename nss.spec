@@ -1,12 +1,12 @@
-%global nspr_version 4.8.6
-%global nss_util_version 3.12.8
-%global nss_softokn_version 3.12.8
+%global nspr_version 4.8.7
+%global nss_util_version 3.12.9
+%global nss_softokn_version 3.12.9
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.8
-Release:          5%{?dist}
+Version:          3.12.9
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -42,7 +42,8 @@ Source12:         %{name}-pem-20101125.tar.bz2
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
-Patch8:           nss-sysinit-userdb-first.patch
+Patch11:          nss-sysinit-fix-trustorder.patch
+Patch12:          nss-sysinit-userdb-first.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -114,7 +115,8 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
-%patch8 -p0 -b .603313
+%patch11 -p1 -b .643134
+%patch12 -p0 -b .603313
 
 
 %build
@@ -490,44 +492,61 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
-* Fri Dec 10 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-5
+* Wed Jan 12 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-1
+- Update to 3.12.9
+
+* Mon Dec 27 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.9-0.1.beta2
+- Rebuilt according to fedora pre-release package naming guidelines
+
+* Fri Dec 10 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.2-1
+- Update to NSS_3_12_9_BETA2
 - Fix libpnsspem crash when cacert dir contains other directories (#642433)
 
-* Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
+* Wed Dec 08 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8.99.1-1
+- Update to NSS_3_12_9_BETA1
+
+* Thu Nov 25 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-9
 - Update pem source tar with fixes for 614532 and 596674
-- Remove patches which we no longer need
+- Remove no longer needed patches
+
+* Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-8
+- Update PayPalEE.cert test certificate which had expired
+
+* Sun Oct 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-7
 - Tell rpm not to verify md5, size, and modtime of configurations file
 
-* Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
-- Update test certificate which had expired
+* Wed Oct 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-6
+- Fix certificates trust order (#643134)
+- Apply nss-sysinit-userdb-first.patch last
 
-* Wed Oct 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-2
+* Wed Oct 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-5
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
 
-* Tue Oct 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
-- Update to 3.12.8
+* Tue Oct 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
 - Fix invalid %postun scriptlet (#639248)
 
-* Thu Sep 30 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-9
-- Fix version on triggerpostun scriplet (#636787)
-
-* Wed Sep 29 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-8
+* Wed Sep 29 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
 - Replace posttrans sysinit scriptlet with a triggerpostun one (#636787)
 - Fix and cleanup the setup-nsssysinit.sh script (#636792, #636801)
 
-* Tue Sep 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-7
-- Prevent of nss-sysinit disabling on package upgrade (#636787)
+* Mon Sep 27 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-2
+- Add posttrans scriptlet (#636787)
+
+* Thu Sep 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
+- Update to 3.12.8
+- Prevent disabling of nss-sysinit on package upgrade (#636787)
 - Create pkcs11.txt with correct permissions regardless of umask (#636792) 
 - Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
-- Add provides nss-pkcs11-devel-static to comply with packaging guidelines (#609612)
+- Added provides pkcs11-devel-static to comply with packaging guidelines (#609612)
 
-* Sun Sep 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-6
-- Remove {nss_util|nss_softokn}_build_version, BuildRequires must match Requires
+* Sat Sep 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.4-1
+- NSS 3.12.8 RC0
 
-* Sat Sep 11 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-5
-- Bump nss_util_build_version and nss_softokn_build_version to 3.12.7
+* Sun Sep 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.3-2
+- Fix nss-util_version and nss_softokn_version required to be 3.12.7.99.3
 
-* Mon Sep 07 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-4
+* Sat Sep 04 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7.99.3-1
+- NSS 3.12.8 Beta3
 - Fix unclosed comment in renegotiate-transitional.patch
 
 * Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-3
