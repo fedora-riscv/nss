@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -42,8 +42,7 @@ Source12:         %{name}-pem-20101125.tar.bz2
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
-Patch11:          nss-sysinit-fix-trustorder.patch
-Patch12:          nss-sysinit-userdb-first.patch
+Patch11:          honor-user-trust-preferences.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -116,7 +115,6 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
-%patch12 -p0 -b .603313
 
 
 %build
@@ -249,7 +247,7 @@ cd ./mozilla/security/nss/tests/
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
-#  Disable the ssl test suites untl Bug 539183 gets resolved
+#  Disable the ssl test suites until Bug 539183 is resolved
 %global nss_ssl_tests " "
 %global nss_ssl_run " "
 
@@ -492,6 +490,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Wed Jan 19 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-2
+- Fix to honor the user's cert trust preferences (#633043)
+- Remove obsoleted patch
+
 * Wed Jan 12 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-1
 - Update to 3.12.9
 
