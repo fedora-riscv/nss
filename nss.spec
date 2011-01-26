@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -490,6 +490,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Wed Jan 26 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-3
+- Update the cacert trust patch per upstream review (#633043)
+
 * Wed Jan 19 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-2
 - Fix to honor the user's cert trust preferences (#633043)
 - Remove obsoleted patch
