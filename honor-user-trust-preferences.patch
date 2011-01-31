@@ -2,16 +2,17 @@ Index: ./mozilla/security/nss/lib/pk11wrap/pk11load.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11load.c,v
 retrieving revision 1.30
-diff -u -p -r1.30 pk11load.c
+retrieving revision 1.30.2.2
+diff -u -p -r1.30 -r1.30.2.2
 --- ./mozilla/security/nss/lib/pk11wrap/pk11load.c	30 Apr 2010 07:22:54 -0000	1.30
-+++ ./mozilla/security/nss/lib/pk11wrap/pk11load.c	26 Jan 2011 18:11:57 -0000
++++ ./mozilla/security/nss/lib/pk11wrap/pk11load.c	27 Jan 2011 01:35:46 -0000	1.30.2.2
 @@ -178,8 +178,8 @@ secmod_handleReload(SECMODModule *oldMod
  	char *oldModuleSpec;
  
  	if (secmod_IsInternalKeySlot(newModule)) {
 -	    pk11_SetInternalKeySlot(slot);
 -	}
-+	    pk11_FirstInternalKeySlot(slot);
++	    pk11_SetInternalKeySlotIfFirst(slot);
 +	} 
  	newID = slot->slotID;
  	PK11_FreeSlot(slot);
@@ -23,7 +24,7 @@ diff -u -p -r1.30 pk11load.c
 +	    /* explicitly mark the internal slot as such if IsInternalKeySlot()
 +	     * is set */
 +	    if (secmod_IsInternalKeySlot(mod) && (i == (mod->isFIPS ? 0 : 1))) {
-+		pk11_FirstInternalKeySlot(mod->slots[i]);
++		pk11_SetInternalKeySlotIfFirst(mod->slots[i]);
 +	    } 
  	}
  	mod->slotCount = slotCount;
@@ -32,14 +33,15 @@ Index: ./mozilla/security/nss/lib/pk11wrap/pk11priv.h
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11priv.h,v
 retrieving revision 1.13
-diff -u -p -r1.13 pk11priv.h
+retrieving revision 1.13.2.2
+diff -u -p -r1.13 -r1.13.2.2
 --- ./mozilla/security/nss/lib/pk11wrap/pk11priv.h	27 Oct 2009 23:04:46 -0000	1.13
-+++ ./mozilla/security/nss/lib/pk11wrap/pk11priv.h	26 Jan 2011 18:11:47 -0000
++++ ./mozilla/security/nss/lib/pk11wrap/pk11priv.h	27 Jan 2011 01:35:46 -0000	1.13.2.2
 @@ -115,6 +115,7 @@ void PK11_InitSlot(SECMODModule *mod,CK_
  PRBool PK11_NeedPWInitForSlot(PK11SlotInfo *slot);
  SECStatus PK11_ReadSlotCerts(PK11SlotInfo *slot);
  void pk11_SetInternalKeySlot(PK11SlotInfo *slot);
-+void pk11_FirstInternalKeySlot(PK11SlotInfo *slot);
++void pk11_SetInternalKeySlotIfFirst(PK11SlotInfo *slot);
  
  /*********************************************************************
   *       Mechanism Mapping functions
@@ -47,9 +49,10 @@ Index: ./mozilla/security/nss/lib/pk11wrap/pk11slot.c
 ===================================================================
 RCS file: /cvsroot/mozilla/security/nss/lib/pk11wrap/pk11slot.c,v
 retrieving revision 1.101
-diff -u -p -r1.101 pk11slot.c
+retrieving revision 1.101.2.3
+diff -u -p -r1.101 -r1.101.2.3
 --- ./mozilla/security/nss/lib/pk11wrap/pk11slot.c	3 Apr 2010 18:27:31 -0000	1.101
-+++ ./mozilla/security/nss/lib/pk11wrap/pk11slot.c	26 Jan 2011 18:11:20 -0000
++++ ./mozilla/security/nss/lib/pk11wrap/pk11slot.c	27 Jan 2011 01:35:46 -0000	1.101.2.3
 @@ -1349,7 +1349,7 @@ pk11_isRootSlot(PK11SlotInfo *slot) 
   * times as tokens are removed and re-inserted.
   */
@@ -66,8 +69,8 @@ diff -u -p -r1.101 pk11slot.c
 +
 +/*
 + * Set a new default internal keyslot. If one has already been set, clear it.
-+ * passing NULL falls back the NSS normally selected default internal key
-+ * slot
++ * Passing NULL falls back to the NSS normally selected default internal key
++ * slot.
 + */
  void
  pk11_SetInternalKeySlot(PK11SlotInfo *slot)
@@ -78,11 +81,11 @@ diff -u -p -r1.101 pk11slot.c
  
 +/*
 + * Set a new default internal keyslot if the normal key slot has not already
-+ * been overrided. Subsequent calls to this function will be ignored unless
++ * been overridden. Subsequent calls to this function will be ignored unless
 + * pk11_SetInternalKeySlot is used to clear the current default.
 + */
 +void
-+pk11_FirstInternalKeySlot(PK11SlotInfo *slot)
++pk11_SetInternalKeySlotIfFirst(PK11SlotInfo *slot)
 +{
 +   if (pk11InternalKeySlot) {
 +	return;

@@ -490,8 +490,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
-* Wed Jan 26 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-3
-- Update the cacert trust patch per upstream review (#633043)
+* Mon Jan 31 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-3
+- Update the cacert trust patch per upstream review requests (#633043)
 
 * Wed Jan 19 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-2
 - Fix to honor the user's cert trust preferences (#633043)
@@ -559,7 +559,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 * Sat Aug 28 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-2
 - Define NSS_USE_SYSTEM_SQLITE and remove unneeded patch
-- Add comments regarding an unverioned provides which triggers rpmlint warning
+- Add comments regarding an unversioned provides which triggers rpmlint warning
 - Build requires nss-softokn-devel >= 3.12.7
 
 * Mon Aug 16 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.7-1
