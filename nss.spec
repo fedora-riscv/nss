@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -43,6 +43,7 @@ Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch11:          honor-user-trust-preferences.patch
+Patch12:          allow-content-types-beyond-smime.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -115,6 +116,7 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
+%patch12 -p1 -b .contenttypes
 
 
 %build
@@ -490,6 +492,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Tue Feb 01 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-4
+- Fix infinite recursion when encoding NSS enveloped/digested data (#499444)
+
 * Mon Jan 31 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-3
 - Update the cacert trust patch per upstream review requests (#633043)
 
