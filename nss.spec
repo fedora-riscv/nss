@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -44,6 +44,7 @@ Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch11:          honor-user-trust-preferences.patch
 Patch12:          allow-content-types-beyond-smime.patch
+Patch13:          nss-recurse.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -117,6 +118,7 @@ low level services.
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
 %patch12 -p1 -b .contenttypes
+%patch13 -p1 -b .recurse
 
 
 %build
@@ -358,7 +360,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
-#remove header shipped in nss-softokn-devel
+#remove the nss-softokn-devel and nss-softokn-freebl-devel headers
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/alghmac.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
@@ -492,6 +495,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Fri Feb 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-5
+- Fix the earlier infinite recursion patch (#499444)
+- Remove a header that now nss-softokn-freebl-devel ships
+
 * Tue Feb 01 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-4
 - Fix infinite recursion when encoding NSS enveloped/digested data (#499444)
 
