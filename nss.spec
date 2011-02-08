@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -117,8 +117,8 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
-%patch12 -p1 -b .contenttypes
-%patch13 -p1 -b .recurse
+#%patch12 -p1 -b .contenttypes
+#%patch13 -p1 -b .recurse
 
 
 %build
@@ -495,6 +495,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Tue Feb 08 2011 Christopher Aillon <caillon@redhat.com> - 3.12.9-6
+- Revert patches for 499444 as they use a C++ reserved word and
+  cause compilation of Firefox to fail
+
 * Fri Feb 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-5
 - Fix the earlier infinite recursion patch (#499444)
 - Remove a header that now nss-softokn-freebl-devel ships
