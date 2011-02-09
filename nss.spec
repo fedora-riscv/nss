@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -118,9 +118,9 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
-%patch12 -p1 -b .contenttypes
-%patch13 -p1 -b .recurse
-%patch14 -p1 -b .676036
+#%patch12 -p1 -b .contenttypes
+#%patch13 -p1 -b .recurse
+#%patch14 -p1 -b .676036
 
 
 %build
@@ -497,6 +497,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Tue Feb 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
+- Revert patches for 499444 until all c++ reserved words are found and extirpated
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.12.9-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
