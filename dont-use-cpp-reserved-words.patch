@@ -1,10 +1,6 @@
-Index: ./mozilla/security/nss/lib/smime/cmscinfo.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmscinfo.c,v
-retrieving revision 1.7.192.2
-diff -u -p -r1.7.192.2 cmscinfo.c
---- ./mozilla/security/nss/lib/smime/cmscinfo.c	1 Feb 2011 00:33:23 -0000	1.7.192.2
-+++ ./mozilla/security/nss/lib/smime/cmscinfo.c	8 Feb 2011 17:12:24 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmscinfo.c.676036 ./mozilla/security/nss/lib/smime/cmscinfo.c
+--- ./mozilla/security/nss/lib/smime/cmscinfo.c.676036	2011-02-09 14:03:55.133296665 -0800
++++ ./mozilla/security/nss/lib/smime/cmscinfo.c	2011-02-09 14:03:55.151294755 -0800
 @@ -56,27 +56,27 @@
  SECStatus
  NSS_CMSContentInfo_Private_Init(NSSCMSContentInfo *cinfo)
@@ -75,14 +71,10 @@ diff -u -p -r1.7.192.2 cmscinfo.c
     return SECSuccess;
  }
  
-Index: ./mozilla/security/nss/lib/smime/cmsdecode.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmsdecode.c,v
-retrieving revision 1.9.66.2
-diff -u -p -r1.9.66.2 cmsdecode.c
---- ./mozilla/security/nss/lib/smime/cmsdecode.c	28 Jan 2011 23:08:27 -0000	1.9.66.2
-+++ ./mozilla/security/nss/lib/smime/cmsdecode.c	8 Feb 2011 17:12:24 -0000
-@@ -455,7 +455,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
+diff -up ./mozilla/security/nss/lib/smime/cmsdecode.c.676036 ./mozilla/security/nss/lib/smime/cmsdecode.c
+--- ./mozilla/security/nss/lib/smime/cmsdecode.c.676036	2011-02-09 14:03:55.149294968 -0800
++++ ./mozilla/security/nss/lib/smime/cmsdecode.c	2011-02-09 14:03:55.152294649 -0800
+@@ -458,7 +458,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
  	goto loser;
      }
  
@@ -91,7 +83,7 @@ diff -u -p -r1.9.66.2 cmsdecode.c
  	/*
  	 * we are decrypting.
  	 * 
-@@ -469,7 +469,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
+@@ -472,7 +472,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
  	unsigned int buflen;		/* length available for decrypted data */
  
  	/* find out about the length of decrypted data */
@@ -100,7 +92,7 @@ diff -u -p -r1.9.66.2 cmsdecode.c
  
  	/*
  	 * it might happen that we did not provide enough data for a full
-@@ -500,7 +500,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
+@@ -503,7 +503,7 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
  	 * any output (see above), but we still need to call NSS_CMSCipherContext_Decrypt to
  	 * keep track of incoming data
  	 */
@@ -109,7 +101,7 @@ diff -u -p -r1.9.66.2 cmsdecode.c
  			       data, len, final);
  	if (rv != SECSuccess) {
  	    p7dcx->error = PORT_GetError();
-@@ -520,8 +520,8 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
+@@ -523,8 +523,8 @@ nss_cms_decoder_work_data(NSSCMSDecoderC
      /*
       * Update the running digests with plaintext bytes (if we need to).
       */
@@ -120,13 +112,9 @@ diff -u -p -r1.9.66.2 cmsdecode.c
  
      /* at this point, we have the plain decoded & decrypted data 
      ** which is either more encoded DER (which we need to hand to the child 
-Index: ./mozilla/security/nss/lib/smime/cmsdigdata.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmsdigdata.c,v
-retrieving revision 1.5.192.1
-diff -u -p -r1.5.192.1 cmsdigdata.c
---- ./mozilla/security/nss/lib/smime/cmsdigdata.c	28 Jan 2011 23:08:27 -0000	1.5.192.1
-+++ ./mozilla/security/nss/lib/smime/cmsdigdata.c	8 Feb 2011 17:12:25 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmsdigdata.c.676036 ./mozilla/security/nss/lib/smime/cmsdigdata.c
+--- ./mozilla/security/nss/lib/smime/cmsdigdata.c.676036	2011-02-09 14:03:55.134296559 -0800
++++ ./mozilla/security/nss/lib/smime/cmsdigdata.c	2011-02-09 14:03:55.152294649 -0800
 @@ -143,8 +143,8 @@ NSS_CMSDigestedData_Encode_BeforeData(NS
      /* set up the digests */
      if (digd->digestAlg.algorithm.len != 0 && digd->digest.len == 0) {
@@ -181,13 +169,9 @@ diff -u -p -r1.5.192.1 cmsdigdata.c
      }
  
      return rv;
-Index: ./mozilla/security/nss/lib/smime/cmsencdata.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmsencdata.c,v
-retrieving revision 1.11.56.1
-diff -u -p -r1.11.56.1 cmsencdata.c
---- ./mozilla/security/nss/lib/smime/cmsencdata.c	28 Jan 2011 23:08:27 -0000	1.11.56.1
-+++ ./mozilla/security/nss/lib/smime/cmsencdata.c	8 Feb 2011 17:12:25 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmsencdata.c.676036 ./mozilla/security/nss/lib/smime/cmsencdata.c
+--- ./mozilla/security/nss/lib/smime/cmsencdata.c.676036	2011-02-09 14:03:55.135296453 -0800
++++ ./mozilla/security/nss/lib/smime/cmsencdata.c	2011-02-09 14:03:55.153294543 -0800
 @@ -200,9 +200,9 @@ NSS_CMSEncryptedData_Encode_BeforeData(N
      /* this may modify algid (with IVs generated in a token).
       * it is therefore essential that algid is a pointer to the "real" contentEncAlg,
@@ -237,13 +221,9 @@ diff -u -p -r1.11.56.1 cmsencdata.c
      }
  
      return SECSuccess;
-Index: ./mozilla/security/nss/lib/smime/cmsencode.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmsencode.c,v
-retrieving revision 1.6.66.4
-diff -u -p -r1.6.66.4 cmsencode.c
---- ./mozilla/security/nss/lib/smime/cmsencode.c	1 Feb 2011 23:27:20 -0000	1.6.66.4
-+++ ./mozilla/security/nss/lib/smime/cmsencode.c	8 Feb 2011 17:12:25 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmsencode.c.676036 ./mozilla/security/nss/lib/smime/cmsencode.c
+--- ./mozilla/security/nss/lib/smime/cmsencode.c.676036	2011-02-09 14:03:55.136296347 -0800
++++ ./mozilla/security/nss/lib/smime/cmsencode.c	2011-02-09 14:03:55.154294437 -0800
 @@ -332,7 +332,7 @@ nss_cms_before_data(NSSCMSEncoderContext
  	 * Indicate that we are streaming.  We will be streaming until we
  	 * get past the contents bytes.
@@ -309,13 +289,9 @@ diff -u -p -r1.6.66.4 cmsencode.c
  	SEC_ASN1EncoderSetStreaming(p7ecx->ecx);
  
      /*
-Index: ./mozilla/security/nss/lib/smime/cmsenvdata.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmsenvdata.c,v
-retrieving revision 1.11.142.1
-diff -u -p -r1.11.142.1 cmsenvdata.c
---- ./mozilla/security/nss/lib/smime/cmsenvdata.c	28 Jan 2011 23:08:27 -0000	1.11.142.1
-+++ ./mozilla/security/nss/lib/smime/cmsenvdata.c	8 Feb 2011 17:12:26 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmsenvdata.c.676036 ./mozilla/security/nss/lib/smime/cmsenvdata.c
+--- ./mozilla/security/nss/lib/smime/cmsenvdata.c.676036	2011-02-09 14:03:55.137296241 -0800
++++ ./mozilla/security/nss/lib/smime/cmsenvdata.c	2011-02-09 14:03:55.155294331 -0800
 @@ -289,9 +289,9 @@ NSS_CMSEnvelopedData_Encode_BeforeData(N
      /* this may modify algid (with IVs generated in a token).
       * it is essential that algid is a pointer to the contentEncAlg data, not a
@@ -374,13 +350,21 @@ diff -u -p -r1.11.142.1 cmsenvdata.c
      }
  
      return SECSuccess;
-Index: ./mozilla/security/nss/lib/smime/cmssigdata.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmssigdata.c,v
-retrieving revision 1.29.142.1
-diff -u -p -r1.29.142.1 cmssigdata.c
---- ./mozilla/security/nss/lib/smime/cmssigdata.c	28 Jan 2011 23:08:27 -0000	1.29.142.1
-+++ ./mozilla/security/nss/lib/smime/cmssigdata.c	8 Feb 2011 17:12:26 -0000
+diff -up ./mozilla/security/nss/lib/smime/cms.h.676036 ./mozilla/security/nss/lib/smime/cms.h
+--- ./mozilla/security/nss/lib/smime/cms.h.676036	2011-02-09 14:05:46.178513159 -0800
++++ ./mozilla/security/nss/lib/smime/cms.h	2011-02-09 14:35:29.675010023 -0800
+@@ -1171,7 +1171,7 @@ NSS_CMSDEREncode(NSSCMSMessage *cmsg, SE
+  *  against that data structure.
+  */
+ SECStatus NSS_CMSType_RegisterContentType(SECOidTag type,
+-                          SEC_ASN1Template *template, size_t size,
++                          SEC_ASN1Template *asn1Template, size_t size,
+                           NSSCMSGenericWrapperDataDestroy  destroy,
+                           NSSCMSGenericWrapperDataCallback decode_before,
+                           NSSCMSGenericWrapperDataCallback decode_after,
+diff -up ./mozilla/security/nss/lib/smime/cmssigdata.c.676036 ./mozilla/security/nss/lib/smime/cmssigdata.c
+--- ./mozilla/security/nss/lib/smime/cmssigdata.c.676036	2011-02-09 14:03:55.139296029 -0800
++++ ./mozilla/security/nss/lib/smime/cmssigdata.c	2011-02-09 14:03:55.155294331 -0800
 @@ -228,11 +228,11 @@ NSS_CMSSignedData_Encode_BeforeData(NSSC
      }
      /* set up the digests */
@@ -437,13 +421,9 @@ diff -u -p -r1.29.142.1 cmssigdata.c
      }
      return rv;
  }
-Index: ./mozilla/security/nss/lib/smime/cmst.h
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/lib/smime/cmst.h,v
-retrieving revision 1.10.142.2
-diff -u -p -r1.10.142.2 cmst.h
---- ./mozilla/security/nss/lib/smime/cmst.h	1 Feb 2011 00:33:23 -0000	1.10.142.2
-+++ ./mozilla/security/nss/lib/smime/cmst.h	8 Feb 2011 17:12:26 -0000
+diff -up ./mozilla/security/nss/lib/smime/cmst.h.676036 ./mozilla/security/nss/lib/smime/cmst.h
+--- ./mozilla/security/nss/lib/smime/cmst.h.676036	2011-02-09 14:03:55.141295816 -0800
++++ ./mozilla/security/nss/lib/smime/cmst.h	2011-02-09 14:03:55.156294225 -0800
 @@ -182,7 +182,7 @@ struct NSSCMSContentInfoStr {
  							 * (only used by creation code) */
      SECOidTag			contentEncAlgTag;	/* oid tag of encryption algorithm
@@ -453,3 +433,24 @@ diff -u -p -r1.10.142.2 cmst.h
      void		*reserved;			/* keep binary compatibility */
  };
  
+diff -up ./mozilla/security/nss/lib/smime/cmsudf.c.676036 ./mozilla/security/nss/lib/smime/cmsudf.c
+--- ./mozilla/security/nss/lib/smime/cmsudf.c.676036	2011-02-09 14:08:23.907775957 -0800
++++ ./mozilla/security/nss/lib/smime/cmsudf.c	2011-02-09 14:36:56.043841454 -0800
+@@ -435,7 +435,7 @@ NSS_CMSGenericWrapperData_Encode_AfterDa
+ 
+ SECStatus
+ NSS_CMSType_RegisterContentType(SECOidTag type, 
+-			SEC_ASN1Template *template, size_t size, 
++			SEC_ASN1Template *asn1Template, size_t size, 
+ 			NSSCMSGenericWrapperDataDestroy destroy,
+ 			NSSCMSGenericWrapperDataCallback decode_before,
+ 			NSSCMSGenericWrapperDataCallback decode_after,
+@@ -465,7 +465,7 @@ NSS_CMSType_RegisterContentType(SECOidTa
+     typeInfo->type =type;
+     typeInfo->size = size;
+     typeInfo->isData = isData;
+-    typeInfo->template = template;
++    typeInfo->template = asn1Template;
+     typeInfo->destroy = destroy;
+     typeInfo->decode_before = decode_before;
+     typeInfo->decode_after = decode_after;

@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -45,7 +45,7 @@ Patch7:           nsspem-642433.patch
 Patch11:          honor-user-trust-preferences.patch
 Patch12:          allow-content-types-beyond-smime.patch
 Patch13:          nss-recurse.patch
-Patch14:          dont-use-cpp-reserved-word.patch
+Patch14:          dont-use-cpp-reserved-words.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -118,9 +118,9 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
-#%patch12 -p1 -b .contenttypes
-#%patch13 -p1 -b .recurse
-#%patch14 -p1 -b .676036
+%patch12 -p1 -b .contenttypes
+%patch13 -p1 -b .recurse
+%patch14 -p1 -b .676036
 
 
 %build
@@ -497,6 +497,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-10
+- Fix cms headers to not use c++ reserved words (#676036)
+- Reenabling Bug 499444 patches
+
 * Tue Feb 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
 - Revert patches for 499444 until all c++ reserved words are found and extirpated
 
