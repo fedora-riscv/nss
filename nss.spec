@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -43,6 +43,7 @@ Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch11:          honor-user-trust-preferences.patch
+Patch15:          swap-internal-key-slot.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -115,6 +116,7 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch11 -p1 -b .643134
+%patch15 -p1 -b .jss
 
 
 %build
@@ -491,6 +493,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckfw.a
 
 %changelog
+* Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-6
+- Fix to swap internal key slot on fips mode switches, related to #633043
+
 * Mon Feb 07 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-5
 - Remove a header that now nss-softokn-freebl-devel ships, related to #675196
 - Backing out earlier patch until further testing from upstream for 3.12.10
