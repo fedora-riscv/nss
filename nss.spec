@@ -46,6 +46,7 @@ Patch11:          honor-user-trust-preferences.patch
 Patch12:          allow-content-types-beyond-smime.patch
 Patch13:          nss-recurse.patch
 Patch14:          dont-use-cpp-reserved-words.patch
+Patch15:          swap-internal-key-slot.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -121,6 +122,7 @@ low level services.
 %patch12 -p1 -b .contenttypes
 %patch13 -p1 -b .recurse
 %patch14 -p1 -b .676036
+%patch15 -p1 -b .jss
 
 
 %build
@@ -500,6 +502,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-10
 - Fix cms headers to not use c++ reserved words (#676036)
 - Reenabling Bug 499444 patches
+- Fix to swap internal key slot on fips mode switches
 
 * Tue Feb 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
 - Revert patches for 499444 until all c++ reserved words are found and extirpated

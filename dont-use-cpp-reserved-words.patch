@@ -12,7 +12,7 @@ diff -up ./mozilla/security/nss/lib/smime/cmscinfo.c.676036 ./mozilla/security/n
 -    cinfo->private = PORT_ZNew(NSSCMSContentInfoPrivate);
 -    return (cinfo->private) ? SECSuccess: SECFailure;
 +    cinfo->privateInfo = PORT_ZNew(NSSCMSContentInfoPrivate);
-+    return (cinfo->privateInfo) ? SECSuccess: SECFailure;
++    return (cinfo->privateInfo) ? SECSuccess : SECFailure;
  }
  
  
