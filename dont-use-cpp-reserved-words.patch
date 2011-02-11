@@ -445,8 +445,12 @@ diff -up ./mozilla/security/nss/lib/smime/cmsudf.c.676036 ./mozilla/security/nss
  			NSSCMSGenericWrapperDataDestroy destroy,
  			NSSCMSGenericWrapperDataCallback decode_before,
  			NSSCMSGenericWrapperDataCallback decode_after,
-@@ -465,7 +465,7 @@ NSS_CMSType_RegisterContentType(SECOidTa
-     typeInfo->type =type;
+@@ -462,10 +462,10 @@ NSS_CMSType_RegisterContentType(SECOidTa
+ 	return SECSuccess;
+     }
+     typeInfo = PORT_ArenaNew(nsscmstypeArena, nsscmstypeInfo);
+-    typeInfo->type =type;
++    typeInfo->type = type;
      typeInfo->size = size;
      typeInfo->isData = isData;
 -    typeInfo->template = template;
