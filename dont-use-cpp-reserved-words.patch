@@ -322,7 +322,7 @@ diff -up ./mozilla/security/nss/lib/smime/cmsenvdata.c.676036 ./mozilla/security
  
      /* look if one of OUR cert's issuerSN is on the list of recipients, and if so,  */
 -    /* get the cert and private key for it right away */
-+    /* get the cert and privateInfo key for it right away */
++    /* get the cert and private key for it right away */
      recipient_list = nss_cms_recipient_list_create(envd->recipientInfos);
      if (recipient_list == NULL)
  	goto loser;
