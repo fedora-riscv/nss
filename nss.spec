@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -101,6 +101,7 @@ Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
+Requires:         nss-softokn-freebl-devel = %{nss_softokn_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -492,7 +493,13 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
+
 %changelog
+* Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-7
+- Add a missing requires for pkcs11-devel (#675196)
+- Remove a header that now nss-softokn-freebl-devel ships
+- Run the test suites in the check section (#677809)
+
 * Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-6
 - Fix to swap internal key slot on fips mode switches, related to #633043
 
