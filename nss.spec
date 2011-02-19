@@ -205,6 +205,21 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 %{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 
+%check
+
+# Begin -- copied from the build section
+FREEBL_NO_DEPEND=1
+export FREEBL_NO_DEPEND
+
+BUILD_OPT=1
+export BUILD_OPT
+
+%ifarch x86_64 ppc64 ia64 s390x sparc64
+USE_64=1
+export USE_64
+%endif
+# End -- copied from the build section
+
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
@@ -220,7 +235,7 @@ chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 # avoid weird quoting we'll require that no spaces are being used.
 
 SPACEISBAD=`find ./mozilla/security/nss/tests | grep -c ' '` ||:
-if [ SPACEISBAD -ne 0 ]; then
+if [ $SPACEISBAD -ne 0 ]; then
   echo "error: filenames containing space are not supported (xargs)"
   exit 1
 fi
@@ -498,7 +513,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-7
 - Add a missing requires for pkcs11-devel (#675196)
 - Remove a header that now nss-softokn-freebl-devel ships
-- Run the test suites in the check section (#677809)
+
 
 * Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-6
 - Fix to swap internal key slot on fips mode switches, related to #633043
