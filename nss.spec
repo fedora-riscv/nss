@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          12%{?dist}
+Release:          13%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -47,6 +47,7 @@ Patch12:          allow-content-types-beyond-smime.patch
 Patch13:          nss-recurse.patch
 Patch14:          dont-use-cpp-reserved-words.patch
 Patch15:          swap-internal-key-slot.patch
+Patch16:          nss-539183.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -124,6 +125,7 @@ low level services.
 %patch13 -p1 -b .recurse
 %patch14 -p1 -b .676036
 %patch15 -p1 -b .jss
+%patch16 -p0 -b .539183
 
 
 %build
@@ -271,9 +273,10 @@ cd ./mozilla/security/nss/tests/
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
-#  Disable the ssl test suites until Bug 539183 is resolved
-%global nss_ssl_tests " "
-%global nss_ssl_run " "
+# Uncomment these lines if you need to temporarily
+# disable some test suites for faster test builds
+# global nss_ssl_tests "normal_fips"
+# global nss_ssl_run "cov auth"
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -516,6 +519,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
+- Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
+
 * Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-12
 - Add a missing requires for pkcs11-devel (#675196)
 
