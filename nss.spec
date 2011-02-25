@@ -1,12 +1,12 @@
-%global nspr_version 4.8.6
-%global nss_util_version 3.12.8
-%global nss_softokn_version 3.12.8
+%global nspr_version 4.8.7
+%global nss_util_version 3.12.9
+%global nss_softokn_version 3.12.9
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.8
-Release:          3%{?dist}
+Version:          3.12.9
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -37,14 +37,14 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20100809.tar.bz2
+Source12:         %{name}-pem-20101125.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nsspem-596674.patch
-Patch8:           nss-sysinit-userdb-first.patch
-Patch9:           0001-Add-support-for-PKCS-8-encoded-private-keys.patch
-Patch10:          0001-Do-not-define-SEC_SkipTemplate.patch
+Patch7:           nsspem-642433.patch
+Patch11:          honor-user-trust-preferences.patch
+Patch15:          swap-internal-key-slot.patch
+Patch16:          nss-539183.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -102,6 +102,7 @@ Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
+Requires:         nss-softokn-freebl-devel = %{nss_softokn_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -115,10 +116,10 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .596674
-%patch8 -p0 -b .603313
-%patch9 -p1 -b .pkcs8privatekey
-%patch10 -p1 -b .noskiptemplate
+%patch7 -p0 -b .642433
+%patch11 -p1 -b .643134
+%patch15 -p1 -b .jss
+%patch16 -p0 -b .539183
 
 
 %build
@@ -129,6 +130,10 @@ export FREEBL_NO_DEPEND
 # Enable compiler optimizations and disable debugging code
 BUILD_OPT=1
 export BUILD_OPT
+
+# Uncomment to disable optimizations
+#RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
+#export RPM_OPT_FLAGS
 
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
@@ -202,6 +207,21 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 %{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 
+%check
+
+# Begin -- copied from the build section
+FREEBL_NO_DEPEND=1
+export FREEBL_NO_DEPEND
+
+BUILD_OPT=1
+export BUILD_OPT
+
+%ifarch x86_64 ppc64 ia64 s390x sparc64
+USE_64=1
+export USE_64
+%endif
+# End -- copied from the build section
+
 # enable the following line to force a test failure
 # find ./mozilla -name \*.chk | xargs rm -f
 
@@ -217,7 +237,7 @@ chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 # avoid weird quoting we'll require that no spaces are being used.
 
 SPACEISBAD=`find ./mozilla/security/nss/tests | grep -c ' '` ||:
-if [ SPACEISBAD -ne 0 ]; then
+if [ $SPACEISBAD -ne 0 ]; then
   echo "error: filenames containing space are not supported (xargs)"
   exit 1
 fi
@@ -247,9 +267,10 @@ cd ./mozilla/security/nss/tests/
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
-#  Disable the ssl test suites untl Bug 539183 gets resolved
-%global nss_ssl_tests " "
-%global nss_ssl_run " "
+# Uncomment these lines if you need to temporarily
+# disable some test suites for faster test builds
+# global nss_ssl_tests "normal_fips"
+# global nss_ssl_run "cov auth"
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
@@ -356,7 +377,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
 
-#remove header shipped in nss-softokn-devel
+#remove headers shipped by nss-softokn-devel and nss-softokn-freebl-devel
+rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/alghmac.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
@@ -386,16 +408,16 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssckbi.so
 %{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert8.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key3.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/secmod.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
 
 %files sysinit
 %defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
-%config(noreplace) %{_sysconfdir}/pki/nssdb/cert9.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/key4.db
-%config(noreplace) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %{_bindir}/setup-nsssysinit.sh
 
 %files tools
@@ -489,7 +511,17 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
+
 %changelog
+* Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-8
+- Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
+- Add a missing requires for pkcs11-devel (#675196)
+- Remove a header that now nss-softokn-freebl-devel ships
+- Fix to swap internal key slot on fips mode switches, related to #633043
+- Remove a header that now nss-softokn-freebl-devel ships (#675196)
+- Fix to honor the user's cert trust preferences (#633043)
+- Update to 3.12.9
+
 * Fri Nov 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
 - Update test certificate which had expired
 
