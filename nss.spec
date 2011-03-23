@@ -520,7 +520,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %changelog
 * Wed Mar 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-14
-- Update to NSS_3.12.9_WITH_CKPI_1_82_RTM
+- Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
 
 * Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
 - Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
