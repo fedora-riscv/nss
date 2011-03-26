@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -513,6 +513,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Mar 25 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
+- Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
+
 * Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-8
 - Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
 - Add a missing requires for pkcs11-devel (#675196)
