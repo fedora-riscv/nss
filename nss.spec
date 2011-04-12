@@ -515,7 +515,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-15
+* Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-10
 - Implement PEM logging using NSPR's own (#695011)
 - Update the expired PayPalEE test certificate to one good until April 1, 2013
 
