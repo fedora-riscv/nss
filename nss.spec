@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.9
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -42,6 +42,7 @@ Source12:         %{name}-pem-20101125.tar.bz2
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
+Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch11:          honor-user-trust-preferences.patch
 Patch15:          swap-internal-key-slot.patch
 Patch16:          nss-539183.patch
@@ -117,6 +118,7 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
+%patch8 -p1 -b .695011          
 %patch11 -p1 -b .643134
 %patch15 -p1 -b .jss
 %patch16 -p0 -b .539183
@@ -513,6 +515,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-15
+- Implement PEM logging using NSPR's own (#695011)
+- Update the expired PayPalEE test certificate to one good until April 1, 2013
+
 * Wed Mar 25 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
 - Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
 
