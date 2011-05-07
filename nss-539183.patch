@@ -1,18 +1,9 @@
-Index: mozilla/security/nss/cmd/selfserv/selfserv.c
-===================================================================
-RCS file: /cvsroot/mozilla/security/nss/cmd/selfserv/selfserv.c,v
-retrieving revision 1.94
-diff -p -u -8 -r1.94 selfserv.c
---- mozilla/security/nss/cmd/selfserv/selfserv.c	3 Apr 2010 18:27:27 -0000	1.94
-+++ mozilla/security/nss/cmd/selfserv/selfserv.c	24 Feb 2011 02:28:02 -0000
-@@ -1487,21 +1487,21 @@ PRFileDesc *
- getBoundListenSocket(unsigned short port)
- {
-     PRFileDesc *       listen_sock;
-     int                listenQueueDepth = 5 + (2 * maxThreads);
-     PRStatus	       prStatus;
-     PRNetAddr          addr;
+diff -up ./mozilla/security/nss/cmd/selfserv/selfserv.c.539183 ./mozilla/security/nss/cmd/selfserv/selfserv.c
+--- ./mozilla/security/nss/cmd/selfserv/selfserv.c.539183	2011-04-27 15:24:07.922128850 -0700
++++ ./mozilla/security/nss/cmd/selfserv/selfserv.c	2011-04-27 15:27:11.053271675 -0700
+@@ -1493,14 +1493,14 @@ getBoundListenSocket(unsigned short port
      PRSocketOptionData opt;
+     PRUint16           socketDomain = PR_AF_INET;
  
 -    addr.inet.family = PR_AF_INET;
 -    addr.inet.ip     = PR_INADDR_ANY;
@@ -21,13 +12,11 @@ diff -p -u -8 -r1.94 selfserv.c
 +	errExit("PR_SetNetAddr");
 +    }
  
--    listen_sock = PR_NewTCPSocket();
+     if (PR_GetEnv("NSS_USE_SDP")) {
+         socketDomain = PR_AF_INET_SDP;
+     }
+-    listen_sock = PR_OpenTCPSocket(socketDomain);
 +    listen_sock = PR_OpenTCPSocket(PR_AF_INET6);
      if (listen_sock == NULL) {
- 	errExit("PR_NewTCPSocket");
+         errExit("PR_OpenTCPSocket error");
      }
- 
-     opt.option = PR_SockOpt_Nonblocking;
-     opt.value.non_blocking = PR_FALSE;
-     prStatus = PR_SetSocketOption(listen_sock, &opt);
-     if (prStatus < 0) {
