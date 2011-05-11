@@ -1,12 +1,12 @@
-%global nspr_version 4.8.7
-%global nss_util_version 3.12.9
-%global nss_softokn_version 3.12.9
+%global nspr_version 4.8.8
+%global nss_util_version 3.12.10
+%global nss_softokn_version 3.12.10
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.9
-Release:          10%{?dist}
+Version:          3.12.10
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -43,8 +43,6 @@ Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch8:           0001-Bug-695011-PEM-logging.patch
-Patch11:          honor-user-trust-preferences.patch
-Patch15:          swap-internal-key-slot.patch
 Patch16:          nss-539183.patch
 
 %description
@@ -119,8 +117,6 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
 %patch8 -p1 -b .695011          
-%patch11 -p1 -b .643134
-%patch15 -p1 -b .jss
 %patch16 -p0 -b .539183
 
 
@@ -515,26 +511,50 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-10
+* Fri May 06 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-1
+- Update to NSS_3_12_10_RTM
+
+* Wed Apr 27 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-0.1.beta1
+- Update to NSS_3_12_10_BETA1
+
+* Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-15
 - Implement PEM logging using NSPR's own (#695011)
 - Update the expired PayPalEE test certificate to one good until April 1, 2013
-
-* Wed Mar 25 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
+ 
+* Wed Mar 25 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-14
 - Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
 
-* Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-8
+* Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
 - Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
 
-* Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-7
+* Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-12
 - Add a missing requires for pkcs11-devel (#675196)
+
+* Tue Feb 15 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-11
+- Run the test suites in the check section (#677809)
+
+* Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-10
+- Fix cms headers to not use c++ reserved words (#676036)
+- Reenabling Bug 499444 patches
+- Fix to swap internal key slot on fips mode switches
+
+* Tue Feb 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-9
+- Revert patches for 499444 until all c++ reserved words are found and extirpated
+
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.12.9-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Tue Feb 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-7
+- Fix cms header to not use c++ reserved word (#676036)
+- Reenable patches for bug 499444
+
+* Tue Feb 08 2011 Christopher Aillon <caillon@redhat.com> - 3.12.9-6
+- Revert patches for 499444 as they use a C++ reserved word and
+  cause compilation of Firefox to fail
+
+* Fri Feb 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-5
+- Fix the earlier infinite recursion patch (#499444)
 - Remove a header that now nss-softokn-freebl-devel ships
-
-* Thu Feb 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-6
-- Fix to swap internal key slot on fips mode switches, related to #633043
-
-* Mon Feb 07 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-5
-- Remove a header that now nss-softokn-freebl-devel ships, related to #675196
-- Backing out earlier patch until further testing from upstream for 3.12.10
 
 * Tue Feb 01 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-4
 - Fix infinite recursion when encoding NSS enveloped/digested data (#499444)
