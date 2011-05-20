@@ -515,7 +515,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Fri MAy 20 2011 Dennis Gilmore <dennis@ausil.us> - 3.12.10-3
+* Fri May 20 2011 Dennis Gilmore <dennis@ausil.us> - 3.12.10-3
 - make the testsuite non fatal on arm arches
 
 * Tue May 17 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-2
