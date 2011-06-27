@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.10
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -88,6 +88,7 @@ any system or user configured modules.
 %package devel
 Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
+Provides:         nss-static = %{version}-%{release}
 Requires:         nss = %{version}-%{release}
 Requires:         nss-util-devel
 Requires:         nss-softokn-devel 
@@ -532,6 +533,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Jun 27 2011 Michael Schwendt <mschwendt@fedoraproject.org> - 3.12.10-5
+- Provide virtual -static package to meet guidelines (#609612).
+
 * Fri Jun 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-4
 - Enable pluggable ecc support (#712556)
 - Disable the nssdb write-access-on-read-only-dir tests when user is root (#646045)
