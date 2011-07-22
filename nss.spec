@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.10
-Release:          3%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -45,6 +45,7 @@ Patch7:           nsspem-642433.patch
 Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
 Patch17:          nss-703658.patch
+Patch18:          nss-646045.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -87,6 +88,7 @@ any system or user configured modules.
 %package devel
 Summary:          Development libraries for Network Security Services
 Group:            Development/Libraries
+Provides:         nss-static = %{version}-%{release}
 Requires:         nss = %{version}-%{release}
 Requires:         nss-util-devel
 Requires:         nss-softokn-devel 
@@ -120,6 +122,7 @@ low level services.
 %patch8 -p1 -b .695011          
 %patch16 -p0 -b .539183
 %patch17 -p0 -b .703658
+%patch18 -p0 -b .646045
 
 
 %build
@@ -161,6 +164,21 @@ export NSS_USE_SYSTEM_SQLITE
 USE_64=1
 export USE_64
 %endif
+
+##### phase 1: build freebl/softokn shared libraries
+# there no ecc in freebl
+unset NSS_ENABLE_ECC
+# Compile softoken plus needed support
+%{__make} -C ./mozilla/security/coreconf
+%{__make} -C ./mozilla/security/dbm
+%{__make} -C ./mozilla/security/nss
+
+##### phase 2: build the rest of nss
+# nss supports pluggable ecc
+NSS_ENABLE_ECC=1
+export NSS_ENABLE_ECC
+NSS_ECC_MORE_THAN_SUITE_B=1
+export NSS_ECC_MORE_THAN_SUITE_B
 
 # We only ship the nss proper libraries, no softoken nor util, yet                                   
 # we must compile with the entire source tree because nss needs                               
@@ -515,11 +533,18 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Jun 27 2011 Michael Schwendt <mschwendt@fedoraproject.org> - 3.12.10-5
+- Provide virtual -static package to meet guidelines (#609612).
+
+* Fri Jun 10 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-4
+- Enable pluggable ecc support (#712556)
+- Disable the nssdb write-access-on-read-only-dir tests when user is root (#646045)
+
 * Fri May 20 2011 Dennis Gilmore <dennis@ausil.us> - 3.12.10-3
 - make the testsuite non fatal on arm arches
 
 * Tue May 17 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-2
-- Fix crmf hard-coded maximum size for wrapped private keys (#703658)
+- Fix crmf hard-coded maximum size for wrapped private keys (#703656)
 
 * Fri May 06 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-1
 - Update to NSS_3_12_10_RTM
