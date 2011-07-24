@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.10
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -26,6 +26,17 @@ BuildRequires:    psmisc
 BuildRequires:    perl
 
 Source0:          %{name}-%{version}-stripped.tar.bz2
+# The stripped tar ball is a subset of the upstream sources with
+# patent-encumbered cryptographic algorithms removed.
+# Use this script to remove them and create the stripped archive.
+# 1. Download the sources nss-{version}.tar.gz found within 
+# http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/
+# in a subdirectory named NSS_${major}_${minor}_${maint}_RTM/src
+# 2. In the download directory execute
+# ./mozilla-crypto-strip.sh ${name}-${version}.tar.gz
+# to produce ${name}-${version}-stripped.tar.bz2
+# for uploading to the lookaside cache.
+Source100:        mozilla-crypto-strip.sh
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -297,7 +308,7 @@ cd ../../../../
 killall $RANDSERV || :
 
 TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
-# test suite is failing on arm and has for awhile lets run the test suite but make it non fatal on arm
+# test suite is failing on arm and has for awhile let's run the test suite but make it non fatal on arm
 %ifnarch %{arm}
 if [ $TEST_FAILURES -ne 0 ]; then
   echo "error: test suite returned failure(s)"
@@ -533,6 +544,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Jul 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-6
+- Indicate the provenance of stripped source tarball (#688015)
+
 * Mon Jun 27 2011 Michael Schwendt <mschwendt@fedoraproject.org> - 3.12.10-5
 - Provide virtual -static package to meet guidelines (#609612).
 
