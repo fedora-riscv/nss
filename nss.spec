@@ -1,12 +1,12 @@
 %global nspr_version 4.8.8
-%global nss_util_version 3.12.10
-%global nss_softokn_version 3.12.10
+%global nss_util_version 3.12.11
+%global nss_softokn_version 3.12.11
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.10
-Release:          6%{?dist}
+Version:          3.12.11
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -55,7 +55,7 @@ Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
-Patch17:          nss-703658.patch
+#Patch17:          nss-703658.patch
 Patch18:          nss-646045.patch
 
 %description
@@ -132,7 +132,7 @@ low level services.
 %patch7 -p0 -b .642433
 %patch8 -p1 -b .695011          
 %patch16 -p0 -b .539183
-%patch17 -p0 -b .703658
+#%patch17 -p0 -b .703658
 %patch18 -p0 -b .646045
 
 
@@ -544,6 +544,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Aug 09 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.11-1
+- Update to NSS_3_12_11_RTM
+
 * Sat Jul 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-6
 - Indicate the provenance of stripped source tarball (#688015)
 
