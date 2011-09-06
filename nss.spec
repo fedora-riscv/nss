@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.10
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -46,6 +46,7 @@ Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
 Patch17:          nss-703658.patch
 Patch18:          nss-646045.patch
+Patch19:          builtins-nssckbi_1_87_rtm.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -123,6 +124,7 @@ low level services.
 %patch16 -p0 -b .539183
 %patch17 -p0 -b .703658
 %patch18 -p0 -b .646045
+%patch19 -p0 -b .ckbi187
 
 
 %build
@@ -533,6 +535,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.10-6
+- Update builtins certs to those from NSSCKBI_1_87_RTM
+
 * Mon Jun 27 2011 Michael Schwendt <mschwendt@fedoraproject.org> - 3.12.10-5
 - Provide virtual -static package to meet guidelines (#609612).
 
