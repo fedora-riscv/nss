@@ -1,4 +1,4 @@
-%global nspr_version 4.9
+%global nspr_version 4.8.9
 %global nss_util_version 3.13
 %global nss_softokn_version 3.13
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13
-Release:          0.1%{?dist}.rc0.1
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -549,6 +549,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Oct 15 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-1
+- Update to NSS_3_13_RTM
+
 * Sat Oct 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-0.1.rc0.1
 - Update to NSS_3_13_RC0
 
