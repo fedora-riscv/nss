@@ -59,7 +59,7 @@ Patch18:          nss-646045.patch
 Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
-Patch23:          nss-ckbi-1.88-rtm.patch
+Patch23:          nss-ckbi-1.88.rtm.patch
 
 
 %description
