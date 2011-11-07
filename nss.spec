@@ -1,12 +1,12 @@
-%global nspr_version 4.8.8
-%global nss_util_version 3.12.10
+%global nspr_version 4.8.9
+%global nss_util_version 3.13.1
 %global nss_softokn_version 3.12.10
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.10
-Release:          7%{?dist}
+Version:          3.13.1
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -55,9 +55,12 @@ Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
-Patch17:          nss-703658.patch
 Patch18:          nss-646045.patch
-Patch19:          builtins-nssckbi_1_87_rtm.patch
+Patch20:          nsspem-createobject-initialize-pointer.patch
+Patch21:          0001-libnsspem-rhbz-734760.patch
+Patch22:          nsspem-init-inform-not-thread-safe.patch
+Patch23:          nss-ckbi-1.88.rtm.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -133,9 +136,11 @@ low level services.
 %patch7 -p0 -b .642433
 %patch8 -p1 -b .695011          
 %patch16 -p0 -b .539183
-%patch17 -p0 -b .703658
 %patch18 -p0 -b .646045
-%patch19 -p0 -b .ckbi187
+%patch20 -p1 -b .717338
+%patch21 -p1 -b .734760
+%patch22 -p0 -b .736410
+%patch23 -p0 -b .ckbi188
 
 
 %build
@@ -546,8 +551,29 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.10-7
+* Fri Nov 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-2
+- Fix broken dependencies by updating the nss-util and nss-softokn versions
+
+* Thu Nov 03 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-1
+- Update to NSS_3_13_1_RTM
+- Update builtin certs to those from NSSCKBI_1_88_RTM
+
+* Sat Oct 15 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-1
+- Update to NSS_3_13_RTM
+
+* Sat Oct 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-0.1.rc0.1
+- Update to NSS_3_13_RC0
+
+* Wed Sep 14 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.11-3
+- Fix attempt to free initilized pointer (#717338)
+- Fix leak on pem_CreateObject when given non-existing file name (#734760)
+- Fix pem_Initialize to return CKR_CANT_LOCK on multi-treaded calls (#736410)
+
+* Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.11-2
 - Update builtins certs to those from NSSCKBI_1_87_RTM
+
+* Tue Aug 09 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.11-1
+- Update to NSS_3_12_11_RTM
 
 * Sat Jul 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-6
 - Indicate the provenance of stripped source tarball (#688015)
