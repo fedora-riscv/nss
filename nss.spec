@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.12.10
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -47,6 +47,7 @@ Patch16:          nss-539183.patch
 Patch17:          nss-703658.patch
 Patch18:          nss-646045.patch
 Patch19:          builtins-nssckbi_1_87_rtm.patch
+Patch21:          builtins-nssckbi_1_88_rtm.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -92,7 +93,7 @@ Group:            Development/Libraries
 Provides:         nss-static = %{version}-%{release}
 Requires:         nss = %{version}-%{release}
 Requires:         nss-util-devel
-Requires:         nss-softokn-devel 
+Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         pkgconfig
 
@@ -120,11 +121,12 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch7 -p0 -b .642433
-%patch8 -p1 -b .695011          
+%patch8 -p1 -b .695011
 %patch16 -p0 -b .539183
 %patch17 -p0 -b .703658
 %patch18 -p0 -b .646045
 %patch19 -p0 -b .ckbi187
+%patch21 -p0 -b .ckbi188rtm
 
 
 %build
@@ -535,6 +537,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Nov 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-7
+- Update builtins certs to those from NSSCKBI_1_88_RTM
+
 * Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.10-6
 - Update builtins certs to those from NSSCKBI_1_87_RTM
 
