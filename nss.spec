@@ -6,7 +6,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -60,6 +60,7 @@ Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
 Patch23:          nss-ckbi-1.88.rtm.patch
+Patch24:          gnuc-minor-def-fix.patch
 
 
 %description
@@ -141,6 +142,7 @@ low level services.
 %patch21 -p1 -b .734760
 %patch22 -p0 -b .736410
 %patch23 -p0 -b .ckbi188
+%patch24 -p1 -b .gnuc-minor
 
 
 %build
@@ -551,6 +553,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Nov 09 2011 Dan Williams <dcbw@redhat.com> - 3.13.1-3
+- Fix builds of packages that use NSS due to a small header file error
+
 * Fri Nov 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-2
 - Fix broken dependencies by updating the nss-util and nss-softokn versions
 
