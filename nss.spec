@@ -1,22 +1,27 @@
 %global nspr_version 4.8.9
 %global nss_util_version 3.13.1
 %global nss_softokn_version 3.13.1
+%global nss_softokn_fips_version 3.12.9
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
-Requires:         nss-system-init
+# TODO: change from nss_softokn_fips_version back to nss_softokn_version
+# once we are done with the merge
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_fips_version}
+Requires:         nss-system-init%{?_isa}
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
+# TODO: change from nss_softokn_fips_version back to nss_softokn_version
+# once we are done with the merge
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_fips_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -120,7 +125,9 @@ Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
-Requires:         nss-softokn-freebl-devel = %{nss_softokn_version}
+# TODO: revert to using nss_softokn_version once we are done with
+# merging Rawhide into to the next RHEL version
+Requires:         nss-softokn-freebl-devel >= %{nss_softokn_fips_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -212,6 +219,8 @@ export NSS_ECC_MORE_THAN_SUITE_B
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
+# TODO: change from nss_softokn_fips_version back to nss_softokn_version
+# once we are done with the merge
 %{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
@@ -220,7 +229,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_fips_version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -553,6 +562,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Nov 27 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-4
+- Changed the minimum required softokn version to nss_softokn_fips_version
+- This is a temporary change to enable merging into the new rhel git repo
+- Using Requires: nss-system-init%%{?_isa} to prevent multilib install problems (rhbz#751694)
+
 * Thu Nov 09 2011 Dan Williams <dcbw@redhat.com> - 3.13.1-3
 - Fix builds of packages that use NSS due to a small header file error
 
