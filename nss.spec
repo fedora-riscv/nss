@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -16,7 +16,7 @@ Requires:         nss-util >= %{nss_util_version}
 # TODO: change from nss_softokn_fips_version back to nss_softokn_version
 # once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_fips_version}
-Requires:         nss-system-init%{?_isa}
+Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: change from nss_softokn_fips_version back to nss_softokn_version
@@ -562,6 +562,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Nov 28 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
+- Dropping the %%{?_isa} from Requires: nss-system-init as it causes problems
+
 * Sun Nov 27 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-4
 - Changed the minimum required softokn version to nss_softokn_fips_version
 - This is a temporary change to enable merging into the new rhel git repo
