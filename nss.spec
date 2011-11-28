@@ -1,22 +1,27 @@
 %global nspr_version 4.8.9
 %global nss_util_version 3.13.1
-%global nss_softokn_version 3.12.10
+%global nss_softokn_version 3.13.1
+%global nss_softokn_fips_version 3.12.9
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
+# TODO: change from nss_softokn_fips_version back to nss_softokn_version
+# once we are done with the merge
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_fips_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
+# TODO: change from nss_softokn_fips_version back to nss_softokn_version
+# once we are done with the merge
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_fips_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -60,6 +65,9 @@ Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
 Patch23:          nss-ckbi-1.88.rtm.patch
+# this patch has been applied in nss-util where
+# it belongs, will remove from here eventually
+# Patch24:          gnuc-minor-def-fix.patch
 
 
 %description
@@ -119,7 +127,9 @@ Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
-Requires:         nss-softokn-freebl-devel = %{nss_softokn_version}
+# TODO: revert to using nss_softokn_version once we are done with
+# merging Rawhide into to the next RHEL version
+Requires:         nss-softokn-freebl-devel >= %{nss_softokn_fips_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -141,6 +151,7 @@ low level services.
 %patch21 -p1 -b .734760
 %patch22 -p0 -b .736410
 %patch23 -p0 -b .ckbi188
+#%patch24 -p1 -b .gnuc-minor
 
 
 %build
