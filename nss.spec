@@ -584,6 +584,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
 - Statically link the pem module against system freebl found in buildroot
 - Disabling sha224-related powerup selftest until we update softokn
+- Disable sha224 and pss tests which nss-softokn 3.12.x doesn't support
 
 * Fri Dec 02 2011 Elio Maldonado Batiz <emaldona@redhat.com> - 3.13.1-4
 - Rebuild with nss-softokn from 3.12 in the buildroot
