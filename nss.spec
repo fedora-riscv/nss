@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -160,7 +160,6 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch27 -p0 -b .nosha224
-%patch28 -p0 -b .terminalrecord
 
 
 %build
@@ -192,10 +191,6 @@ NSPR_LIB_DIR=%{_libdir}
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
-NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-
-export NSSUTIL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-export NSSUTIL_LIB_DIR=%{_libdir}
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
@@ -581,6 +576,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Dec 05 2011 Elio Maldonado Batiz <emaldona@redhat.com> - 3.13.1-6
+- Removed unwanted /usr/include/nss3 in front of the normal cflags include path
+- Removed unnecessary patch dealing with CERTDB_TERMINAL_RECORD, it's visible
+
 * Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
 - Statically link the pem module against system freebl found in buildroot
 - Disabling sha224-related powerup selftest until we update softokn
