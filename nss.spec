@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -64,8 +64,14 @@ Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
 Patch23:          nss-ckbi-1.88.rtm.patch
-# Remove this patch which belongs in nss-util
-#Patch24:          gnuc-minor-def-fix.patch
+# must statically link pem against the 3.12.x system freebl in the buildroot
+Patch25:          nsspem-use-system-freebl.patch
+# don't compile the fipstest application
+Patch26:          nofipstest.patch
+# sha224 isn't available we use 3.12 softokn
+Patch27:          nosha224.patch
+# Get rid of it as soon as we can
+Patch28:          terminalrecord.patch
 
 
 %description
@@ -150,8 +156,11 @@ low level services.
 %patch21 -p1 -b .734760
 %patch22 -p0 -b .736410
 %patch23 -p0 -b .ckbi188
-# TODO: Reemove this patch which is now in nss-util
-#%patch24 -p1 -b .gnuc-minor
+# link pem against buildroot's 3.12 freebl
+%patch25 -p0 -b .systemfreebl
+%patch26 -p0 -b .nofipstest
+%patch27 -p0 -b .nosha224
+%patch28 -p0 -b .terminalrecord
 
 
 %build
@@ -178,13 +187,20 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
 
 NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
-NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
+NSPR_LIB_DIR=%{_libdir}
 
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
 NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
+
+export NSSUTIL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
+export NSSUTIL_LIB_DIR=%{_libdir}
+export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
+export FREEBL_LIB_DIR=%{_libdir}
+export USE_SYSTEM_FREEBL=1
+# prevents running the sha224 portion of the powerup selftest when testing
+export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -221,6 +237,9 @@ export NSS_ECC_MORE_THAN_SUITE_B
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
+# TODO: using %%{nss_softokn_fips_version} for rhel
+# but for fefora we will revert to nss_softokn_version after
+# the merge is completed
 %{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
@@ -229,7 +248,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_fips_version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -562,6 +581,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
+- Statically link the pem module against system freebl found in buildroot
+- Disabling sha224-related powerup selftest until we update softokn
+
 * Fri Dec 02 2011 Elio Maldonado Batiz <emaldona@redhat.com> - 3.13.1-4
 - Rebuild with nss-softokn from 3.12 in the buildroot
 - Allows the pem module to statically link against 3.12.x freebl
