@@ -70,8 +70,6 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch26:          nofipstest.patch
 # sha224 isn't available we use 3.12 softokn
 Patch27:          nosha224.patch
-# Get rid of it as soon as we can
-Patch28:          terminalrecord.patch
 
 
 %description
