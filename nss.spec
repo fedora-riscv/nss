@@ -574,7 +574,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Mon Dec 05 2011 Elio Maldonado Batiz <emaldona@redhat.com> - 3.13.1-6
+* Mon Dec 05 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-6
 - Removed unwanted /usr/include/nss3 in front of the normal cflags include path
 - Removed unnecessary patch dealing with CERTDB_TERMINAL_RECORD, it's visible
 
