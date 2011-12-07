@@ -70,8 +70,6 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch26:          nofipstest.patch
 # sha224 isn't available we use 3.12 softokn
 Patch27:          nosha224.patch
-# Get rid of it as soon as we can
-Patch28:          terminalrecord.patch
 
 
 %description
@@ -118,7 +116,7 @@ Group:            Development/Libraries
 Provides:         nss-static = %{version}-%{release}
 Requires:         nss = %{version}-%{release}
 Requires:         nss-util-devel
-Requires:         nss-softokn-devel 
+Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         pkgconfig
 
@@ -160,7 +158,6 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch27 -p0 -b .nosha224
-%patch28 -p0 -b .terminalrecord
 
 
 %build
@@ -187,13 +184,16 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
 
 NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
-NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
+NSPR_LIB_DIR=%{_libdir}
 
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
-NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
+export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
+export FREEBL_LIB_DIR=%{_libdir}
+export USE_SYSTEM_FREEBL=1
+# prevents running the sha224 portion of the powerup selftest when testing
+export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -241,7 +241,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_fips_version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -574,7 +574,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-6
+* Mon Dec 05 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-6
+- Removed unwanted /usr/include/nss3 in front of the normal cflags include path
+- Removed unnecessary patch dealing with CERTDB_TERMINAL_RECORD, it's visible
+
+* Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
 - Statically link the pem module against system freebl found in buildroot
 - Disabling sha224-related powerup selftest until we update softokn
 - Disable sha224 and pss tests which nss-softokn 3.12.x doesn't support
