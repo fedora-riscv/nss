@@ -7,20 +7,20 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
 # TODO: revert to same version as nss once we are done with the merge
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_fips_version}
+Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
 # Using '>=' but on RHEL the requires should be '='
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_fips_version}
+BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
@@ -68,8 +68,6 @@ Patch23:          nss-ckbi-1.88.rtm.patch
 Patch25:          nsspem-use-system-freebl.patch
 # don't compile the fipstest application
 Patch26:          nofipstest.patch
-# sha224 isn't available when we use 3.12 softokn
-Patch27:          nosha224.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
 
@@ -134,7 +132,7 @@ Requires:         nss-devel = %{version}-%{release}
 # TODO: revert to using nss_softokn_version once we are done with
 # the merge into to new rhel git repo
 # For RHEL we should have '=' instead of '>='
-Requires:         nss-softokn-freebl-devel >= %{nss_softokn_fips_version}
+Requires:         nss-softokn-freebl-devel >= %{nss_softokn_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -159,7 +157,6 @@ low level services.
 # link pem against buildroot's 3.12 freebl
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
-%patch27 -p0 -b .nosha224
 %patch28 -p0 -b .754771
 
 
@@ -233,9 +230,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
-# TODO: using %%{nss_softokn_fips_version} for rhel
-# but for fefora we will revert to nss_softokn_version after
-# the merge is completed
+# Using the current %%{nss_softokn_version} for fedora again
 %{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
@@ -244,7 +239,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_fips_version},g" > \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
                           ./mozilla/dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
@@ -577,6 +572,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Dec 13 2011 elio maldonado <emaldona@redhat.com> - 3.13.1-9
+- Revert to using current nss_softokn_version
+- Patch to deal with lack of sha224 is no longer needed
+
 * Tue Dec 13 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-8
 - Resolves: Bug 754771 - [PEM] an unregistered callback causes a SIGSEGV
 
