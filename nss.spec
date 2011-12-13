@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -68,8 +68,10 @@ Patch23:          nss-ckbi-1.88.rtm.patch
 Patch25:          nsspem-use-system-freebl.patch
 # don't compile the fipstest application
 Patch26:          nofipstest.patch
-# sha224 isn't available we use 3.12 softokn
+# sha224 isn't available when we use 3.12 softokn
 Patch27:          nosha224.patch
+# include this patch in the upstream pem review
+Patch28:          nsspem-bz754771.patch
 
 
 %description
@@ -158,6 +160,7 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch27 -p0 -b .nosha224
+%patch28 -p0 -b .754771
 
 
 %build
@@ -574,6 +577,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Dec 13 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-8
+- Resolves: Bug 754771 - [PEM] an unregistered callback causes a SIGSEGV
+
 * Mon Dec 12 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-7
 - Resolves: Bug 750376 - nss 3.13 breaks sssd TLS
 - Fix how pem is built so that nss-3.13.x works with nss-softokn-3.12.y
