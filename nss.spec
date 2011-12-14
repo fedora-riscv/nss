@@ -1,21 +1,25 @@
-%global nspr_version 4.8.8
-%global nss_util_version 3.12.10
-%global nss_softokn_version 3.12.10
+%global nspr_version 4.8.9
+%global nss_util_version 3.13.1
+%global nss_softokn_fips_version 3.12.9
+%global nss_softokn_version 3.13.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.12.10
-Release:          7%{?dist}
+Version:          3.13.1
+Release:          9%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
 Requires:         nss-util >= %{nss_util_version}
+# TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
+# TODO: revert to same version as nss once we are done with the merge
+# Using '>=' but on RHEL the requires should be '='
 BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
@@ -26,6 +30,17 @@ BuildRequires:    psmisc
 BuildRequires:    perl
 
 Source0:          %{name}-%{version}-stripped.tar.bz2
+# The stripped tar ball is a subset of the upstream sources with
+# patent-encumbered cryptographic algorithms removed.
+# Use this script to remove them and create the stripped archive.
+# 1. Download the sources nss-{version}.tar.gz found within 
+# http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/
+# in a subdirectory named NSS_${major}_${minor}_${maint}_RTM/src
+# 2. In the download directory execute
+# ./mozilla-crypto-strip.sh ${name}-${version}.tar.gz
+# to produce ${name}-${version}-stripped.tar.bz2
+# for uploading to the lookaside cache.
+Source100:        mozilla-crypto-strip.sh
 
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -44,10 +59,18 @@ Patch6:           nss-enable-pem.patch
 Patch7:           nsspem-642433.patch
 Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
-Patch17:          nss-703658.patch
 Patch18:          nss-646045.patch
-Patch19:          builtins-nssckbi_1_87_rtm.patch
-Patch21:          builtins-nssckbi_1_88_rtm.patch
+Patch20:          nsspem-createobject-initialize-pointer.patch
+Patch21:          0001-libnsspem-rhbz-734760.patch
+Patch22:          nsspem-init-inform-not-thread-safe.patch
+Patch23:          nss-ckbi-1.88.rtm.patch
+# must statically link pem against the 3.12.x system freebl in the buildroot
+Patch25:          nsspem-use-system-freebl.patch
+# don't compile the fipstest application
+Patch26:          nofipstest.patch
+# include this patch in the upstream pem review
+Patch28:          nsspem-bz754771.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -106,7 +129,10 @@ Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
 Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
-Requires:         nss-softokn-freebl-devel = %{nss_softokn_version}
+# TODO: revert to using nss_softokn_version once we are done with
+# the merge into to new rhel git repo
+# For RHEL we should have '=' instead of '>='
+Requires:         nss-softokn-freebl-devel >= %{nss_softokn_version}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS 
@@ -123,10 +149,15 @@ low level services.
 %patch7 -p0 -b .642433
 %patch8 -p1 -b .695011
 %patch16 -p0 -b .539183
-%patch17 -p0 -b .703658
 %patch18 -p0 -b .646045
-%patch19 -p0 -b .ckbi187
-%patch21 -p0 -b .ckbi188rtm
+%patch20 -p1 -b .717338
+%patch21 -p1 -b .734760
+%patch22 -p0 -b .736410
+%patch23 -p0 -b .ckbi188
+# link pem against buildroot's 3.12 freebl
+%patch25 -p0 -b .systemfreebl
+%patch26 -p0 -b .nofipstest
+%patch28 -p0 -b .754771
 
 
 %build
@@ -537,11 +568,60 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Tue Nov 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-7
-- Update builtins certs to those from NSSCKBI_1_88_RTM
+* Tue Dec 13 2011 elio maldonado <emaldona@redhat.com> - 3.13.1-9
+- Revert to using current nss_softokn_version
+- Patch to deal with lack of sha224 is no longer needed
 
-* Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.10-6
+* Tue Dec 13 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-8
+- Resolves: Bug 754771 - [PEM] an unregistered callback causes a SIGSEGV
+
+* Mon Dec 12 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-7
+- Resolves: Bug 750376 - nss 3.13 breaks sssd TLS
+- Fix how pem is built so that nss-3.13.x works with nss-softokn-3.12.y
+- Only patch blapitest for the lack of sha224 on system freebl
+- Completed the patch to make pem link against system freebl
+
+* Mon Dec 05 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-6
+- Removed unwanted /usr/include/nss3 in front of the normal cflags include path
+- Removed unnecessary patch dealing with CERTDB_TERMINAL_RECORD, it's visible
+
+* Sun Dec 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-5
+- Statically link the pem module against system freebl found in buildroot
+- Disabling sha224-related powerup selftest until we update softokn
+- Disable sha224 and pss tests which nss-softokn 3.12.x doesn't support
+
+* Fri Dec 02 2011 Elio Maldonado Batiz <emaldona@redhat.com> - 3.13.1-4
+- Rebuild with nss-softokn from 3.12 in the buildroot
+- Allows the pem module to statically link against 3.12.x freebl
+- Required for using nss-3.13.x with nss-softokn-3.12.y for a merge inrto rhel git repo
+- Build will be temprarily placed on buildroot override but not pushed in bodhi
+
+* Fri Nov 04 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-2
+- Fix broken dependencies by updating the nss-util and nss-softokn versions
+
+* Thu Nov 03 2011 Elio Maldonado <emaldona@redhat.com> - 3.13.1-1
+- Update to NSS_3_13_1_RTM
+- Update builtin certs to those from NSSCKBI_1_88_RTM
+
+* Sat Oct 15 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-1
+- Update to NSS_3_13_RTM
+
+* Sat Oct 08 2011 Elio Maldonado <emaldona@redhat.com> - 3.13-0.1.rc0.1
+- Update to NSS_3_13_RC0
+
+* Wed Sep 14 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.11-3
+- Fix attempt to free initilized pointer (#717338)
+- Fix leak on pem_CreateObject when given non-existing file name (#734760)
+- Fix pem_Initialize to return CKR_CANT_LOCK on multi-treaded calls (#736410)
+
+* Tue Sep 06 2011 Kai Engert <kaie@redhat.com> - 3.12.11-2
 - Update builtins certs to those from NSSCKBI_1_87_RTM
+
+* Tue Aug 09 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.11-1
+- Update to NSS_3_12_11_RTM
+
+* Sat Jul 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.10-6
+- Indicate the provenance of stripped source tarball (#688015)
 
 * Mon Jun 27 2011 Michael Schwendt <mschwendt@fedoraproject.org> - 3.12.10-5
 - Provide virtual -static package to meet guidelines (#609612).
@@ -564,9 +644,8 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 * Mon Apr 11 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-15
 - Implement PEM logging using NSPR's own (#695011)
-- Update the expired PayPalEE test certificate to one good until April 1, 2013
- 
-* Wed Mar 25 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-14
+
+* Wed Mar 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-14
 - Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
 
 * Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
