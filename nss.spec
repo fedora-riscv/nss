@@ -184,13 +184,16 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
 
 NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
-NSPR_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nspr | sed 's/-L//'`
+NSPR_LIB_DIR=%{_libdir}
 
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
-NSS_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-NSS_LIB_DIR=`/usr/bin/pkg-config --libs-only-L nss-util | sed 's/-L//'`
+export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
+export FREEBL_LIB_DIR=%{_libdir}
+export USE_SYSTEM_FREEBL=1
+# prevents running the sha224 portion of the powerup selftest when testing
+export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -227,6 +230,7 @@ export NSS_ECC_MORE_THAN_SUITE_B
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
+# Using the current %%{nss_softokn_version} for fedora again
 %{__mkdir_p} ./mozilla/dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
@@ -332,7 +336,7 @@ cd ../../../../
 killall $RANDSERV || :
 
 TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
-# test suite is failing on arm and has for awhile lets run the test suite but make it non fatal on arm
+# test suite is failing on arm and has for awhile let's run the test suite but make it non fatal on arm
 %ifnarch %{arm}
 if [ $TEST_FAILURES -ne 0 ]; then
   echo "error: test suite returned failure(s)"
