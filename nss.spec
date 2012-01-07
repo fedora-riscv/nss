@@ -70,7 +70,8 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch26:          nofipstest.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
-Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+# This patch is currently meant for f16 and f15 only
+#Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 
 %description
@@ -159,7 +160,8 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch28 -p0 -b .754771
-%patch29 -p0 -b .770682
+# activate only if requested for f17
+#%patch29 -p0 -b .770682
 
 
 %build
@@ -574,6 +576,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-11
+- Deactivate a patch currently meant for stable branches only
+
 * Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-10
 - Resolves: Bug 770682 - nss update breaks pidgin-sipe connectivity
 - NSS_SSL_CBC_RANDOM_IV set to 0 by default and changed to 1 on user request
