@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -70,6 +70,7 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch26:          nofipstest.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
+Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 
 %description
@@ -158,6 +159,7 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch28 -p0 -b .754771
+%patch29 -p0 -b .770682
 
 
 %build
@@ -572,6 +574,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-10
+- Resolves: Bug 770682 - nss update breaks pidgin-sipe connectivity
+- NSS_SSL_CBC_RANDOM_IV set to 0 by default and changed to 1 on user request
+
 * Tue Dec 13 2011 elio maldonado <emaldona@redhat.com> - 3.13.1-9
 - Revert to using current nss_softokn_version
 - Patch to deal with lack of sha224 is no longer needed
