@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          11%{?dist}
+Release:          12%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -72,6 +72,7 @@ Patch26:          nofipstest.patch
 Patch28:          nsspem-bz754771.patch
 # This patch is currently meant for f16 and f15 only
 #Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+Patch30:          bz784672-protect-against-calls-before-nss_init.patch
 
 
 %description
@@ -162,6 +163,7 @@ low level services.
 %patch28 -p0 -b .754771
 # activate only if requested for f17
 #%patch29 -p0 -b .770682
+%patch30 -p0 -b .784672
 
 
 %build
@@ -576,6 +578,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Jan 26 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-12
+- Resolves: Bug 784672 - nss should protect against being called before nss_Init
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.13.1-11
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
