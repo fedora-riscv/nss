@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          10%{?dist}
+Release:          11%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -71,6 +71,7 @@ Patch26:          nofipstest.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+Patch30:          bz784672-protect-against-calls-before-nss_init.patch
 
 
 %description
@@ -160,6 +161,7 @@ low level services.
 %patch26 -p0 -b .nofipstest
 %patch28 -p0 -b .754771
 %patch29 -p0 -b .770682
+%patch30 -p0 -b .784672
 
 
 %build
@@ -574,6 +576,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Jan 26 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-12
+- Resolves: Bug 784672 - nss should protect against being called before nss_Init
+
 * Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-10
 - Resolves: Bug 770682 - nss update breaks pidgin-sipe connectivity
 - NSS_SSL_CBC_RANDOM_IV set to 0 by default and changed to 1 on user request
