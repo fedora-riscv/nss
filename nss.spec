@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.1
-Release:          12%{?dist}
+Release:          13%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -73,6 +73,9 @@ Patch28:          nsspem-bz754771.patch
 # This patch is currently meant for f16 and f15 only
 #Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
+# Fix gcc 4.7 c++ issue in secmodt.h
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=50917
+Patch31:          nss-fix-gcc47-secmodt.patch
 
 
 %description
@@ -164,6 +167,7 @@ low level services.
 # activate only if requested for f17
 #%patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
+%patch31 -p0 -b .gcc47
 
 
 %build
@@ -578,6 +582,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Jan 30 2012 Tom Callaway <spot@fedoraproject.org> - 3.13.1-13
+- fix issue with gcc 4.7 in secmodt.h and C++11 user-defined literals
+
 * Thu Jan 26 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-12
 - Resolves: Bug 784672 - nss should protect against being called before nss_Init
 
