@@ -1,13 +1,13 @@
-%global nspr_version 4.8.9
-%global nss_util_version 3.13.1
+%global nspr_version 4.9
+%global nss_util_version 3.13.3
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.13.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.13.1
-Release:          13%{?dist}
+Version:          3.13.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -63,7 +63,6 @@ Patch18:          nss-646045.patch
 Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
-Patch23:          nss-ckbi-1.88.rtm.patch
 # must statically link pem against the 3.12.x system freebl in the buildroot
 Patch25:          nsspem-use-system-freebl.patch
 # don't compile the fipstest application
@@ -159,7 +158,6 @@ low level services.
 %patch20 -p1 -b .717338
 %patch21 -p1 -b .734760
 %patch22 -p0 -b .736410
-%patch23 -p0 -b .ckbi188
 # link pem against buildroot's 3.12 freebl
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
@@ -582,6 +580,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Mar 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-1
+- Update to NSS_3_13_3_RTM
+
 * Mon Jan 30 2012 Tom Callaway <spot@fedoraproject.org> - 3.13.1-13
 - fix issue with gcc 4.7 in secmodt.h and C++11 user-defined literals
 
