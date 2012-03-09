@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.3
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -71,13 +71,24 @@ Patch26:          nofipstest.patch
 Patch28:          nsspem-bz754771.patch
 # This patch is currently meant for f16 and f15 only
 #Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
 # Fix gcc 4.7 c++ issue in secmodt.h
 # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=50917
 Patch31:          nss-fix-gcc47-secmodt.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734484
 Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch33:          Bug-800682-Qpid-AMQP-daemon-fails-to-load-after-nss-update.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734441
 Patch34:          Bug-800676-nss-workaround-for-freebl-bug-that-causes-openswan-to-drop-connections.patch
+
+# Activate when verified in RHEL
+# Patch55:          Bug-746632-pem_CreateObject-mem-leak-on-non-existing-file-name.patch
 
 
 %description
@@ -104,7 +115,7 @@ Install the nss-tools package if you need command-line tools to
 manipulate the NSS certificate and key database.
 
 %package sysinit
-Summary:          System NSS Initilization
+Summary:          System NSS Initialization
 Group:            System Environment/Base
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
@@ -586,6 +597,11 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Mar 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-3
+- Cleanup of the spec file
+- Add references to the upstream bugs
+- Fix typo in Summary for sysinit
+
 * Thu Mar 08 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-2
 - Pick up fixes from RHEL
 - Resolves: rhbz#800674 - Unable to contact LDAP Server during winsync
