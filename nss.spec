@@ -69,8 +69,8 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch26:          nofipstest.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
-# This patch is currently meant for f16 and f15 only
-#Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+# This patch is currently meant for f16 and f15 only, and f17 now
+Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
