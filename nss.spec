@@ -1,13 +1,13 @@
-%global nspr_version 4.8.9
-%global nss_util_version 3.13.1
+%global nspr_version 4.9
+%global nss_util_version 3.13.3
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.13.1
+%global nss_softokn_version 3.13.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.13.1
-Release:          11%{?dist}
+Version:          3.13.3
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -63,15 +63,29 @@ Patch18:          nss-646045.patch
 Patch20:          nsspem-createobject-initialize-pointer.patch
 Patch21:          0001-libnsspem-rhbz-734760.patch
 Patch22:          nsspem-init-inform-not-thread-safe.patch
-Patch23:          nss-ckbi-1.88.rtm.patch
 # must statically link pem against the 3.12.x system freebl in the buildroot
 Patch25:          nsspem-use-system-freebl.patch
 # don't compile the fipstest application
 Patch26:          nofipstest.patch
 # include this patch in the upstream pem review
 Patch28:          nsspem-bz754771.patch
+# This patch is currently meant for current stable branches
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
+# Fix gcc 4.7 c++ issue in secmodt.h
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=50917
+Patch31:          nss-fix-gcc47-secmodt.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734484
+Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
+Patch33:          Bug-800682-Qpid-AMQP-daemon-fails-to-load-after-nss-update.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734441
+Patch34:          Bug-800676-nss-workaround-for-freebl-bug-that-causes-openswan-to-drop-connections.patch
 
 
 %description
@@ -98,7 +112,7 @@ Install the nss-tools package if you need command-line tools to
 manipulate the NSS certificate and key database.
 
 %package sysinit
-Summary:          System NSS Initilization
+Summary:          System NSS Initialization
 Group:            System Environment/Base
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
@@ -155,13 +169,16 @@ low level services.
 %patch20 -p1 -b .717338
 %patch21 -p1 -b .734760
 %patch22 -p0 -b .736410
-%patch23 -p0 -b .ckbi188
 # link pem against buildroot's 3.12 freebl
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 %patch28 -p0 -b .754771
 %patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
+%patch31 -p0 -b .gcc47
+%patch32 -p0 -b .800674
+%patch33 -p0 -b .800682
+%patch34 -p0 -b .800676
 
 
 %build
@@ -576,6 +593,15 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Mar 10 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-1
+- Update to NSS_3_13_3_RTM
+- spec file cleanup: add references to upstream bugs
+- spec file cleanup: fix typo in Summary for sysinit
+- Pick up fixes from RHEL
+- Resolves: rhbz#800674 - Unable to contact LDAP Server during winsync
+- Resolves: rhbz#800682 - Qpid AMQP daemon fails to load after nss update
+- Resolves: rhbz#800676 - NSS workaround for freebl bug that causes openswan to drop connections
+
 * Thu Jan 26 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-12
 - Resolves: Bug 784672 - nss should protect against being called before nss_Init
 
