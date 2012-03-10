@@ -74,9 +74,6 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
-# Fix gcc 4.7 c++ issue in secmodt.h
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=50917
-Patch31:          nss-fix-gcc47-secmodt.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734484
 Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
@@ -175,7 +172,6 @@ low level services.
 %patch28 -p0 -b .754771
 %patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
-%patch31 -p0 -b .gcc47
 %patch32 -p0 -b .800674
 %patch33 -p0 -b .800682
 %patch34 -p0 -b .800676
