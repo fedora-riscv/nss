@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -186,6 +186,10 @@ low level services.
 
 
 %build
+
+# partial RELRO support as a security enhancement
+LDFLAGS+=-Wl,-z,relro
+export LDFLAGS
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -597,6 +601,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Mar 21 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-4
+- Resolves: Bug 805723 - Library needs partial RELRO support added
+
 * Fri Mar 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-3
 - Cleanup of the spec file
 - Add references to the upstream bugs
