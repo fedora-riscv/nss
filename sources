@@ -1,4 +1,3 @@
-e63cddf74c07f0d818d1052ecc6fbb1f  nss-pem-20101125.tar.bz2
 a5ae49867124ac75f029a9a33af31bad  blank-cert8.db
 9315689bbd9f28ceebd47894f99fccbd  blank-key3.db
 73bc040a0542bba387e6dd7fb9fd7d23  blank-secmod.db
@@ -6,3 +5,4 @@ a5ae49867124ac75f029a9a33af31bad  blank-cert8.db
 2ec9e0606ba40fe65196545564b7cc2a  blank-key4.db
 bf47cecad861efa77d1488ad4a73cb5b  PayPalEE.cert
 13717d6132b9cba15062ee34020ecd5a  nss-3.13.4-stripped.tar.bz2
+d19159b7f91b94afaf7fa78bba006c13  nss-pem-20120402.tar.bz2
