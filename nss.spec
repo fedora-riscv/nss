@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.4
-Release:          0.1%{?dist}.beta1.2
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -582,6 +582,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Apr 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-1
+- Update to NSS_3_13_4_RTM
+
 * Mon Apr 02 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-0.1.beta1.2
 - Update the nss-pem source archive to the latest version
 - Remove no longer needed patches
