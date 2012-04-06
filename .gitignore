@@ -1,8 +1,8 @@
-nss-3.13.3-stripped.tar.bz2
-nss-pem-20101125.tar.bz2
 blank-cert8.db
 blank-key3.db
 blank-secmod.db
 blank-cert9.db
 blank-key4.db
 PayPalEE.cert
+/nss-3.13.4-stripped.tar.bz2
+/nss-pem-20120402.tar.bz2

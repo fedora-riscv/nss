@@ -1,13 +1,13 @@
 %global nspr_version 4.9
-%global nss_util_version 3.13.3
+%global nss_util_version 3.13.4
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.13.3
+%global nss_softokn_version 3.13.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.13.3
-Release:          4%{?dist}
+Version:          3.13.4
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -52,24 +52,18 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20101125.tar.bz2
+Source12:         %{name}-pem-20120402.tar.bz2
 
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
-Patch7:           nsspem-642433.patch
-Patch8:           0001-Bug-695011-PEM-logging.patch
 Patch16:          nss-539183.patch
 Patch18:          nss-646045.patch
-Patch20:          nsspem-createobject-initialize-pointer.patch
-Patch21:          0001-libnsspem-rhbz-734760.patch
-Patch22:          nsspem-init-inform-not-thread-safe.patch
-# must statically link pem against the 3.12.x system freebl in the buildroot
+# must statically link pem against the freebl in the buildroot
+# Needed only when freebl on tree has newe APIS
 Patch25:          nsspem-use-system-freebl.patch
 # don't compile the fipstest application
 Patch26:          nofipstest.patch
-# include this patch in the upstream pem review
-Patch28:          nsspem-bz754771.patch
-# This patch is currently meant for f16 and f15 only, and f17 now
+# This patch is currently meant for stable branches
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
@@ -83,12 +77,6 @@ Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch33:          Bug-800682-Qpid-AMQP-daemon-fails-to-load-after-nss-update.patch
-
-# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734441
-Patch34:          Bug-800676-nss-workaround-for-freebl-bug-that-causes-openswan-to-drop-connections.patch
-
-# Activate when verified in RHEL
-# Patch55:          Bug-746632-pem_CreateObject-mem-leak-on-non-existing-file-name.patch
 
 
 %description
@@ -165,24 +153,17 @@ low level services.
 
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
-%patch7 -p0 -b .642433
-%patch8 -p1 -b .695011
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
-%patch20 -p1 -b .717338
-%patch21 -p1 -b .734760
-%patch22 -p0 -b .736410
-# link pem against buildroot's 3.12 freebl
+# link pem against buildroot's freebl, esential wen mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
-%patch28 -p0 -b .754771
-# activate only if requested for f17
-#%patch29 -p0 -b .770682
+# activate only if requested for this branch
+%patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
 %patch31 -p0 -b .gcc47
 %patch32 -p0 -b .800674
 %patch33 -p0 -b .800682
-%patch34 -p0 -b .800676
 
 
 %build
@@ -601,6 +582,14 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Apr 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-1
+- Update to NSS_3_13_4_RTM
+- Update the nss-pem source archive to the latest version
+- Remove no longer needed patches
+- Resolves: Bug 806043 - use pem files interchangeably in a single process
+- Resolves: Bug 806051 - PEM various flaws detected by Coverity
+- Resolves: Bug 806058 - PEM pem_CreateObject leaks memory given a non-existing file name
+
 * Wed Mar 21 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-4
 - Resolves: Bug 805723 - Library needs partial RELRO support added
 
