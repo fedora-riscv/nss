@@ -155,7 +155,6 @@ low level services.
 # link pem against buildroot's freebl, esential wen mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
-%patch28 -p0 -b .754771
 %patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
 %patch32 -p0 -b .800674
