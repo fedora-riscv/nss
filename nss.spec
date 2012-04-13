@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.4
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -79,6 +79,8 @@ Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch33:          Bug-800682-Qpid-AMQP-daemon-fails-to-load-after-nss-update.patch
 
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=745224
+Patch34:          Bug-772628-nss_Init-leaks-memory.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -161,11 +163,12 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 # activate only if requested for this branch
-%patch29 -p0 -b .770682
+#%patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
 %patch31 -p0 -b .gcc47
 %patch32 -p0 -b .800674
 %patch33 -p0 -b .800682
+%patch34 -p1 -b .772628
 
 
 %build
@@ -580,6 +583,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Apr 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-3
+- Resolves: Bug 812423 - nss_Init leaks memory, fix from RHEL 6.3
+
 * Sun Apr 08 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-2
 - Resolves: Bug 805723 - Library needs partial RELRO support added
 - Patch coreconf/Linux.mk as done on RHEL 6.2
