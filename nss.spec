@@ -163,7 +163,7 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch26 -p0 -b .nofipstest
 # activate only if requested for this branch
-#%patch29 -p0 -b .770682
+%patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
 %patch31 -p0 -b .gcc47
 %patch32 -p0 -b .800674
