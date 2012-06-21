@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -583,6 +583,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Jun 20 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-3
+- Resolves: rhbz#833529 - revert unwanted change to nss.pc.in
+
 * Tue Jun 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-2
 - Resolves: rhbz#833529 - Remove unwanted space from the Libs: line on nss.pc.in
 
