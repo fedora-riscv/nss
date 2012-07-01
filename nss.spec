@@ -1,13 +1,13 @@
-%global nspr_version 4.9
-%global nss_util_version 3.13.4
+%global nspr_version 4.9.1
+%global nss_util_version 3.13.5
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.13.4
+%global nss_softokn_version 3.13.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.13.4
-Release:          3%{?dist}
+Version:          3.13.5
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -92,8 +92,7 @@ v3 certificates, and other security standards.
 %package tools
 Summary:          Tools for the Network Security Services
 Group:            System Environment/Base
-Requires:         nss = %{version}-%{release}
-Requires:         zlib
+Requires:         %{name}%{?_isa} = %{version}-%{release}
 
 %description tools
 Network Security Services (NSS) is a set of libraries designed to
@@ -203,8 +202,6 @@ export NSPR_LIB_DIR
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
-# prevents running the sha224 portion of the powerup selftest when testing
-export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -583,6 +580,15 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-1
+- Update to NSS_3_13_5_RTM
+- Resolves: Bug 830410 - Missing Requires %%{?_isa}
+- Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
+- Drop zlib requires which rpmlint reports as error E: explicit-lib-dependency zlib
+- Enable sha224 portion of powerup selftest when running test suites
+- Require nspr 4.9.1
+- Selective merge from master
+
 * Fri Apr 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-3
 - Resolves: Bug 812423 - nss_Init leaks memory, fix from RHEL 6.3
 
