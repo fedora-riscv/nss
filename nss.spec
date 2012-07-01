@@ -1,4 +1,4 @@
-%global nspr_version 4.9
+%global nspr_version 4.9.1
 %global nss_util_version 3.13.5
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.13.5
@@ -585,6 +585,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
 - Drop zlib requires which rpmlint reports as error E: explicit-lib-dependency zlib
 - Enable sha224 portion of powerup selftest when running test suites
+- Require nspr 4.9.1
 
 * Wed Jun 20 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-3
 - Resolves: rhbz#833529 - revert unwanted change to nss.pc.in
