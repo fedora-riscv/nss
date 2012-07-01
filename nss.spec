@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -580,6 +580,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-5
+- Fix checkin comment to prevent unwanted expansions of percents
+
 * Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-4
 - Resolves: Bug 830410 - Missing Requires %%{?_isa}
 - Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
