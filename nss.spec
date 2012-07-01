@@ -581,7 +581,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %changelog
 * Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-4
-- Resolves: Bug 830410 - Missing Requires %{?_isa}
+- Resolves: Bug 830410 - Missing Requires %%{?_isa}
 - Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
 - Drop zlib requires which rpmlint reports as error E: explicit-lib-dependency zlib
 - Enable sha224 portion of powerup selftest when running test suites
