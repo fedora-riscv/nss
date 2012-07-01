@@ -202,8 +202,6 @@ export NSPR_LIB_DIR
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
-# prevents running the sha224 portion of the powerup selftest when testing
-export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -586,6 +584,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Resolves: Bug 830410 - Missing Requires %{?_isa}
 - Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
 - Drop zlib requires which rpmlint reports as error E: explicit-lib-dependency zlib
+- Enable sha224 portion of powerup selftest when running test suites
 
 * Wed Jun 20 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-3
 - Resolves: rhbz#833529 - revert unwanted change to nss.pc.in
