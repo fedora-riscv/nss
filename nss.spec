@@ -1,13 +1,13 @@
-%global nspr_version 4.9
-%global nss_util_version 3.13.4
+%global nspr_version 4.9.1
+%global nss_util_version 3.13.5
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.13.4
+%global nss_softokn_version 3.13.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.13.4
-Release:          2%{?dist}
+Version:          3.13.5
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -76,6 +76,8 @@ Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch33:          Bug-800682-Qpid-AMQP-daemon-fails-to-load-after-nss-update.patch
 
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=745224
+Patch34:          Bug-772628-nss_Init-leaks-memory.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -87,8 +89,7 @@ v3 certificates, and other security standards.
 %package tools
 Summary:          Tools for the Network Security Services
 Group:            System Environment/Base
-Requires:         nss = %{version}-%{release}
-Requires:         zlib
+Requires:         %{name}%{?_isa} = %{version}-%{release}
 
 %description tools
 Network Security Services (NSS) is a set of libraries designed to
@@ -161,6 +162,7 @@ low level services.
 %patch30 -p0 -b .784672
 %patch32 -p0 -b .800674
 %patch33 -p0 -b .800682
+%patch34 -p1 -b .772628
 
 
 %build
@@ -195,8 +197,6 @@ export NSPR_LIB_DIR
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
-# prevents running the sha224 portion of the powerup selftest when testing
-export NO_SHA224_AVAILABLE=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -575,6 +575,18 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Jul 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-3
+- Update to NSS_3_13_5_RTM
+- Resolves: Bug 830410 - Missing Requires %%{?_isa}
+- Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
+- Drop zlib requires which rpmlint reports as error E: explicit-lib-dependency zlib
+- Enable sha224 portion of powerup selftest when running test suites
+- Require nspr 4.9.1
+- Selective merge from master
+
+* Fri Apr 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-3
+- Resolves: Bug 812423 - nss_Init leaks memory, fix from RHEL 6.3
+
 * Sun Apr 08 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-2
 - Resolves: Bug 805723 - Library needs partial RELRO support added
 - Patch coreconf/Linux.mk as done on RHEL 6.2
