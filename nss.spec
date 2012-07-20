@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -580,6 +580,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Jul 20 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.13.5-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-5
 - Fix checkin comment to prevent unwanted expansions of percents
 
