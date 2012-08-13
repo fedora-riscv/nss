@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -212,7 +212,19 @@ unset NSS_ENABLE_ECC
 # Compile softoken plus needed support
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
-%{__make} -C ./mozilla/security/nss
+
+%{__make} -C ./mozilla/security/nss/lib/util export
+%{__make} -C ./mozilla/security/nss/lib/freebl export
+%{__make} -C ./mozilla/security/nss/lib/softoken export
+
+%{__make} -C ./mozilla/security/nss/lib/util
+%{__make} -C ./mozilla/security/nss/lib/freebl
+%{__make} -C ./mozilla/security/nss/lib/softoken
+
+# stash away the bltest and fipstest to build them last
+tar cf build_these_later.tar ./mozilla/security/nss/cmd/bltest ./mozilla/security/nss/cmd/fipstest
+rm -rf ./mozilla/security/nss/cmd/bltest
+rm -rf ./mozilla/security/nss/cmd/fipstest
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc
@@ -229,6 +241,12 @@ export NSS_ECC_MORE_THAN_SUITE_B
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
 %{__make} -C ./mozilla/security/nss
+
+##### phase 3: build bltest and fipstest
+tar xf build_these_later.tar
+unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/bltest
+unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/fipstest
+%{__rm} -f build_these_later.tar
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
@@ -575,7 +593,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Thu Jul 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-3
+* Mon Aug 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-2
+- Fix pluggable ecc support
+
+* Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-1
 - Update to NSS_3_13_5_RTM
 - Resolves: Bug 830410 - Missing Requires %%{?_isa}
 - Use Requires: %%{name}%%{?_isa} = %%{version}-%%{release} on tools
@@ -591,7 +612,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Resolves: Bug 805723 - Library needs partial RELRO support added
 - Patch coreconf/Linux.mk as done on RHEL 6.2
 
-* Sat Apr 07 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-1
+* Fri Apr 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.4-1
 - Update to NSS_3_13_4_RTM
 - Update the nss-pem source archive to the latest version
 - Remove no longer needed patches
@@ -599,20 +620,34 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Resolves: Bug 806051 - PEM various flaws detected by Coverity
 - Resolves: Bug 806058 - PEM pem_CreateObject leaks memory given a non-existing file name
 
-* Wed Mar 28 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-2
+* Wed Mar 21 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-4
 - Resolves: Bug 805723 - Library needs partial RELRO support added
 
-* Sat Mar 10 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-1
-- Update to NSS_3_13_3_RTM
-- spec file cleanup: add references to upstream bugs
-- spec file cleanup: fix typo in Summary for sysinit
+* Fri Mar 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-3
+- Cleanup of the spec file
+- Add references to the upstream bugs
+- Fix typo in Summary for sysinit
+
+* Thu Mar 08 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-2
 - Pick up fixes from RHEL
 - Resolves: rhbz#800674 - Unable to contact LDAP Server during winsync
 - Resolves: rhbz#800682 - Qpid AMQP daemon fails to load after nss update
 - Resolves: rhbz#800676 - NSS workaround for freebl bug that causes openswan to drop connections
 
+* Thu Mar 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.3-1
+- Update to NSS_3_13_3_RTM
+
+* Mon Jan 30 2012 Tom Callaway <spot@fedoraproject.org> - 3.13.1-13
+- fix issue with gcc 4.7 in secmodt.h and C++11 user-defined literals
+
 * Thu Jan 26 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-12
 - Resolves: Bug 784672 - nss should protect against being called before nss_Init
+
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.13.1-11
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-11
+- Deactivate a patch currently meant for stable branches only
 
 * Fri Jan 06 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.1-10
 - Resolves: Bug 770682 - nss update breaks pidgin-sipe connectivity
