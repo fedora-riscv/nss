@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -217,7 +217,19 @@ unset NSS_ENABLE_ECC
 # Compile softoken plus needed support
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
-%{__make} -C ./mozilla/security/nss
+
+%{__make} -C ./mozilla/security/nss/lib/util export
+%{__make} -C ./mozilla/security/nss/lib/freebl export
+%{__make} -C ./mozilla/security/nss/lib/softoken export
+
+%{__make} -C ./mozilla/security/nss/lib/util
+%{__make} -C ./mozilla/security/nss/lib/freebl
+%{__make} -C ./mozilla/security/nss/lib/softoken
+
+# stash away the bltest and fipstest to build them last
+tar cf build_these_later.tar ./mozilla/security/nss/cmd/bltest ./mozilla/security/nss/cmd/fipstest
+rm -rf ./mozilla/security/nss/cmd/bltest
+rm -rf ./mozilla/security/nss/cmd/fipstest
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc
@@ -234,6 +246,12 @@ export NSS_ECC_MORE_THAN_SUITE_B
 %{__make} -C ./mozilla/security/coreconf
 %{__make} -C ./mozilla/security/dbm
 %{__make} -C ./mozilla/security/nss
+
+##### phase 3: build bltest and fipstest
+tar xf build_these_later.tar
+unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/bltest
+unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/fipstest
+%{__rm} -f build_these_later.tar
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
@@ -580,6 +598,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-7
+- Fix pluggable ecc support
+
 * Sun Jul 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-1
 - Update to NSS_3_13_5_RTM
 - Resolves: Bug 830410 - Missing Requires %%{?_isa}
