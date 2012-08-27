@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.13.5
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -52,7 +52,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20120402.tar.bz2
+Source12:         %{name}-pem-20120811.tar.bz2
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -69,9 +69,6 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734492
 Patch30:          bz784672-protect-against-calls-before-nss_init.patch
-# Fix gcc 4.7 c++ issue in secmodt.h
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=50917
-Patch31:          nss-fix-gcc47-secmodt.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=734484
 Patch32:          Bug-800674-Unable-to-contact-LDAP-Server-during-winsync.patch
@@ -164,7 +161,6 @@ low level services.
 # activate only if requested for this branch
 #%patch29 -p0 -b .770682
 %patch30 -p0 -b .784672
-%patch31 -p0 -b .gcc47
 %patch32 -p0 -b .800674
 %patch33 -p0 -b .800682
 %patch34 -p1 -b .772628
@@ -598,6 +594,12 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Aug 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-8
+- Rebase pem sources to fedora-hosted upstream to pick up two fixes from rhel-6.3
+- Resolves: rhbz#847460 - Fix invalid read and free on invalid cert load
+- Resolves: rhbz#847462 - PEM module may attempt to free uninitialized pointer 
+- Remove unneeded fix gcc 4.7 c++ issue in secmodt.h that actually undoes the upstream fix
+
 * Mon Aug 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-7
 - Fix pluggable ecc support
 
