@@ -4,5 +4,5 @@ blank-secmod.db
 blank-cert9.db
 blank-key4.db
 PayPalEE.cert
-/nss-3.13.5-stripped.tar.bz2
 /nss-pem-20120811.tar.bz2
+/nss-3.13.6-stripped.tar.bz2
