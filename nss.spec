@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          0.1%{?dist}.rc1.1
+Release:          1%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -580,6 +580,9 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Oct 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-1
+- Update to NSS_3_14_RTM
+
 * Sun Oct 21 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-0.1.rc.1
 - Update to NSS_3_14_RC1
 - update nss-589636.patch to apply to httpdserv
