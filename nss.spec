@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv1.1 or GPLv2+ or LGPLv2+
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -450,7 +450,6 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/sechash.h
-rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/secmodt.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/shsign.h
 rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
@@ -554,6 +553,7 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/preenc.h
 %{_includedir}/nss3/secmime.h
 %{_includedir}/nss3/secmod.h
+%{_includedir}/nss3/secmodt.h
 %{_includedir}/nss3/secpkcs5.h
 %{_includedir}/nss3/secpkcs7.h
 %{_includedir}/nss3/smime.h
@@ -580,6 +580,10 @@ rm -rf $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Tue Oct 23 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
+- Add secmodt.h to the headers installed by nss-devel
+- nss-devel must install secmodt.h which moved from softoken to pk11wrap with nss-3.14
+
 * Mon Oct 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-1
 - Update to NSS_3_14_RTM
 
