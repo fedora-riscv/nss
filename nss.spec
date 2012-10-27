@@ -7,8 +7,8 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          3%{?dist}
-License:          MPLv1.1 or GPLv2+ or LGPLv2+
+Release:          4%{?dist}
+License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
@@ -580,6 +580,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Oct 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-4
+- Update the license to MPLv2.0
+
 * Wed Oct 24 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-3
 - Use only -f when removing unwanted headers
 
