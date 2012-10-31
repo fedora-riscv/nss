@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -449,7 +449,6 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/alghmac.h
 rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
 rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
 rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/sechash.h
 rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/shsign.h
 rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
@@ -527,6 +526,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/crmft.h
 %{_includedir}/nss3/cryptohi.h
 %{_includedir}/nss3/cryptoht.h
+%{_includedir}/nss3/sechash.h
 %{_includedir}/nss3/jar-ds.h
 %{_includedir}/nss3/jar.h
 %{_includedir}/nss3/jarfile.h
@@ -580,6 +580,10 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
+- Fix the spec file so sechash.h gets installed
+- Bug 871882 - missing header: sechash.h in nss 3.14
+
 * Sat Oct 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-1
 - Update to NSS_3_14_RTM
 - Update the license to MPLv2.0
