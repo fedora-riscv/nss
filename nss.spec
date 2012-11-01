@@ -145,8 +145,8 @@ low level services.
 %patch18 -p0 -b .646045
 # link pem against buildroot's freebl, esential wen mixing and matching
 %patch25 -p0 -b .systemfreebl
-# activate only if requested for this branch
-%patch29 -p0 -b .770682
+# activate for stable and beta branches
+#%patch29 -p0 -b .770682
 %patch40 -p1 -b .noocsptest
 
 %build
@@ -581,10 +581,12 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %changelog
 * Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
-- Reenable patch to set NSS_SSL_CBC_RANDOM_IV to 1 by default
-- Bug 872124 - nss 3.14 breaks fedpkg new-sources
+- Fix a previous unwanted merge from f18
+- Update the SS_SSL_CBC_RANDOM_IV patch to match new sources while
+- Keeping the patch disabled while we are still in rawhide and
+- State in comment that patch is needed for both stable and beta branches
+- Update .gitignore to download only the new sources
 
-* Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
 - Fix the spec file so sechash.h gets installed
 - Resolves: rhbz#871882 - missing header: sechash.h in nss 3.14
 
