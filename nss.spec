@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -580,6 +580,11 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
+- Add a dummy source file for testing /preventing fedpkg breakage
+- Helps test the fedpkg new-sources and upload commands for breakage by nss updates
+- Related to Bug 872124 - nss 3.14 breaks fedpkg new-sources
+
 * Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
 - Fix a previous unwanted merge from f18
 - Update the SS_SSL_CBC_RANDOM_IV patch to match new sources while
