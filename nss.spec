@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -580,19 +580,33 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
+- Reenable patch to set NSS_SSL_CBC_RANDOM_IV to 1 by default
+- Bug 872124 - nss 3.14 breaks fedpkg new-sources
+
 * Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
 - Fix the spec file so sechash.h gets installed
-- Bug 871882 - missing header: sechash.h in nss 3.14
+- Resolves: rhbz#871882 - missing header: sechash.h in nss 3.14
 
-* Sat Oct 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-1
-- Update to NSS_3_14_RTM
+* Sat Oct 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-4
 - Update the license to MPLv2.0
+
+* Wed Oct 24 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-3
 - Use only -f when removing unwanted headers
+
+* Tue Oct 23 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
 - Add secmodt.h to the headers installed by nss-devel
+- nss-devel must install secmodt.h which moved from softoken to pk11wrap with nss-3.14
+
+* Mon Oct 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-1
+- Update to NSS_3_14_RTM
+
+* Sun Oct 21 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-0.1.rc.1
+- Update to NSS_3_14_RC1
 - update nss-589636.patch to apply to httpdserv
 - turn off ocsp tests for now
 - remove no longer needed patches
-- remove secmodt.h now installed by nss-util
+- remove headers shipped by nss-util
 
 * Fri Oct 05 2012 Kai Engert <kaie@redhat.com> - 3.13.6-1
 - Update to NSS_3_13_6_RTM
