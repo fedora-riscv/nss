@@ -145,8 +145,8 @@ low level services.
 %patch18 -p0 -b .646045
 # link pem against buildroot's freebl, esential wen mixing and matching
 %patch25 -p0 -b .systemfreebl
-# activate only if requested for this branch
-#%patch29 -p0 -b .770682
+# activate for stable and beta branches
+%patch29 -p0 -b .770682
 %patch40 -p1 -b .noocsptest
 
 %build
