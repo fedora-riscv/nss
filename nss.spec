@@ -584,7 +584,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
-* Sun Nov 04 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-5
+* Mon Nov 05 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-5
 - Fix pk11wrap locking which fixes 'fedpkg new-sources' and 'fedpkg update' hangs
 - Bug 872124 - nss-3.14 breaks fedpkg new-sources
 
