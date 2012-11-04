@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -66,6 +66,9 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
+
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
+Patch41:          Bug-872838-fix-pk11wrap-locking.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -148,6 +151,7 @@ low level services.
 # activate for stable and beta branches
 #%patch29 -p0 -b .770682
 %patch40 -p1 -b .noocsptest
+%patch41 -p0 -b .872838
 
 %build
 
@@ -580,6 +584,11 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Nov 04 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-8
+- Fix pk11wrap locking to fix 'fedpkg new-sources' and 'fedpkg update' hangs
+- Bug 87838 - nss-3.14 causes fedpkg new-sources breakage
+- Fix should be considered preliminary since the patch may change upon upstream approval
+ 
 * Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Add a dummy source file for testing /preventing fedpkg breakage
 - Helps test the fedpkg new-sources and upload commands for breakage by nss updates
