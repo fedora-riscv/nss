@@ -592,6 +592,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - State in comment that patch is needed for both stable and beta branches
 - Update .gitignore to download only the new sources
 
+* Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-5
 - Fix the spec file so sechash.h gets installed
 - Resolves: rhbz#871882 - missing header: sechash.h in nss 3.14
 
