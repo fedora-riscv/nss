@@ -68,7 +68,7 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
-Patch41:          Bug-872838-fix-pk11wrap-locking.patch
+Patch41:          Bug-872124-fix-pk11wrap-locking.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -151,7 +151,7 @@ low level services.
 # activate for stable and beta branches
 #%patch29 -p0 -b .770682
 %patch40 -p1 -b .noocsptest
-%patch41 -p0 -b .872838
+%patch41 -p0 -b .872124
 
 %build
 
