@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -64,6 +64,8 @@ Patch18:          nss-646045.patch
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+# Prevent users from trying to enable ssl pkcs11 bypass
+Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
@@ -150,10 +152,14 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 #%patch29 -p0 -b .770682
+%patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch41 -p0 -b .872124
 
 %build
+
+NSS_NO_PKCS11_BYPASS=1
+export NSS_NO_PKCS11_BYPASS
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -584,6 +590,10 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sat Nov 10 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-9
+- Disable bypass code at build time and return failure on attempts to enable at runtime
+- Bug 806588 - Disable SSL PKCS #11 bypass at build time
+
 * Sun Nov 04 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-8
 - Fix pk11wrap locking which fixes 'fedpkg new-sources' and 'fedpkg update' hangs
 - Bug 872124 - nss-3.14 breaks fedpkg new-sources
