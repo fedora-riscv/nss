@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -71,6 +71,8 @@ Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
 Patch41:          Bug-872124-fix-pk11wrap-locking.patch
+# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=807890
+Patch42:          0001-Add-extended-key-usage-for-MS-Authenticode-Code-Sign.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -155,6 +157,7 @@ low level services.
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch41 -p0 -b .872124
+%patch42 -p0 -b .870864
 
 %build
 
@@ -590,6 +593,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
+- Bug 870864 - Add support in NSS for Secure Boot
+
 * Fri Nov 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
 - Disable bypass code at build time and return failure on attempts to enable at runtime
 - Bug 806588 - Disable SSL PKCS #11 bypass at build time
