@@ -5,4 +5,5 @@ a5ae49867124ac75f029a9a33af31bad  blank-cert8.db
 2ec9e0606ba40fe65196545564b7cc2a  blank-key4.db
 bf47cecad861efa77d1488ad4a73cb5b  PayPalEE.cert
 2a06bf7b815d1a666cc3587b895506ce  nss-pem-20120811.tar.bz2
-11bdf048bce19963c88c4fc32652cd29  nss-3.13.6-stripped.tar.bz2
+2844d502638ac84097d5a9affa6d1c3a  nss-3.14-stripped.tar.bz2
+1eda5a1b9b9ab00476203d0df303297c  dummy-sources-for-testing
