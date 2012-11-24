@@ -5,8 +5,8 @@ diff -up ./mozilla/security/nss/lib/ssl/sslsock.c.770682 ./mozilla/security/nss/
      3,          /* enableRenegotiation (default: transitional) */
      PR_FALSE,   /* requireSafeNegotiation */
      PR_FALSE,   /* enableFalseStart   */
--    PR_FALSE    /* cbcRandomIV        */ /* defaults to off for compatibility */
-+    PR_TRUE     /* cbcRandomIV        */
+-    PR_TRUE     /* cbcRandomIV        */
++    PR_FALSE    /* cbcRandomIV        */ /* defaults to off for compatibility */
  };
  
  /*
@@ -14,12 +14,12 @@ diff -up ./mozilla/security/nss/lib/ssl/sslsock.c.770682 ./mozilla/security/nss/
  	                PR_TRUE));
  	}
  	ev = getenv("NSS_SSL_CBC_RANDOM_IV");
--	if (ev && ev[0] == '1') {
--	    ssl_defaults.cbcRandomIV = PR_TRUE;
--	    SSL_TRACE(("SSL: cbcRandomIV set to 1"));
-+	if (ev && ev[0] == '0') {
-+	    ssl_defaults.cbcRandomIV = PR_FALSE;
-+	    SSL_TRACE(("SSL: cbcRandomIV set to 0"));
+-	if (ev && ev[0] == '0') {
+-	    ssl_defaults.cbcRandomIV = PR_FALSE;
+-	    SSL_TRACE(("SSL: cbcRandomIV set to 0"));
++	if (ev && ev[0] == '1') {
++	    ssl_defaults.cbcRandomIV = PR_TRUE;
++	    SSL_TRACE(("SSL: cbcRandomIV set to 1"));
  	}
      }
  #endif /* NSS_HAVE_GETENV */
