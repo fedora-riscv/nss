@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          7%{?dist}
+Release:          11%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -282,6 +282,8 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 %{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 
+%{__cp} ./mozilla/security/nss/lib/ckfw/nssck.api ./mozilla/dist/private/nss/
+
 %check
 
 # Begin -- copied from the build section
@@ -412,6 +414,12 @@ done
 
 # Copy the include files we want
 for file in mozilla/dist/public/nss/*.h
+do
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+done
+
+# Copy the template files we want
+for file in mozilla/dist/private/nss/nssck.api
 do
   %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
@@ -588,11 +596,16 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nssckg.h
 %{_includedir}/nss3/nssckmdt.h
 %{_includedir}/nss3/nssckt.h
+%{_includedir}/nss3/nssck.api
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
 
 %changelog
+* Tue Nov 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-11
+- Bug 879978 - Install the nssck.api header template in a place where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3
+
 * Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Bug 870864 - Add support in NSS for Secure Boot
 
