@@ -153,7 +153,7 @@ low level services.
 # link pem against buildroot's freebl, esential wen mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-#%patch29 -p0 -b .770682
+%patch29 -p0 -b .770682
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch41 -p0 -b .872124
