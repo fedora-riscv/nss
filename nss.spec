@@ -7,7 +7,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14
-Release:          11%{?dist}
+Release:          12%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -372,6 +372,7 @@ echo "test suite completed"
 # There is no make install target so we'll do it ourselves.
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
@@ -421,7 +422,7 @@ done
 # Copy the template files we want
 for file in mozilla/dist/private/nss/nssck.api
 do
-  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 done
 
 # Copy the package configuration files
@@ -596,12 +597,16 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nssckg.h
 %{_includedir}/nss3/nssckmdt.h
 %{_includedir}/nss3/nssckt.h
-%{_includedir}/nss3/nssck.api
+%{_includedir}/nss3/templates/nssck.api
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
 
 %changelog
+* Wed Dec 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-12
+- Bug 879978 - Install the nssck.api header template where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3/templates
+
 * Tue Nov 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-11
 - Bug 879978 - Install the nssck.api header template in a place where mod_revocator can access it
 - Install nssck.api in /usr/includes/nss3
