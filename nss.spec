@@ -6,8 +6,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14
-Release:          12%{?dist}
+Version:          3.14.1
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -69,10 +69,10 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
-# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
-Patch41:          Bug-872124-fix-pk11wrap-locking.patch
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=807890
 Patch42:          0001-Add-extended-key-usage-for-MS-Authenticode-Code-Sign.patch
+
+Patch43:          no-softoken-freebl-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -150,14 +150,14 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
-# link pem against buildroot's freebl, esential wen mixing and matching
+# link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 #%patch29 -p0 -b .770682
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
-%patch41 -p0 -b .872124
 %patch42 -p0 -b .870864
+%patch43 -p0 -b .nosoftokentests
 
 %build
 
@@ -603,6 +603,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Dec 17 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-1
+- Update to NSS_3_14_1_RTM
+
 * Wed Dec 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-12
 - Bug 879978 - Install the nssck.api header template where mod_revocator can access it
 - Install nssck.api in /usr/includes/nss3/templates

@@ -1,0 +1,35 @@
+diff -up ./mozilla/security/nss/cmd/Makefile.nosoftokentests ./mozilla/security/nss/cmd/Makefile
+--- ./mozilla/security/nss/cmd/Makefile.nosoftokentests	2012-12-16 21:47:35.412350822 -0800
++++ ./mozilla/security/nss/cmd/Makefile	2012-12-16 21:49:13.138963897 -0800
+@@ -19,6 +19,10 @@ ifeq ($(FREEBL_LOWHASH),1)
+ LOWHASHTEST_SRCDIR = lowhashtest  # Add the lowhashtest directory to DIRS.
+ endif
+ 
++# These test were compiled as part of the nss-softoken build
++BLTEST_SRCDIR=
++FIPSTEST_SRCDIR=
++
+ INCLUDES += \
+ 	-I$(DIST)/../public/security \
+ 	-I./include \
+diff -up ./mozilla/security/nss/cmd/manifest.mn.nosoftokentests ./mozilla/security/nss/cmd/manifest.mn
+--- ./mozilla/security/nss/cmd/manifest.mn.nosoftokentests	2012-12-16 21:45:18.693489564 -0800
++++ ./mozilla/security/nss/cmd/manifest.mn	2012-12-16 21:47:15.443225712 -0800
+@@ -11,7 +11,7 @@ REQUIRES = nss nspr libdbm
+ DIRS = lib  \
+  addbuiltin \
+  atob  \
+- bltest \
++ $(BLTEST_SRCDIR) \
+  btoa  \
+  certcgi \
+  certutil  \
+@@ -23,7 +23,7 @@ DIRS = lib  \
+  derdump  \
+  digest  \
+  httpserv  \
+- fipstest  \
++ $(FIPSTEST_SRCDIR)  \
+  $(LOWHASHTEST_SRCDIR)  \
+  listsuites \
+  makepqg  \
