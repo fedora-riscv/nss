@@ -1,4 +1,4 @@
-%global nspr_version 4.9.2
+%global nspr_version 4.9.4
 %global nss_util_version 3.14
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.14
@@ -6,8 +6,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14
-Release:          7%{?dist}
+Version:          3.14.1
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -69,10 +69,10 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
-# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
-Patch41:          Bug-872124-fix-pk11wrap-locking.patch
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=807890
 Patch42:          0001-Add-extended-key-usage-for-MS-Authenticode-Code-Sign.patch
+
+Patch43:          no-softoken-freebl-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -150,14 +150,14 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
-# link pem against buildroot's freebl, esential wen mixing and matching
+# link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 %patch29 -p0 -b .770682
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
-%patch41 -p0 -b .872124
 %patch42 -p0 -b .870864
+%patch43 -p0 -b .nosoftokentests
 
 %build
 
@@ -282,6 +282,8 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 %{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 
+%{__cp} ./mozilla/security/nss/lib/ckfw/nssck.api ./mozilla/dist/private/nss/
+
 %check
 
 # Begin -- copied from the build section
@@ -370,6 +372,7 @@ echo "test suite completed"
 # There is no make install target so we'll do it ourselves.
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
@@ -414,6 +417,12 @@ done
 for file in mozilla/dist/public/nss/*.h
 do
   %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+done
+
+# Copy the template files we want
+for file in mozilla/dist/private/nss/nssck.api
+do
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 done
 
 # Copy the package configuration files
@@ -588,11 +597,27 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nssckg.h
 %{_includedir}/nss3/nssckmdt.h
 %{_includedir}/nss3/nssckt.h
+%{_includedir}/nss3/templates/nssck.api
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
 
 %changelog
+* Sat Dec 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-2
+- Require nspr >= 4.9.4
+- Fix changelog invalid dates
+
+* Mon Dec 17 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-1
+- Update to NSS_3_14_1_RTM
+
+* Wed Dec 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-12
+- Bug 879978 - Install the nssck.api header template where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3/templates
+
+* Tue Nov 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-11
+- Bug 879978 - Install the nssck.api header template in a place where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3
+
 * Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Bug 870864 - Add support in NSS for Secure Boot
 
@@ -789,7 +814,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Wed Mar 23 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-14
 - Update to NSS_3.12.9_WITH_CKBI_1_82_RTM
 
-* Wed Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
+* Thu Feb 24 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-13
 - Short-term fix for ssl test suites hangs on ipv6 type connections (#539183)
 
 * Fri Feb 18 2011 Elio Maldonado <emaldona@redhat.com> - 3.12.9-12
@@ -854,7 +879,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Sun Oct 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-7
 - Tell rpm not to verify md5, size, and modtime of configurations file
 
-* Wed Oct 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-6
+* Mon Oct 18 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-6
 - Fix certificates trust order (#643134)
 - Apply nss-sysinit-userdb-first.patch last
 
@@ -908,7 +933,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Mon Aug 09 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-10
 - Add support for PKCS#8 encoded PEM RSA private key files (#614532)
 
-* Fri Jul 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-9
+* Sat Jul 31 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-9
 - Fix nsssysinit to return userdb ahead of systemdb (#603313)
 
 * Tue Jun 08 2010 Dennis Gilmore <dennis@ausil.us> - 3.12.6-8
@@ -920,7 +945,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Sun Jun 06 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-6
 - Fix SIGSEGV within CreateObject (#596674)
 
-* Sat Apr 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-5
+* Mon Apr 12 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.6-5
 - Update pem source tar to pick up the following bug fixes:
 - PEM - Allow collect objects to search through all objects
 - PEM - Make CopyObject return a new shallow copy
@@ -1001,7 +1026,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Require nss-softoken of same architecture as nss (#527867)
 - Merge setup-nsssysinit.sh improvements from F-12 (#527051)
 
-* Mon Oct 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13
+* Sat Oct 03 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.4-13
 - User no longer prompted for a password when listing keys an empty system db (#527048)
 - Fix setup-nsssysinit to handle more general formats (#527051)
 
@@ -1075,13 +1100,13 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Fix nss-config not to include nssutil
 - Add BuildRequires on nss-softokn and nss-util since build also runs the test suite
 
-* Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-21
+* Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-21
 - disabling all tests while we investigate a buffer overflow bug
 
-* Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-20
+* Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-20
 - disabling some tests while we investigate a buffer overflow bug - 519766
 
-* Wed Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-19
+* Thu Aug 27 2009 Elio Maldonado<emaldona@redhat.com> - 3.12.3.99.3-19
 - remove patches that are now in nss-softokn and
 - remove spurious exec-permissions for nss.pc per rpmlint
 - single requires line in nss.pc.in
@@ -1118,7 +1143,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Thu Aug 20 2009 Dennis Gilmore <dennis@ausil.us> - 3.12.3.99.3-9
 - dont install libnssutil3.so since its now in nss-util
 
-* Sat Aug 06 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-7.1
+* Thu Aug 06 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-7.1
 - Fix spec file problems uncovered by Fedora_12_Mass_Rebuild
 
 * Sat Jul 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.12.3.99.3-7
@@ -1136,7 +1161,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - fix numerous gcc warnings. (500815)
 - fix to support arbitrarily long password while loading a private key. (500180) 
 - fix memory leak in make_key and memory leaks and return values in pem_mdSession_Login (501191)
-* Fri Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
+* Mon Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
 - add patch for bug 502133 upstream bug 496997
 * Fri Jun 05 2009 Kai Engert <kaie@redhat.com> - 3.12.3.99.3-3
 - rebuild with higher release number for upgrade sanity
@@ -1334,5 +1359,5 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 - Adressed review comments by Wan-Teh Chang, Bob Relyea,
   Christopher Aillon.
 
-* Tue Jul  9 2005 Rob Crittenden <rcritten@redhat.com> 3.10-1
+* Sat Jul  9 2005 Rob Crittenden <rcritten@redhat.com> 3.10-1
 - Initial build
