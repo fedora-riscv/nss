@@ -1,4 +1,4 @@
-%global nspr_version 4.9.2
+%global nspr_version 4.9.4
 %global nss_util_version 3.14
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.14
@@ -6,8 +6,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14
-Release:          7%{?dist}
+Version:          3.14.1
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -69,10 +69,10 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 
-# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=357025
-Patch41:          Bug-872124-fix-pk11wrap-locking.patch
 # upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=807890
 Patch42:          0001-Add-extended-key-usage-for-MS-Authenticode-Code-Sign.patch
+
+Patch43:          no-softoken-freebl-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -588,12 +588,28 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/nssckg.h
 %{_includedir}/nss3/nssckmdt.h
 %{_includedir}/nss3/nssckt.h
+%{_includedir}/nss3/templates/nssck.api
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
 
 %changelog
-* Tue Dec 18 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
+* Sat Dec 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-2
+- Require nspr >= 4.9.4
+- Fix changelog invalid dates
+
+* Mon Dec 17 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-1
+- Update to NSS_3_14_1_RTM
+
+* Wed Dec 12 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-12
+- Bug 879978 - Install the nssck.api header template where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3/templates
+
+* Tue Nov 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-11
+- Bug 879978 - Install the nssck.api header template in a place where mod_revocator can access it
+- Install nssck.api in /usr/includes/nss3
+
+* Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Bug 870864 - Add support in NSS for Secure Boot
 
 * Fri Nov 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
