@@ -156,8 +156,8 @@ low level services.
 %patch29 -p0 -b .770682
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
-%patch41 -p0 -b .872124
 %patch42 -p0 -b .870864
+%patch43 -p0 -b .nosoftokentests
 
 %build
 
@@ -282,6 +282,8 @@ chmod 755 ./mozilla/dist/pkgconfig/nss-config
 %{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 
+%{__cp} ./mozilla/security/nss/lib/ckfw/nssck.api ./mozilla/dist/private/nss/
+
 %check
 
 # Begin -- copied from the build section
@@ -370,6 +372,7 @@ echo "test suite completed"
 # There is no make install target so we'll do it ourselves.
 
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
@@ -414,6 +417,12 @@ done
 for file in mozilla/dist/public/nss/*.h
 do
   %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+done
+
+# Copy the template files we want
+for file in mozilla/dist/private/nss/nssck.api
+do
+  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 done
 
 # Copy the package configuration files
