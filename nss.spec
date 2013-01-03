@@ -4,10 +4,14 @@
 %global nss_softokn_version 3.14
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
+# Define if using a source archive like "nss-version.with.ckbi.version".
+# To "disable", add "#" to start of line, AND a space after "%".
+%define nss_ckbi_suffix .with.ckbi.1.93
+
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.1
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -29,7 +33,11 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
 
-Source0:          %{name}-%{version}-stripped.tar.bz2
+%{!?nss_ckbi_suffix:%define full_nss_version %{version}}
+%{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
+
+Source0:          %{name}-%{full_nss_version}-stripped.tar.bz2
+
 # The stripped tar ball is a subset of the upstream sources with
 # patent-encumbered cryptographic algorithms removed.
 # Use this script to remove them and create the stripped archive.
@@ -603,6 +611,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Jan 02 2013 Kai Engert <kaie@redhat.com> - 3.14.1-3
+- Update to NSS_3_14_1_WITH_CKBI_1_93_RTM
+
 * Sat Dec 22 2012 Elio Maldonado <emaldona@redhat.com> - 3.14.1-2
 - Require nspr >= 4.9.4
 - Fix changelog invalid dates
