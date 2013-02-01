@@ -77,7 +77,6 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
-# Keeping it disabled until further view upstream
 Patch43:          no-softoken-freebl-tests.patch
 
 %description
@@ -161,8 +160,8 @@ low level services.
 # activate for stable and beta branches
 #%patch29 -p0 -b .cbcrandomivoff
 %patch39 -p1 -b .nobypass
-#%patch40 -p1 -b .noocsptest
-#%patch43 -p0 -b .nosoftokentests
+%patch40 -p1 -b .noocsptest
+%patch43 -p0 -b .nosoftokentests
 
 %build
 
