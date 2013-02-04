@@ -161,7 +161,6 @@ low level services.
 %patch29 -p0 -b .cbcrandomivoff
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
-%patch42 -p0 -b .870864
 %patch43 -p0 -b .nosoftokentests
 
 %build
