@@ -11,7 +11,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -78,6 +78,7 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
 Patch43:          no-softoken-freebl-tests.patch
+Patch44: allow-building-nss-against-older-sqlite.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -162,6 +163,8 @@ low level services.
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch43 -p0 -b .nosoftokentests
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=837799
+%patch44 -p0 -b .oldersqlite
 
 %build
 
@@ -607,6 +610,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Feb 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-2
+- Allow building nss against older system sqlite
+
 * Fri Feb 01 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-1
 - Update to NSS_3_14_2_RTM
 
