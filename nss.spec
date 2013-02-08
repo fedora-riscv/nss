@@ -1,17 +1,17 @@
-%global nspr_version 4.9.4
-%global nss_util_version 3.14
+%global nspr_version 4.9.5
+%global nss_util_version 3.14.2
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.14
+%global nss_softokn_version 3.14.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 # Define if using a source archive like "nss-version.with.ckbi.version".
 # To "disable", add "#" to start of line, AND a space after "%".
-%define nss_ckbi_suffix .with.ckbi.1.93
+#% define nss_ckbi_suffix .with.ckbi.1.93
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14.1
-Release:          3%{?dist}
+Version:          3.14.2
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -68,7 +68,7 @@ Patch6:           nss-enable-pem.patch
 Patch16:          nss-539183.patch
 Patch18:          nss-646045.patch
 # must statically link pem against the freebl in the buildroot
-# Needed only when freebl on tree has newe APIS
+# Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
@@ -76,11 +76,9 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-
-# upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=807890
-Patch42:          0001-Add-extended-key-usage-for-MS-Authenticode-Code-Sign.patch
-
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
 Patch43:          no-softoken-freebl-tests.patch
+Patch44: allow-building-nss-against-older-sqlite.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -158,14 +156,15 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
-# link pem against buildroot's freebl, esential wen mixing and matching
+# link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-%patch29 -p0 -b .770682
+%patch29 -p0 -b .cbcrandomivoff
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
-%patch42 -p0 -b .870864
 %patch43 -p0 -b .nosoftokentests
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=837799
+%patch44 -p0 -b .oldersqlite
 
 %build
 
@@ -611,6 +610,12 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Mon Feb 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-2
+- Allow building nss against older system sqlite
+
+* Fri Feb 01 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-1
+- Update to NSS_3_14_2_RTM
+
 * Wed Jan 02 2013 Kai Engert <kaie@redhat.com> - 3.14.1-3
 - Update to NSS_3_14_1_WITH_CKBI_1_93_RTM
 
