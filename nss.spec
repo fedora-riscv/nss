@@ -1,7 +1,7 @@
 %global nspr_version 4.9.5
-%global nss_util_version 3.14.2
+%global nss_util_version 3.14.3
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.14.2
+%global nss_softokn_version 3.14.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
 # Define if using a source archive like "nss-version.with.ckbi.version".
@@ -10,8 +10,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14.2
-Release:          2%{?dist}
+Version:          3.14.3
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -78,7 +78,7 @@ Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
 Patch43:          no-softoken-freebl-tests.patch
-Patch44: allow-building-nss-against-older-sqlite.patch
+Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -163,8 +163,7 @@ low level services.
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch43 -p0 -b .nosoftokentests
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=837799
-%patch44 -p0 -b .oldersqlite
+%patch44 -p1 -b .syncupwithupstream
 
 %build
 
@@ -610,6 +609,10 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Fri Feb 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-1
+- Update to NSS_3_14_3_RTM
+- sync up pem rsawrapr.c with softoken upstream changes for nss-3.14.3
+
 * Mon Feb 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-2
 - Allow building nss against older system sqlite
 
