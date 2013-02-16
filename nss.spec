@@ -79,6 +79,7 @@ Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
 Patch43:          no-softoken-freebl-tests.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
+Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -164,6 +165,7 @@ low level services.
 %patch40 -p1 -b .noocsptest
 %patch43 -p0 -b .nosoftokentests
 %patch44 -p1 -b .syncupwithupstream
+%patch45 -p0 -b .notrash
 
 %build
 
@@ -204,7 +206,7 @@ export USE_SYSTEM_FREEBL=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -299,7 +301,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -612,6 +614,9 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Fri Feb 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-1
 - Update to NSS_3_14_3_RTM
 - sync up pem rsawrapr.c with softoken upstream changes for nss-3.14.3
+- Resolves: rhbz#896651 - PEM module trashes private keys if login fails
+- Resolves: rhbz#909775 - specfile support for AArch64
+- Resolves: rhbz#910584 - certutil -a does not produce ASCII output
 
 * Mon Feb 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.2-2
 - Allow building nss against older system sqlite
