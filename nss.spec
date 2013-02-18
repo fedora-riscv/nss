@@ -614,6 +614,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 * Fri Feb 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-1
 - Update to NSS_3_14_3_RTM
 - sync up pem rsawrapr.c with softoken upstream changes for nss-3.14.3
+- Resolves: rhbz#908257 - CVE-2013-1620 nss: TLS CBC padding timing attack
 - Resolves: rhbz#896651 - PEM module trashes private keys if login fails
 - Resolves: rhbz#909775 - specfile support for AArch64
 - Resolves: rhbz#910584 - certutil -a does not produce ASCII output
