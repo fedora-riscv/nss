@@ -4,6 +4,14 @@
 %global nss_softokn_version 3.14.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 
+# solution taken from icedtea-web.spec
+%define multilib_arches ppc64 sparc64 x86_64
+%ifarch %{multilib_arches}
+%define alt_ckbi  libnssckbi.so.%{_arch}
+%else
+%define alt_ckbi  libnssckbi.so
+%endif
+
 # Define if using a source archive like "nss-version.with.ckbi.version".
 # To "disable", add "#" to start of line, AND a space after "%".
 #% define nss_ckbi_suffix .with.ckbi.1.93
@@ -11,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.3
-Release:          1%{?dist}
+Release:          9%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -20,6 +28,8 @@ Requires:         nss-util >= %{nss_util_version}
 # TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
+Requires(post):   %{_sbindir}/update-alternatives
+Requires(postun): %{_sbindir}/update-alternatives
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
@@ -293,6 +303,10 @@ chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
 %{__cp} ./mozilla/security/nss/lib/ckfw/nssck.api ./mozilla/dist/private/nss/
 
 %check
+if [ $DISABLETEST -eq 1 ]; then
+  echo "testing disabled"
+  exit 0
+fi
 
 # Begin -- copied from the build section
 FREEBL_NO_DEPEND=1
@@ -386,8 +400,11 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
+touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
+%{__install} -p -m 755 mozilla/dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
+
 # Copy the binary libraries we want
-for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnss3.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
 do
   %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -490,9 +507,35 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
-%post -p /sbin/ldconfig
+%post
+# If we upgrade, and the shared filename is a regular file, then we must
+# remove it, before we can install the alternatives symbolic link.
+if [ $1 -gt 1 ] ; then
+  # when upgrading or downgrading
+  if test -f %{_libdir}/libnssckbi.so; then
+    rm -f %{_libdir}/libnssckbi.so
+  fi
+fi
+# Install the symbolic link
+# FYI: Certain other packages use alternatives --set to enforce that the first
+# installed package is preferred. We don't do that. Highest priority wins.
+%{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
+  %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
+/sbin/ldconfig
 
-%postun -p /sbin/ldconfig
+%postun
+if [ $1 -eq 0 ] ; then
+  # package removal
+  %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
+else
+  # upgrade or downgrade
+  # If the new installed package uses a regular file (not a symblic link),
+  # then cleanup the alternatives link.
+  if test -f %{_libdir}/libnssckbi.so; then
+    %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
+  fi
+fi
+/sbin/ldconfig
 
 
 %files
@@ -500,7 +543,8 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%{_libdir}/libnssckbi.so
+%ghost %{_libdir}/libnssckbi.so
+%{_libdir}/nss/libnssckbi.so
 %{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
@@ -611,6 +655,10 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Wed Mar 06 2013 Kai Engert <kaie@redhat.com> - 3.14.3-9
+- Configure libnssckbi.so to use the alternatives system
+  in order to prepare for a drop in replacement.
+
 * Fri Feb 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-1
 - Update to NSS_3_14_3_RTM
 - sync up pem rsawrapr.c with softoken upstream changes for nss-3.14.3
