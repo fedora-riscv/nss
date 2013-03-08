@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.3
-Release:          9%{?dist}
+Release:          10%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -512,7 +512,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 # remove it, before we can install the alternatives symbolic link.
 if [ $1 -gt 1 ] ; then
   # when upgrading or downgrading
-  if test -f %{_libdir}/libnssckbi.so; then
+  if ! test -L %{_libdir}/libnssckbi.so; then
     rm -f %{_libdir}/libnssckbi.so
   fi
 fi
@@ -531,11 +531,29 @@ else
   # upgrade or downgrade
   # If the new installed package uses a regular file (not a symblic link),
   # then cleanup the alternatives link.
-  if test -f %{_libdir}/libnssckbi.so; then
+  if ! test -L %{_libdir}/libnssckbi.so; then
     %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
   fi
 fi
 /sbin/ldconfig
+
+%posttrans
+# An earlier version of this package had an incorrect %postun script (3.14.3-9).
+# (The incorrect %postun always called "update-alternatives --remove",
+# because it incorrectly assumed that test -f returns false for symbolic links.)
+# The only possible remedy to fix the mistake that "always removes on upgrade"
+# made by the older %postun script, is to repair it in %posttrans of the new package.
+# Strategy:
+# %posttrans is never called when uninstalling.
+# %posttrans is only called when installing or upgrading a package.
+# Because %posttrans is the very last action of a package install,
+# %{_libdir}/libnssckbi.so must exist.
+# If it does not, it's the result of the incorrect removal from a broken %postun.
+# In this case, we repeat installation of the alternatives link.
+if ! test -e %{_libdir}/libnssckbi.so; then
+  %{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
+    %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
+fi
 
 
 %files
@@ -655,6 +673,9 @@ fi
 
 
 %changelog
+* Fri Mar 08 2013 Kai Engert <kaie@redhat.com> - 3.14.3-10
+- Fix incorrect post/postun scripts. Fix broken links in posttrans.
+
 * Wed Mar 06 2013 Kai Engert <kaie@redhat.com> - 3.14.3-9
 - Configure libnssckbi.so to use the alternatives system
   in order to prepare for a drop in replacement.
