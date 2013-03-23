@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.3
-Release:          10%{?dist}
+Release:          11%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -71,6 +71,9 @@ Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20120811.tar.bz2
+Source17:         TestCA.ca.cert
+Source18:         TestUser50.cert
+Source19:         TestUser51.cert
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -160,6 +163,9 @@ low level services.
 %prep
 %setup -q
 %{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE17} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE18} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE19} -f ./mozilla/security/nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .relro
@@ -673,6 +679,9 @@ fi
 
 
 %changelog
+* Sun Mar 24 2013 Kai Engert <kaie@redhat.com> - 3.14.3-11
+- Update expired test certificates (fixed in upstream bug 852781)
+
 * Fri Mar 08 2013 Kai Engert <kaie@redhat.com> - 3.14.3-10
 - Fix incorrect post/postun scripts. Fix broken links in posttrans.
 
