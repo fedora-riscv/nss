@@ -1,6 +1,6 @@
-diff -up ./mozilla/security/nss/cmd/Makefile.nosoftokentests ./mozilla/security/nss/cmd/Makefile
---- ./mozilla/security/nss/cmd/Makefile.nosoftokentests	2012-12-22 14:06:13.193304912 -0800
-+++ ./mozilla/security/nss/cmd/Makefile	2012-12-22 14:10:04.942248630 -0800
+diff -up nss/cmd/Makefile.nosoftokentests nss/cmd/Makefile
+--- nss/cmd/Makefile.nosoftokentests	2012-12-22 14:06:13.193304912 -0800
++++ nss/cmd/Makefile	2012-12-22 14:10:04.942248630 -0800
 @@ -14,6 +14,14 @@ ifdef BUILD_LIBPKIX_TESTS
  DIRS += libpkix
  endif
@@ -16,9 +16,9 @@ diff -up ./mozilla/security/nss/cmd/Makefile.nosoftokentests ./mozilla/security/
  LOWHASHTEST_SRCDIR=
  ifeq ($(FREEBL_LOWHASH),1)
  LOWHASHTEST_SRCDIR = lowhashtest  # Add the lowhashtest directory to DIRS.
-diff -up ./mozilla/security/nss/cmd/manifest.mn.nosoftokentests ./mozilla/security/nss/cmd/manifest.mn
---- ./mozilla/security/nss/cmd/manifest.mn.nosoftokentests	2012-12-22 14:06:35.191293837 -0800
-+++ ./mozilla/security/nss/cmd/manifest.mn	2012-12-22 14:11:22.342263467 -0800
+diff -up nss/cmd/manifest.mn.nosoftokentests nss/cmd/manifest.mn
+--- nss/cmd/manifest.mn.nosoftokentests	2012-12-22 14:06:35.191293837 -0800
++++ nss/cmd/manifest.mn	2012-12-22 14:11:22.342263467 -0800
 @@ -11,7 +11,7 @@ REQUIRES = nss nspr libdbm
  DIRS = lib  \
   addbuiltin \

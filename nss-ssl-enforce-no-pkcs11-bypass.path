@@ -1,15 +1,16 @@
-diff -up ./mozilla/security/nss/lib/ssl/derive.c.nobypass ./mozilla/security/nss/lib/ssl/derive.c
-diff -up ./mozilla/security/nss/lib/ssl/sslsock.c.nobypass ./mozilla/security/nss/lib/ssl/sslsock.c
---- ./mozilla/security/nss/lib/ssl/sslsock.c.nobypass	2012-10-07 15:12:25.455307540 -0700
-+++ ./mozilla/security/nss/lib/ssl/sslsock.c	2012-10-07 15:21:27.229346754 -0700
-@@ -547,8 +547,8 @@ static PRStatus SSL_BypassRegisterShutdo
+diff -up nss/lib/ssl/sslsock.c.nobypass nss/lib/ssl/sslsock.c
+--- nss/lib/ssl/sslsock.c.nobypass	2013-04-04 16:52:20.614559042 -0700
++++ nss/lib/ssl/sslsock.c	2013-04-04 16:55:55.353777732 -0700
+@@ -554,8 +554,10 @@ static PRStatus SSL_BypassRegisterShutdo
  static PRStatus SSL_BypassSetup(void)
  {
  #ifdef NO_PKCS11_BYPASS
 -    /* Guarantee binary compatibility */
 -    return PR_SUCCESS;
-+    /* We can safely return failure as we have never supported it */
-+    return PR_FALSE;
++    /* No need in our case to guarantee binary compatibility and
++     * we can safely return failure as we have never supported it
++     */
++    return PR_FAILURE;
  #else
      return PR_CallOnce(&setupBypassOnce, &SSL_BypassRegisterShutdown);
  #endif
