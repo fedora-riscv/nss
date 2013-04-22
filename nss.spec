@@ -61,6 +61,9 @@ Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20120811.tar.bz2
+Source17:         TestCA.ca.cert
+Source18:         TestUser50.cert
+Source19:         TestUser51.cert
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -151,6 +154,9 @@ low level services.
 %prep
 %setup -q
 %{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE17} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE18} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE19} -f ./mozilla/security/nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .relro
@@ -615,6 +621,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %changelog
 * Mon Apr 22 2013 Kai Engert <kaie@redhat.com> - 3.14.3-2
 - Add upstream patch to fix rhbz#872761
+- Update expired test certificates (fixed in upstream bug 852781)
 
 * Fri Feb 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-1
 - Update to NSS_3_14_3_RTM
