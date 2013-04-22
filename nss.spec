@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.3
-Release:          11%{?dist}
+Release:          12.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -80,6 +80,7 @@ Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch16:          nss-539183.patch
 Patch18:          nss-646045.patch
+Patch19:          nss-872761.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
@@ -173,6 +174,7 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
+%patch19 -p0 -b .872761
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
@@ -679,6 +681,9 @@ fi
 
 
 %changelog
+* Fri Apr 19 2013 Kai Engert <kaie@redhat.com> - 3.14.3-12.0
+- Add upstream patch to fix rhbz#872761
+
 * Sun Mar 24 2013 Kai Engert <kaie@redhat.com> - 3.14.3-11
 - Update expired test certificates (fixed in upstream bug 852781)
 
