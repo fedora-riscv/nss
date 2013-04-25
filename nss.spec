@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          0.1%{?dist}.beta1.1
+Release:          0.1%{?dist}.beta1.2
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -93,6 +93,9 @@ Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch43:          no-softoken-freebl-tests.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
 Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
+# The ocsp stapling tests currently require access to the
+# kuix.de test server but koji forbids outbount connections
+Patch46:          disable-ocsp-stapling-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -177,11 +180,12 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 #%patch29 -p0 -b .cbcrandomivoff
-%patch39 -p0 -b .nobypass
+#%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch43 -p0 -b .nosoftokentests
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
+%patch46 -p0 -b .skipoutbound
 
 %build
 
@@ -367,7 +371,7 @@ cd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl merge pkits chains"
+nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -378,7 +382,7 @@ nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl merge pkits
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
-cd ../../../../
+cd ../../
 
 killall $RANDSERV || :
 
@@ -678,6 +682,12 @@ fi
 
 
 %changelog
+* Wed Apr 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-0.1.beta1.2
+- Fix incorrect path that hid failed test from view
+- Add ocsp to the test suites to run but ...
+- Temporarily disable the ocsp stapling tests
+- Do not treat failed attempts at ssl pkcs11 bypass as fatal errors
+
 * Thu Apr 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-0.1.beta1.1
 - Update to NSS_3_15_BETA1
 - Update spec file, patches, and helper scripts on account of a shallower source tree
