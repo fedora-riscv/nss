@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.14.3
-Release:          12.0%{?dist}
+Release:          13.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -178,7 +178,7 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-#%patch29 -p0 -b .cbcrandomivoff
+%patch29 -p0 -b .cbcrandomivoff
 %patch39 -p1 -b .nobypass
 %patch40 -p1 -b .noocsptest
 %patch43 -p0 -b .nosoftokentests
@@ -681,6 +681,9 @@ fi
 
 
 %changelog
+* Tue May 14 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-13.0
+- Reactivate nss-ssl-cbc-random-iv-off-by-default.patch
+
 * Fri Apr 19 2013 Kai Engert <kaie@redhat.com> - 3.14.3-12.0
 - Add upstream patch to fix rhbz#872761
 
