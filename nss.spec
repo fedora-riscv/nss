@@ -1,4 +1,4 @@
-%global nspr_version 4.9.5
+%global nspr_version 4.10
 %global nss_util_version 3.15
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.15
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          0.1%{?dist}.beta1.2
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -96,6 +96,10 @@ Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
 # The ocsp stapling tests currently require access to the
 # kuix.de test server but koji forbids outbount connections
 Patch46:          disable-ocsp-stapling-tests.patch
+Patch47:          utilwrap-include-templates.patch
+Patch48:          nss-versus-softoken-tests.patch
+# TODO remove when we switch to building nss without softoken
+Patch49:  nss-skip-bltest-and-fipstest.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -182,10 +186,13 @@ low level services.
 #%patch29 -p0 -b .cbcrandomivoff
 #%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
-%patch43 -p0 -b .nosoftokentests
+#%patch43 -p0 -b .nosoftokentests
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
 %patch46 -p0 -b .skipoutbound
+#%patch47 -p0 -b .templates
+%patch48 -p0 -b .crypto
+%patch49 -p0 -b .skipthem
 
 %build
 
@@ -262,9 +269,11 @@ export NSS_ECC_MORE_THAN_SUITE_B
 # private exports from util. The install section will ensure not
 # to override nss-util and nss-softoken headers already installed.
 #     
+export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 %{__make} -C ./nss
+unset NSS_BLTEST_NOT_AVAILABLE
 
 ##### phase 3: build bltest and fipstest
 tar xf build_these_later.tar
@@ -328,6 +337,9 @@ export BUILD_OPT
 USE_64=1
 export USE_64
 %endif
+
+export NSS_BLTEST_NOT_AVAILABLE=1
+
 # End -- copied from the build section
 
 # enable the following line to force a test failure
@@ -682,6 +694,9 @@ fi
 
 
 %changelog
+* Sat Jun 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-1
+- Update to NSS_3_15_RTM
+
 * Wed Apr 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-0.1.beta1.2
 - Fix incorrect path that hid failed test from view
 - Add ocsp to the test suites to run but ...
