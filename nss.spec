@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -296,12 +296,12 @@ unset NSS_ENABLE_ECC; %{__make} -C ./nss/cmd/fipstest
                           -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
                           ./dist/pkgconfig/nss.pc
 
-NSS_VMAJOR=`cat lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
-NSS_VMINOR=`cat lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
-NSS_VPATCH=`cat lib/nss/nss.h | grep "#define.*NSS_VPATCH" | awk '{print $3}'`
+NSS_VMAJOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
+NSS_VMINOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
+NSS_VPATCH=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VPATCH" | awk '{print $3}'`
 
-export NSS_VMAJOR 
-export NSS_VMINOR 
+export NSS_VMAJOR
+export NSS_VMINOR
 export NSS_VPATCH
 
 %{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
@@ -694,6 +694,9 @@ fi
 
 
 %changelog
+* Sun Jun 16 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-2
+- Fix generation of NSS_VMAJOR, NSS_VMINOR, and NSS_VPATCH for nss-config
+
 * Sat Jun 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-1
 - Update to NSS_3_15_RTM
 
