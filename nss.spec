@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -694,6 +694,9 @@ fi
 
 
 %changelog
+* Mon Jun 17 2013 emaldona <emaldona@redhat.com> - 3.15-3
+- Update ssl-cbc-random-iv-by-default.patch
+
 * Sun Jun 16 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-2
 - Fix generation of NSS_VMAJOR, NSS_VMINOR, and NSS_VPATCH for nss-config
 

@@ -6,7 +6,7 @@ diff -up nss/lib/ssl/sslsock.c.cbcrandomivoff nss/lib/ssl/sslsock.c
      PR_FALSE,   /* requireSafeNegotiation */
      PR_FALSE,   /* enableFalseStart   */
 -    PR_TRUE,    /* cbcRandomIV        */
-+    PR_FALSE    /* cbcRandomIV        */ /* defaults to off for compatibility */
++    PR_FALSE,    /* cbcRandomIV        */ /* defaults to off for compatibility */
      PR_FALSE    /* enableOCSPStapling */
  };
  
