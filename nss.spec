@@ -700,6 +700,7 @@ fi
 
 %changelog
 * Mon Jun 17 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-2
+- Update to NSS_3_15_RTM
 
 * Tue May 14 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-13.0
 - Reactivate nss-ssl-cbc-random-iv-off-by-default.patch
