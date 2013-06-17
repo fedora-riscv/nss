@@ -1,0 +1,25 @@
+diff -up nss/cmd/bltest/Makefile.iquote nss/cmd/bltest/Makefile
+--- nss/cmd/bltest/Makefile.iquote	2013-04-04 21:56:59.329249213 -0700
++++ nss/cmd/bltest/Makefile	2013-04-04 21:57:47.583579084 -0700
+@@ -45,6 +45,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
++INCLUDES += -iquote $(DIST)/../private/nss
+ 
+ 
+ #######################################################################
+diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
+--- nss/coreconf/location.mk.iquote	2013-04-04 21:54:59.710477106 -0700
++++ nss/coreconf/location.mk	2013-04-04 21:56:21.091163121 -0700
+@@ -45,6 +45,10 @@ endif
+ 
+ ifdef NSS_INCLUDE_DIR
+     INCLUDES += -I$(NSS_INCLUDE_DIR)
++    ifdef IN_TREE_FREEBL_HEADERS_FIRST
++        INCLUDES += -iquote $(DIST)/../public/nss
++        INCLUDES += -iquote $(DIST)/../private/nss
++    endif
+ endif
+ 
+ ifndef NSS_LIB_DIR
