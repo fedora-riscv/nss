@@ -185,7 +185,7 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 %patch29 -p0 -b .cbcrandomivoff
-%patch39 -p0 -b .nobypass
+#%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 #%patch43 -p0 -b .nosoftokentests
 %patch44 -p1 -b .syncupwithupstream
