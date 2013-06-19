@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          2%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -89,14 +89,14 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
-Patch43:          no-softoken-freebl-tests.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
 Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
 # The ocsp stapling tests currently require access to the
 # kuix.de test server but koji forbids outbount connections
 Patch46:          disable-ocsp-stapling-tests.patch
+# Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
+# TODO submit this patch upstream
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:  nss-skip-bltest-and-fipstest.patch
@@ -187,14 +187,30 @@ low level services.
 %patch29 -p0 -b .cbcrandomivoff
 #%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
-#%patch43 -p0 -b .nosoftokentests
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
 %patch46 -p0 -b .skipoutbound
-#%patch47 -p0 -b .templates
+%patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
-%patch50 -p0 -b .iquote
+#%patch50 -p0 -b .iquote
+
+#########################################################
+# Higher-level libraries and test tools need access to
+# module-private headers from util, freebl, and softoken
+# until fixed upstream we must copy some headers locally
+#########################################################
+
+pemNeedsFromSoftoken="lowkeyi lowkeyti softoken softoknt"
+for file in ${pemNeedsFromSoftoken}; do
+    %{__cp} ./nss/lib/softoken/${file}.h ./nss/lib/ckfw/pem/
+done
+
+# Copying these header util the upstream bug is accepted
+# Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
+%{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
+%{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
+
 
 %build
 
@@ -228,9 +244,25 @@ NSPR_LIB_DIR=%{_libdir}
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
+export NSSUTIL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
+export NSSUTIL_LIB_DIR=%{_libdir}
+
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
+# FIXME choose one or the other style and submit a patch upstream
+# wtc has suggested using NSS_USE_SYSTEM_FREEBL
+export NSS_USE_SYSTEM_FREEBL=1
+
+export FREEBL_LIBS=`/usr/bin/pkg-config --libs nss-softokn`
+
+export SOFTOKEN_LIB_DIR=%{_libdir}
+# use the system ones
+export USE_SYSTEM_NSSUTIL=1
+export USE_SYSTEM_SOFTOKEN=1
+
+# tell the upstream build system what we are doing
+export NSS_BUILD_WITHOUT_SOFTOKEN=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -241,26 +273,18 @@ export USE_64
 %endif
 
 # uncomment if the iquote patch is activated
-export IN_TREE_FREEBL_HEADERS_FIRST=1
+#export IN_TREE_FREEBL_HEADERS_FIRST=1
 
-##### phase 1: build freebl/softokn shared libraries
-# there no ecc in freebl
-unset NSS_ENABLE_ECC
-# Compile softoken plus needed support
-%{__make} -C ./nss/coreconf
-
-%{__make} -C ./nss/lib/util export
-%{__make} -C ./nss/lib/freebl export
-%{__make} -C ./nss/lib/softoken export
-
-%{__make} -C ./nss/lib/util
-%{__make} -C ./nss/lib/dbm
-%{__make} -C ./nss/lib/freebl
-%{__make} -C ./nss/lib/softoken
-
-# stash away the bltest and fipstest to build them last
-tar cf build_these_later.tar ./nss/cmd/bltest ./nss/cmd/fipstest
-rm -rf ./nss/cmd/bltest ./nss/cmd/fipstest
+##### phase 1: remove util/freebl/softoken and low level tools
+#
+######## Remove freebl, softoken and util
+%{__rm} -rf ./mozilla/security/nss/lib/freebl
+%{__rm} -rf ./mozilla/security/nss/lib/softoken
+%{__rm} -rf ./mozilla/security/nss/lib/util
+######## Remove nss-softokn test tools
+%{__rm} -rf ./mozilla/security/nss/cmd/bltest
+%{__rm} -rf ./mozilla/security/nss/cmd/fipstest
+%{__rm} -rf ./mozilla/security/nss/cmd/rsaperf_low
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc
@@ -269,22 +293,11 @@ export NSS_ENABLE_ECC
 NSS_ECC_MORE_THAN_SUITE_B=1
 export NSS_ECC_MORE_THAN_SUITE_B
 
-# We only ship the nss proper libraries, no softoken nor util, yet                                   
-# we must compile with the entire source tree because nss needs                               
-# private exports from util. The install section will ensure not
-# to override nss-util and nss-softoken headers already installed.
-#     
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 %{__make} -C ./nss
 unset NSS_BLTEST_NOT_AVAILABLE
-
-##### phase 3: build bltest and fipstest
-tar xf build_these_later.tar
-unset NSS_ENABLE_ECC; %{__make} -C ./nss/cmd/bltest
-unset NSS_ENABLE_ECC; %{__make} -C ./nss/cmd/fipstest
-%{__rm} -f build_these_later.tar
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
@@ -344,6 +357,9 @@ export USE_64
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
+
+# needed for the fips manging test
+export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
 
@@ -481,49 +497,6 @@ done
 %{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
 %{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
-
-#remove the nss-util-devel headers
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/ciferfam.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslocks.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilock.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilckt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlk.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlkt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssutil.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11f.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11n.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11p.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11u.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/portreg.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/seccomon.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secder.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdert.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdig.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdigt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secerr.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secitem.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secoid.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilmodt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilpars.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilparst.h
-
-#remove headers shipped nss-softokn-devel and nss-softokn-freebl-devel
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/alghmac.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/shsign.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -699,7 +672,17 @@ fi
 
 
 %changelog
-* Mon Jun 17 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-2
+* Tue Jun 18 2013 emaldona <emaldona@redhat.com> - 3.15-4
+- Build nss without softoken or util sources in the tree
+- Resolves: rhbz#689918
+
+* Mon Jun 17 2013 emaldona <emaldona@redhat.com> - 3.15-3
+- Update ssl-cbc-random-iv-by-default.patch
+
+* Sun Jun 16 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-2
+- Fix generation of NSS_VMAJOR, NSS_VMINOR, and NSS_VPATCH for nss-config
+
+* Sat Jun 15 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-1
 - Update to NSS_3_15_RTM
 
 * Tue May 14 2013 Elio Maldonado <emaldona@redhat.com> - 3.14.3-13.0
