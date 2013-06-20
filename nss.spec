@@ -3,6 +3,7 @@
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.15
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches ppc64 sparc64 x86_64
@@ -19,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -74,6 +75,8 @@ Source12:         %{name}-pem-20130405.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
+Source20:         nss-config.xml
+Source21:         setup-nsssysinit.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -148,6 +151,7 @@ Requires:         nss-util-devel
 Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         pkgconfig
+BuildRequires:    xmlto
 
 %description devel
 Header and Library files for doing development with Network Security Services.
@@ -299,6 +303,16 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss
 unset NSS_BLTEST_NOT_AVAILABLE
 
+# build the man pages clean
+pushd ./nss
+%{__make} clean_docs build_docs
+popd
+
+# and copy them here
+for m in "%{allTools}"; do 
+  cp ./nss/doc/nroff/${m}.1 .
+done
+
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
@@ -337,6 +351,16 @@ chmod 755 ./dist/pkgconfig/nss-config
 chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 
 %{__cp} ./nss/lib/ckfw/nssck.api ./dist/private/nss/
+
+date +"%e %B %Y" | tr -d '\n' > date.xml
+echo -n %{version} > version.xml
+
+for m in %{SOURCE20} %{SOURCE21}; do
+  cp ${m} .
+done
+for m in nss-config.xml setup-nsssysinit.xml; do
+  xmlto man ${m}
+done
 
 %check
 if [ $DISABLETEST -eq 1 ]; then
@@ -442,6 +466,8 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+
 touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
 %{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
 
@@ -497,6 +523,14 @@ done
 %{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
 %{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
+# Copy the man pages for scripts
+for f in nss-config setup-nsssysinit; do 
+   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+done
+# Copy the man pages the nss tools
+for f in "%{allTools}"; do 
+   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+done
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -575,6 +609,7 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %{_bindir}/setup-nsssysinit.sh
+%attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
 
 %files tools
 %defattr(-,root,root)
@@ -597,12 +632,28 @@ fi
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
+# instead of %{_mandir}/man*/* let's list them explicitely
+# supported tools
+%attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/crlutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/modutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/pk12util.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/signtool.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/signver.1.gz
+# unsupported tools
+%attr(0644,root,root) %doc /usr/share/man/man1/derdump.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/pp.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/ssltap.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/vfychain.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/vfyserv.1.gz
 
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
+%attr(0644,root,root) %doc /usr/share/man/man1/nss-config.1.gz
 
 %dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
@@ -672,6 +723,10 @@ fi
 
 
 %changelog
+* Wed Jun 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-5
+- Install man pages for nss-tools and the nss-config and setup-nsssysinit scripts
+- Resolves: rhbz#606020 - nss security tools lack man pages
+
 * Tue Jun 18 2013 emaldona <emaldona@redhat.com> - 3.15-4
 - Build nss without softoken or util sources in the tree
 - Resolves: rhbz#689918
