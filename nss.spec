@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15
-Release:          6%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -187,8 +187,8 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-%patch29 -p0 -b .cbcrandomivoff
-%patch39 -p0 -b .nobypass
+#%patch29 -p0 -b .cbcrandomivoff
+#%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
@@ -718,11 +718,6 @@ fi
 
 
 %changelog
-* Mon Jun 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-6
-- Reenable patches required for compatibility on stable fedora branches 
-- Reenable nss-ssl-enforce-no-pkcs11-bypass.path
-- Renable nss-ssl-cbc-random-iv-off-by-default.patch
-
 * Wed Jun 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-5
 - Install man pages for nss-tools and the nss-config and setup-nsssysinit scripts
 - Resolves: rhbz#606020 - nss security tools lack man pages
