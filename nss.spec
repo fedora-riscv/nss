@@ -1,7 +1,7 @@
 %global nspr_version 4.10
-%global nss_util_version 3.15
+%global nss_util_version 3.15.1
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.15
+%global nss_softokn_version 3.15.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,8 +19,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15
-Release:          5%{?dist}
+Version:          3.15.1
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -718,6 +718,9 @@ fi
 
 
 %changelog
+* Tue Jul 02 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-1
+- Update to NSS_3_15_1_RTM
+
 * Wed Jun 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-5
 - Install man pages for nss-tools and the nss-config and setup-nsssysinit scripts
 - Resolves: rhbz#606020 - nss security tools lack man pages
