@@ -103,6 +103,7 @@ Patch47:          utilwrap-include-templates.patch
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:  nss-skip-bltest-and-fipstest.patch
+Patch50:  iquote.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -196,6 +197,7 @@ low level services.
 %patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
+%patch50 -p0 -b .iquote
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -273,6 +275,9 @@ export NSS_USE_SYSTEM_SQLITE
 USE_64=1
 export USE_64
 %endif
+
+# uncomment if the iquote patch is activated
+export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 1: remove util/freebl/softoken and low level tools
 #
@@ -720,6 +725,7 @@ fi
 %changelog
 * Tue Jul 02 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-1
 - Update to NSS_3_15_1_RTM
+- Enable the iquote.patch to access newly introduced types
 
 * Wed Jun 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15-5
 - Install man pages for nss-tools and the nss-config and setup-nsssysinit scripts
