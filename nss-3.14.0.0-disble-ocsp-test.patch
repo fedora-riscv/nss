@@ -1,11 +1,11 @@
-diff -up nss/tests/chains/scenarios/scenarios.nocsptest nss/tests/chains/scenarios/scenarios
---- nss/tests/chains/scenarios/scenarios.nocsptest	2013-07-02 13:16:31.833623231 -0700
-+++ nss/tests/chains/scenarios/scenarios	2013-07-02 13:17:02.465910005 -0700
-@@ -48,7 +48,6 @@ bridgewithaia.cfg
- bridgewithhalfaia.cfg
- bridgewithpolicyextensionandmapping.cfg
+diff -up nss/tests/chains/scenarios/scenarios.noocsptest nss/tests/chains/scenarios/scenarios
+--- nss/tests/chains/scenarios/scenarios.noocsptest	2013-06-27 10:58:08.000000000 -0700
++++ nss/tests/chains/scenarios/scenarios	2013-07-02 16:13:27.075038930 -0700
+@@ -50,7 +50,6 @@ bridgewithpolicyextensionandmapping.cfg
  realcerts.cfg
--dsa.cfg
+ dsa.cfg
  revoc.cfg
- ocsp.cfg
+-ocsp.cfg
  crldp.cfg
+ trustanchors.cfg
+ nameconstraints.cfg
