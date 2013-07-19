@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.1
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -102,8 +102,10 @@ Patch47:          utilwrap-include-templates.patch
 # TODO submit this patch upstream
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
-Patch49:  nss-skip-bltest-and-fipstest.patch
-Patch50:  iquote.patch
+Patch49:          nss-skip-bltest-and-fipstest.patch
+Patch50:          iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug_cgi?id=836477
+Patch51:          manpages-fixes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -198,6 +200,9 @@ low level services.
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+pushd nss
+%patch51 -p1 -b .948495
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -466,7 +471,8 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
 touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
 %{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
@@ -527,7 +533,7 @@ done
 for f in nss-config setup-nsssysinit; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
-# Copy the man pages the nss tools
+# Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
@@ -723,6 +729,11 @@ fi
 
 
 %changelog
+* Fri Jul 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-2
+- Fix errors in the man pages
+- Resolves: rhbz#984106 - Add missing option descriptions to man pages for {cert|cms|crl}util
+- Resolves: rhbz#982856 - Fix path to script in man page for nss-sysinit
+
 * Tue Jul 02 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-1
 - Update to NSS_3_15_1_RTM
 - Enable the iquote.patch to access newly introduced types
