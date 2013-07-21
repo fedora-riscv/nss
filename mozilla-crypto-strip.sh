@@ -50,9 +50,9 @@ then
 fi
 
 TOPDIR=`ls -1`
-if test "x$TOPDIR" != "xmozilla"
+if test "x$TOPDIR" != "xnss"
 then
-  # try to deal with a single additional subdirectory above "mozilla"
+  # try to deal with a single additional subdirectory above "nss"
   echo "== skipping toplevel directory $TOPDIR"
   cd $TOPDIR
 fi
@@ -65,18 +65,18 @@ then
 fi
 
 SINGLEDIR=`ls -1`
-if test "x$SINGLEDIR" != "xmozilla"
+if test "x$SINGLEDIR" != "xnss"
 then
-  echo "unable to process, first or second level directory is not mozilla"
+  echo "unable to process, first or second level directory is not nss"
   exit
 fi
 
 echo "== input archive accepted, now processing"
 
-REALFREEBLDIR=mozilla/security/nss/lib/freebl
+REALFREEBLDIR=nss/lib/freebl
 FREEBLDIR=./$REALFREEBLDIR
 
-rm -rf ./mozilla/security/nss/cmd/ecperf
+rm -rf ./nss/cmd/ecperf
 
 mv ${FREEBLDIR}/ecl/ecl-exp.h ${FREEBLDIR}/save
 rm -rf ${FREEBLDIR}/ecl/tests

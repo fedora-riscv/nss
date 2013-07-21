@@ -1,0 +1,9 @@
+diff -up nss/tests/ocsp/ocsp.sh.skipoutbound nss/tests/ocsp/ocsp.sh
+--- nss/tests/ocsp/ocsp.sh.skipoutbound	2013-04-24 18:04:30.203307355 -0700
++++ nss/tests/ocsp/ocsp.sh	2013-04-24 18:06:27.967176794 -0700
+@@ -115,4 +115,4 @@ ocsp_stapling()
+ ################## main #################################################
+ ocsp_init
+ ocsp_iopr_run
+-ocsp_stapling
++#ocsp_stapling

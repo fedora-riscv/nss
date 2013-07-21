@@ -1,8 +1,9 @@
-%global nspr_version 4.9.5
-%global nss_util_version 3.14.3
+%global nspr_version 4.10
+%global nss_util_version 3.15.1
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.14.3
+%global nss_softokn_version 3.15.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # Define if using a source archive like "nss-version.with.ckbi.version".
 # To "disable", add "#" to start of line, AND a space after "%".
@@ -10,8 +11,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.14.3
-Release:          2%{?dist}
+Version:          3.15.1
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -60,17 +61,18 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20120811.tar.bz2
+Source12:         %{name}-pem-20130405.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
+Source20:         nss-config.xml
+Source21:         setup-nsssysinit.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch16:          nss-539183.patch
 Patch18:          nss-646045.patch
-Patch19:          nss-872761.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
@@ -80,10 +82,18 @@ Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=835919
-Patch43:          no-softoken-freebl-tests.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
 Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
+# The ocsp stapling tests currently require access to the
+# kuix.de test server but koji forbids outbount connections
+Patch46:          disable-ocsp-stapling-tests.patch
+# Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
+Patch47:          utilwrap-include-templates.patch
+# TODO submit this patch upstream
+Patch48:          nss-versus-softoken-tests.patch
+# TODO remove when we switch to building nss without softoken
+Patch49:  nss-skip-bltest-and-fipstest.patch
+Patch50:  iquote.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -131,6 +141,7 @@ Requires:         nss-util-devel
 Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         pkgconfig
+BuildRequires:    xmlto
 
 %description devel
 Header and Library files for doing development with Network Security Services.
@@ -153,10 +164,10 @@ low level services.
 
 %prep
 %setup -q
-%{__cp} %{SOURCE10} -f ./mozilla/security/nss/tests/libpkix/certs
-%{__cp} %{SOURCE17} -f ./mozilla/security/nss/tests/libpkix/certs
-%{__cp} %{SOURCE18} -f ./mozilla/security/nss/tests/libpkix/certs
-%{__cp} %{SOURCE19} -f ./mozilla/security/nss/tests/libpkix/certs
+%{__cp} %{SOURCE10} -f ./nss/tests/libpkix/certs
+%{__cp} %{SOURCE17} -f ./nss/tests/libpkix/certs
+%{__cp} %{SOURCE18} -f ./nss/tests/libpkix/certs
+%{__cp} %{SOURCE19} -f ./nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .relro
@@ -164,16 +175,36 @@ low level services.
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
 %patch18 -p0 -b .646045
-%patch19 -p0 -b .872761
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 %patch29 -p0 -b .cbcrandomivoff
-%patch39 -p1 -b .nobypass
-%patch40 -p1 -b .noocsptest
-%patch43 -p0 -b .nosoftokentests
+%patch39 -p0 -b .nobypass
+%patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
+%patch46 -p0 -b .skipoutbound
+%patch47 -p0 -b .templates
+%patch48 -p0 -b .crypto
+%patch49 -p0 -b .skipthem
+%patch50 -p0 -b .iquote
+
+#########################################################
+# Higher-level libraries and test tools need access to
+# module-private headers from util, freebl, and softoken
+# until fixed upstream we must copy some headers locally
+#########################################################
+
+pemNeedsFromSoftoken="lowkeyi lowkeyti softoken softoknt"
+for file in ${pemNeedsFromSoftoken}; do
+    %{__cp} ./nss/lib/softoken/${file}.h ./nss/lib/ckfw/pem/
+done
+
+# Copying these header util the upstream bug is accepted
+# Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
+%{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
+%{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
+
 
 %build
 
@@ -207,9 +238,25 @@ NSPR_LIB_DIR=%{_libdir}
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
+export NSSUTIL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
+export NSSUTIL_LIB_DIR=%{_libdir}
+
 export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
 export FREEBL_LIB_DIR=%{_libdir}
 export USE_SYSTEM_FREEBL=1
+# FIXME choose one or the other style and submit a patch upstream
+# wtc has suggested using NSS_USE_SYSTEM_FREEBL
+export NSS_USE_SYSTEM_FREEBL=1
+
+export FREEBL_LIBS=`/usr/bin/pkg-config --libs nss-softokn`
+
+export SOFTOKEN_LIB_DIR=%{_libdir}
+# use the system ones
+export USE_SYSTEM_NSSUTIL=1
+export USE_SYSTEM_SOFTOKEN=1
+
+# tell the upstream build system what we are doing
+export NSS_BUILD_WITHOUT_SOFTOKEN=1
 
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
@@ -219,25 +266,19 @@ USE_64=1
 export USE_64
 %endif
 
-##### phase 1: build freebl/softokn shared libraries
-# there no ecc in freebl
-unset NSS_ENABLE_ECC
-# Compile softoken plus needed support
-%{__make} -C ./mozilla/security/coreconf
-%{__make} -C ./mozilla/security/dbm
+# uncomment if the iquote patch is activated
+export IN_TREE_FREEBL_HEADERS_FIRST=1
 
-%{__make} -C ./mozilla/security/nss/lib/util export
-%{__make} -C ./mozilla/security/nss/lib/freebl export
-%{__make} -C ./mozilla/security/nss/lib/softoken export
-
-%{__make} -C ./mozilla/security/nss/lib/util
-%{__make} -C ./mozilla/security/nss/lib/freebl
-%{__make} -C ./mozilla/security/nss/lib/softoken
-
-# stash away the bltest and fipstest to build them last
-tar cf build_these_later.tar ./mozilla/security/nss/cmd/bltest ./mozilla/security/nss/cmd/fipstest
-rm -rf ./mozilla/security/nss/cmd/bltest
-rm -rf ./mozilla/security/nss/cmd/fipstest
+##### phase 1: remove util/freebl/softoken and low level tools
+#
+######## Remove freebl, softoken and util
+%{__rm} -rf ./mozilla/security/nss/lib/freebl
+%{__rm} -rf ./mozilla/security/nss/lib/softoken
+%{__rm} -rf ./mozilla/security/nss/lib/util
+######## Remove nss-softokn test tools
+%{__rm} -rf ./mozilla/security/nss/cmd/bltest
+%{__rm} -rf ./mozilla/security/nss/cmd/fipstest
+%{__rm} -rf ./mozilla/security/nss/cmd/rsaperf_low
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc
@@ -246,26 +287,27 @@ export NSS_ENABLE_ECC
 NSS_ECC_MORE_THAN_SUITE_B=1
 export NSS_ECC_MORE_THAN_SUITE_B
 
-# We only ship the nss proper libraries, no softoken nor util, yet                                   
-# we must compile with the entire source tree because nss needs                               
-# private exports from util. The install section will ensure not
-# to override nss-util and nss-softoken headers already installed.
-#     
-%{__make} -C ./mozilla/security/coreconf
-%{__make} -C ./mozilla/security/dbm
-%{__make} -C ./mozilla/security/nss
+export NSS_BLTEST_NOT_AVAILABLE=1
+%{__make} -C ./nss/coreconf
+%{__make} -C ./nss/lib/dbm
+%{__make} -C ./nss
+unset NSS_BLTEST_NOT_AVAILABLE
 
-##### phase 3: build bltest and fipstest
-tar xf build_these_later.tar
-unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/bltest
-unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/fipstest
-%{__rm} -f build_these_later.tar
+# build the man pages clean
+pushd ./nss
+%{__make} clean_docs build_docs
+popd
+
+# and copy them here
+for m in "%{allTools}"; do 
+  cp ./nss/doc/nroff/${m}.1 .
+done
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
 # here match the ones nss has for its Requires. 
 # Using the current %%{nss_softokn_version} for fedora again
-%{__mkdir_p} ./mozilla/dist/pkgconfig
+%{__mkdir_p} ./dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
@@ -274,14 +316,14 @@ unset NSS_ENABLE_ECC; %{__make} -C ./mozilla/security/nss/cmd/fipstest
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
                           -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
-                          ./mozilla/dist/pkgconfig/nss.pc
+                          ./dist/pkgconfig/nss.pc
 
-NSS_VMAJOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
-NSS_VMINOR=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
-NSS_VPATCH=`cat mozilla/security/nss/lib/nss/nss.h | grep "#define.*NSS_VPATCH" | awk '{print $3}'`
+NSS_VMAJOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
+NSS_VMINOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
+NSS_VPATCH=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VPATCH" | awk '{print $3}'`
 
-export NSS_VMAJOR 
-export NSS_VMINOR 
+export NSS_VMAJOR
+export NSS_VMINOR
 export NSS_VPATCH
 
 %{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
@@ -291,16 +333,30 @@ export NSS_VPATCH
                           -e "s,@MOD_MAJOR_VERSION@,$NSS_VMAJOR,g" \
                           -e "s,@MOD_MINOR_VERSION@,$NSS_VMINOR,g" \
                           -e "s,@MOD_PATCH_VERSION@,$NSS_VPATCH,g" \
-                          > ./mozilla/dist/pkgconfig/nss-config
+                          > ./dist/pkgconfig/nss-config
 
-chmod 755 ./mozilla/dist/pkgconfig/nss-config
+chmod 755 ./dist/pkgconfig/nss-config
 
-%{__cat} %{SOURCE9} > ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
-chmod 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh
+%{__cat} %{SOURCE9} > ./dist/pkgconfig/setup-nsssysinit.sh
+chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 
-%{__cp} ./mozilla/security/nss/lib/ckfw/nssck.api ./mozilla/dist/private/nss/
+%{__cp} ./nss/lib/ckfw/nssck.api ./dist/private/nss/
+
+date +"%e %B %Y" | tr -d '\n' > date.xml
+echo -n %{version} > version.xml
+
+for m in %{SOURCE20} %{SOURCE21}; do
+  cp ${m} .
+done
+for m in nss-config.xml setup-nsssysinit.xml; do
+  xmlto man ${m}
+done
 
 %check
+if [ $DISABLETEST -eq 1 ]; then
+  echo "testing disabled"
+  exit 0
+fi
 
 # Begin -- copied from the build section
 FREEBL_NO_DEPEND=1
@@ -313,10 +369,16 @@ export BUILD_OPT
 USE_64=1
 export USE_64
 %endif
+
+export NSS_BLTEST_NOT_AVAILABLE=1
+
+# needed for the fips manging test
+export SOFTOKEN_LIB_DIR=%{_libdir}
+
 # End -- copied from the build section
 
 # enable the following line to force a test failure
-# find ./mozilla -name \*.chk | xargs rm -f
+# find ./nss -name \*.chk | xargs rm -f
 
 # Run test suite.
 # In order to support multiple concurrent executions of the test suite
@@ -329,34 +391,34 @@ export USE_64
 # Using xargs doesn't mix well with spaces in filenames, in order to
 # avoid weird quoting we'll require that no spaces are being used.
 
-SPACEISBAD=`find ./mozilla/security/nss/tests | grep -c ' '` ||:
+SPACEISBAD=`find ./nss/tests | grep -c ' '` ||:
 if [ $SPACEISBAD -ne 0 ]; then
   echo "error: filenames containing space are not supported (xargs)"
   exit 1
 fi
 MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
 RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
-DISTBINDIR=`ls -d ./mozilla/dist/*.OBJ/bin`; echo $DISTBINDIR ||:
+DISTBINDIR=`ls -d ./dist/*.OBJ/bin`; echo $DISTBINDIR ||:
 pushd `pwd`
 cd $DISTBINDIR
 ln -s selfserv $RANDSERV
 popd
 # man perlrun, man perlrequick
 # replace word-occurrences of selfserv with selfserv_$MYRAND
-find ./mozilla/security/nss/tests -type f |\
+find ./nss/tests -type f |\
   grep -v "\.db$" |grep -v "\.crl$" | grep -v "\.crt$" |\
   grep -vw CVS  |xargs grep -lw selfserv |\
   xargs -l perl -pi -e "s/\bselfserv\b/$RANDSERV/g" ||:
 
 killall $RANDSERV || :
 
-rm -rf ./mozilla/tests_results
-cd ./mozilla/security/nss/tests/
+rm -rf ./tests_results
+cd ./nss/tests/
 # all.sh is the test suite script
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl merge pkits chains"
+nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -367,11 +429,11 @@ nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl merge pkits
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
-cd ../../../../
+cd ../../
 
 killall $RANDSERV || :
 
-TEST_FAILURES=`grep -c FAILED ./mozilla/tests_results/security/localhost.1/output.log` || :
+TEST_FAILURES=`grep -c FAILED ./tests_results/security/localhost.1/output.log` || :
 # test suite is failing on arm and has for awhile let's run the test suite but make it non fatal on arm
 %ifnarch %{arm}
 if [ $TEST_FAILURES -ne 0 ]; then
@@ -394,10 +456,15 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+
+touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
+%{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
+
 # Copy the binary libraries we want
-for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnss3.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
 do
-  %{__install} -p -m 755 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Install the empty NSS db files
@@ -414,81 +481,46 @@ done
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -p -m 644 mozilla/dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  %{__install} -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
-  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in atob btoa derdump ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -p -m 755 mozilla/dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
-for file in mozilla/dist/public/nss/*.h
+for file in dist/public/nss/*.h
 do
   %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
 done
 
 # Copy the template files we want
-for file in mozilla/dist/private/nss/nssck.api
+for file in dist/private/nss/nssck.api
 do
   %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 done
 
 # Copy the package configuration files
-%{__install} -p -m 644 ./mozilla/dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
-%{__install} -p -m 755 ./mozilla/dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
+%{__install} -p -m 644 ./dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+%{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
-%{__install} -p -m 755 ./mozilla/dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
-
-#remove the nss-util-devel headers
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/base64.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/ciferfam.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssb64t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslocks.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilock.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssilckt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlk.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssrwlkt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nssutil.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11f.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11n.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11p.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/pkcs11u.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/portreg.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secasn1t.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/seccomon.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secder.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdert.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdig.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secdigt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secerr.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secitem.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secoid.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secoidt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/secport.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilrename.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilmodt.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilpars.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/utilparst.h
-
-#remove headers shipped nss-softokn-devel and nss-softokn-freebl-devel
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/alghmac.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/blapit.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/ecl-exp.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/hasht.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/shsign.h
-rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
+%{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
+# Copy the man pages for scripts
+for f in nss-config setup-nsssysinit; do 
+   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+done
+# Copy the man pages the nss tools
+for f in "%{allTools}"; do 
+   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+done
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -522,6 +554,7 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %{_bindir}/setup-nsssysinit.sh
+%attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
 
 %files tools
 %defattr(-,root,root)
@@ -544,12 +577,28 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
+# instead of %{_mandir}/man*/* let's list them explicitely
+# supported tools
+%attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/crlutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/modutil.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/pk12util.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/signtool.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/signver.1.gz
+# unsupported tools
+%attr(0644,root,root) %doc /usr/share/man/man1/derdump.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/pp.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/ssltap.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/vfychain.1.gz
+%attr(0644,root,root) %doc /usr/share/man/man1/vfyserv.1.gz
 
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
+%attr(0644,root,root) %doc /usr/share/man/man1/nss-config.1.gz
 
 %dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
@@ -619,6 +668,14 @@ rm -f $RPM_BUILD_ROOT/%{_includedir}/nss3/nsslowhash.h
 
 
 %changelog
+* Sun Jul 21 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-1
+- Update to NSS_3_15_1_RTM
+- Enable iquote.patch to access newly introduced types
+- Install man pages for nss-config and setup-nsssysinit
+- Resolves: rhbz#606020 - nss security tools lack man pages
+- Resolves: rhbz#689918 -build nss without softoken or util sources in the tree
+- Fix NSS_VMAJOR, NSS_VMINOR, and NSS_VPATCH generation for nss-config
+
 * Mon Apr 22 2013 Kai Engert <kaie@redhat.com> - 3.14.3-2
 - Add upstream patch to fix rhbz#872761
 - Update expired test certificates (fixed in upstream bug 852781)
