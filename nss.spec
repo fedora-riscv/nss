@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.1
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -77,6 +77,12 @@ Source18:         TestUser50.cert
 Source19:         TestUser51.cert
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
+Source22:         pkcs11.txt.xml
+Source23:         cert8.db.xml
+Source24:         cert9.db.xml
+Source25:         key3.db.xml
+Source26:         key4.db.xml
+Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -360,12 +366,22 @@ chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 date +"%e %B %Y" | tr -d '\n' > date.xml
 echo -n %{version} > version.xml
 
-for m in %{SOURCE20} %{SOURCE21}; do
+# configuration files and setup script
+for m in %{SOURCE20} %{SOURCE21} %{SOURCE22}; do
   cp ${m} .
 done
-for m in nss-config.xml setup-nsssysinit.xml; do
+for m in nss-config.xml setup-nsssysinit.xml pkcs11.txt.xml; do
   xmlto man ${m}
 done
+
+# nss databases considered to be configuration files
+for m in %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26} %{SOURCE27}; do
+  cp ${m} .
+done
+for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
+  xmlto man ${m}
+done
+ 
 
 %check
 if [ $DISABLETEST -eq 1 ]; then
@@ -537,6 +553,14 @@ done
 for f in "%{allTools}"; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
+# Copy the man pages for the configuration files
+for f in pkcs11.txt; do 
+   install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
+done
+# Copy the man pages for the nss databases
+for f in cert8.db cert9.db key3.db key4.db secmod.db; do 
+   install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
+done
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -607,6 +631,10 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
+%attr(0644,root,root) %doc /usr/share/man/man5/*
+%attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -614,6 +642,9 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
 %attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
 
@@ -729,6 +760,10 @@ fi
 
 
 %changelog
+* Thu Jul 25 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-3
+- Add man page for pkcs11.txt configuration file and cert and key databases
+- Resolves: rhbz#985114 - Provide man pages for the nss configuration files
+
 * Fri Jul 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-2
 - Fix errors in the man pages
 - Resolves: rhbz#984106 - Add missing option descriptions to man pages for {cert|cms|crl}util
