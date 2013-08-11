@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.1
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -93,9 +93,9 @@ Patch18:          nss-646045.patch
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
-Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+# Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 # Prevent users from trying to enable ssl pkcs11 bypass
-Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
+# Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
@@ -196,8 +196,8 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-#%patch29 -p0 -b .cbcrandomivoff
-#%patch39 -p0 -b .nobypass
+# %%patch29 -p0 -b .cbcrandomivoff
+# %%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
@@ -601,17 +601,17 @@ fi
 /sbin/ldconfig
 
 %posttrans
-# An earlier version of this package had an incorrect %postun script (3.14.3-9).
-# (The incorrect %postun always called "update-alternatives --remove",
+# An earlier version of this package had an incorrect %%postun script (3.14.3-9).
+# (The incorrect %%postun always called "update-alternatives --remove",
 # because it incorrectly assumed that test -f returns false for symbolic links.)
 # The only possible remedy to fix the mistake that "always removes on upgrade"
-# made by the older %postun script, is to repair it in %posttrans of the new package.
+# made by the older %%postun script, is to repair it in %%posttrans of the new package.
 # Strategy:
-# %posttrans is never called when uninstalling.
-# %posttrans is only called when installing or upgrading a package.
-# Because %posttrans is the very last action of a package install,
-# %{_libdir}/libnssckbi.so must exist.
-# If it does not, it's the result of the incorrect removal from a broken %postun.
+# %%posttrans is never called when uninstalling.
+# %%posttrans is only called when installing or upgrading a package.
+# Because %%posttrans is the very last action of a package install,
+# %%{_libdir}/libnssckbi.so must exist.
+# If it does not, it's the result of the incorrect removal from a broken %%postun.
 # In this case, we repeat installation of the alternatives link.
 if ! test -e %{_libdir}/libnssckbi.so; then
   %{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
@@ -669,7 +669,7 @@ fi
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
-# instead of %{_mandir}/man*/* let's list them explicitely
+# instead of %%{_mandir}/man*/* let's list them explicitely
 # supported tools
 %attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
 %attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
@@ -760,6 +760,13 @@ fi
 
 
 %changelog
+* Sun Aug 11 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-4
+- Cleanup spec file to address most rpmlint errors and warnings
+- Using double percent symbols to fix macro-in-comment warnings
+- Ignore unversioned-explicit-provides nss-system-init per spec comments
+- Ignore invalid-url Source0 as it comes from the git lookaside cache
+- Ignore invalid-url Source12 as it comes from the git lookaside cache
+
 * Thu Jul 25 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-3
 - Add man page for pkcs11.txt configuration file and cert and key databases
 - Resolves: rhbz#985114 - Provide man pages for the nss configuration files
@@ -1125,7 +1132,7 @@ fi
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
 
 * Tue Oct 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
-- Fix invalid %postun scriptlet (#639248)
+- Fix invalid %%postun scriptlet (#639248)
 
 * Wed Sep 29 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
 - Replace posttrans sysinit scriptlet with a triggerpostun one (#636787)
