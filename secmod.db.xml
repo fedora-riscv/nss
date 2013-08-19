@@ -27,7 +27,11 @@
 <refsection id="description">
     <title>Description</title>
     <para><emphasis>secmod.db</emphasis> is an NSS security modules database.</para>
-  <para>This is a BerkeyDB legacy database format. The recommende way of tracking security modules is the pkcs11.txt configuration file used in conjunction thew shared database format certificate and key dtabases.
+  <para>The security modules database is used to keep track of the NSS security modules. The NSS security modules export their services via the PKCS #11 API which NSS uses as its Services Provider Interface.
+  </para>
+  <para>The command line utility <emphasis>modutil</emphasis> is used for managing PKCS #11 module information both within secmod.db files and within hardware tokens.
+  </para>
+  <para>For new applications the recommended way of tracking security modules is via the pkcs11.txt configuration file used in conjunction the new sqlite-based shared database format for certificate and key databases.
   </para>
   </refsection>
 
@@ -38,12 +42,12 @@
 
   <refsection>
     <title>See also</title>
-    <para>cert9.db(5), key4.db(5), pkcs11.txt(5), </para>
+    <para>modutil(1), cert8.db(5), cert9.db(5), key3.db(5), key4.db(5), pkcs11.txt(5)</para>
   </refsection>
 
   <refsection id="authors">
     <title>Authors</title>
-    <para>The nss libraries were written and maintained by developers with Netscape, Red Hat,  Sun, Oracle, Mozilla, and Google.</para>
+    <para>The nss libraries were written and maintained by developers with Netscape, Red Hat, Sun, Oracle, Mozilla, and Google.</para>
     <para>Authors: Elio Maldonado &lt;emaldona@redhat.com>.</para>
   </refsection>
 

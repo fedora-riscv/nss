@@ -21,7 +21,7 @@
 
   <refnamediv>
     <refname>key4.db</refname>
-    <refpurpose>Legacy NSS certificate database</refpurpose>
+    <refpurpose>NSS certificate database</refpurpose>
   </refnamediv>
 
 <refsection id="description">
