@@ -21,13 +21,13 @@
 
   <refnamediv>
     <refname>cert9.db</refname>
-    <refpurpose>Legacy NSS certificate database</refpurpose>
+    <refpurpose>NSS certificate database</refpurpose>
   </refnamediv>
 
 <refsection id="description">
     <title>Description</title>
     <para><emphasis>cert9.db</emphasis> is an NSS certificate database.</para>
-  <para>This certificate database is the sqlite-based shared databse with support for concurrent access.
+  <para>This certificate database is the sqlite-based shared database with support for concurrent access.
   </para>
   </refsection>
 
