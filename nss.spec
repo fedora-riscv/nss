@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.1
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
