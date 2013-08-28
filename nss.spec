@@ -71,7 +71,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20130827.tar.bz2
+Source12:         %{name}-pem-20130828.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -760,6 +760,10 @@ fi
 
 
 %changelog
+* Wed Aug 28 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-7
+- Update pem sources to pick up a patch applied upstream which a faulty merge had missed
+- The pem module should not require unique file basenames
+
 * Tue Aug 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-6
 - Update pem sources to the latest from interim upstream
 
