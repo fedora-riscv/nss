@@ -36,3 +36,27 @@ diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
  endif
  
  ifndef NSS_LIB_DIR
+diff -up nss/lib/certhigh/Makefile.iquote nss/lib/certhigh/Makefile
+--- nss/lib/certhigh/Makefile.iquote	2013-09-27 11:13:55.158689314 -0700
++++ nss/lib/certhigh/Makefile	2013-09-27 11:14:38.181042336 -0700
+@@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
+-
++INCLUDES += -iquote $(DIST)/../public/nss
+ 
+ #######################################################################
+ # (7) Execute "local" rules. (OPTIONAL).                              #
+diff -up nss/lib/cryptohi/Makefile.iquote nss/lib/cryptohi/Makefile
+--- nss/lib/cryptohi/Makefile.iquote	2013-09-27 11:11:30.117494489 -0700
++++ nss/lib/cryptohi/Makefile	2013-09-27 11:12:54.704194915 -0700
+@@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
+-
++INCLUDES += -iquote $(DIST)/../public/nss
+ 
+ #######################################################################
+ # (7) Execute "local" rules. (OPTIONAL).                              #

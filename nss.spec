@@ -757,6 +757,7 @@ fi
 %changelog
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
+- Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
 
 * Wed Aug 28 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-7
 - Update pem sources to pick up a patch applied upstream which a faulty merge had missed
