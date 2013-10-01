@@ -93,7 +93,7 @@ Patch18:          nss-646045.patch
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
-# Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 # Prevent users from trying to enable ssl pkcs11 bypass
 # Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
@@ -194,7 +194,7 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
-# %%patch29 -p0 -b .cbcrandomivoff
+%patch29 -p0 -b .cbcrandomivoff
 # %%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
@@ -758,6 +758,7 @@ fi
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
 - Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
+- Keep the nss-ssl-cbc-random-iv-off-by-default.patch enabled
 
 * Wed Aug 28 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-7
 - Update pem sources to pick up a patch applied upstream which a faulty merge had missed
