@@ -1,7 +1,7 @@
-%global nspr_version 4.10
-%global nss_util_version 3.15.1
+%global nspr_version 4.10.1
+%global nss_util_version 3.15.2
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.15.1
+%global nss_softokn_version 3.15.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,8 +19,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.1
-Release:          5%{?dist}
+Version:          3.15.2
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -71,7 +71,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20130405.tar.bz2
+Source12:         %{name}-pem-20130828.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -110,8 +110,6 @@ Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug_cgi?id=836477
-Patch51:          manpages-fixes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -206,9 +204,6 @@ low level services.
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-%patch51 -p1 -b .948495
-popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -760,6 +755,18 @@ fi
 
 
 %changelog
+* Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
+- Update to NSS_3_15_2_RTM
+- Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
+- Keep the nss-ssl-cbc-random-iv-off-by-default.patch enabled
+
+* Wed Aug 28 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-7
+- Update pem sources to pick up a patch applied upstream which a faulty merge had missed
+- The pem module should not require unique file basenames
+
+* Tue Aug 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-6
+- Update pem sources to the latest from interim upstream
+
 * Mon Aug 19 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-5
 - Resolves: rhbz#996639 - Minor bugs in nss man pages
 - Fix some typos and improve description and see also sections
