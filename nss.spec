@@ -1,9 +1,17 @@
-%global nspr_version 4.10
-%global nss_util_version 3.15.1
+%global nspr_version 4.10.1
+%global nss_util_version 3.15.2
 %global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.15.1
+%global nss_softokn_version 3.15.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
+
+# solution taken from icedtea-web.spec
+%define multilib_arches ppc64 sparc64 x86_64
+%ifarch %{multilib_arches}
+%define alt_ckbi  libnssckbi.so.%{_arch}
+%else
+%define alt_ckbi  libnssckbi.so
+%endif
 
 # Define if using a source archive like "nss-version.with.ckbi.version".
 # To "disable", add "#" to start of line, AND a space after "%".
@@ -11,7 +19,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.1
+Version:          3.15.2
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -21,6 +29,8 @@ Requires:         nss-util >= %{nss_util_version}
 # TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
+Requires(post):   %{_sbindir}/update-alternatives
+Requires(postun): %{_sbindir}/update-alternatives
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
@@ -61,7 +71,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20130405.tar.bz2
+Source12:         %{name}-pem-20130828.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -179,7 +189,7 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 %patch29 -p0 -b .cbcrandomivoff
-#%patch39 -p0 -b .nobypass
+#%%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
@@ -514,7 +524,7 @@ done
 for f in nss-config setup-nsssysinit; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
-# Copy the man pages the nss tools
+# Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
@@ -574,7 +584,7 @@ done
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
-# instead of %{_mandir}/man*/* let's list them explicitely
+# instead of %%{_mandir}/man*/* let's list them explicitely
 # supported tools
 %attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
 %attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
@@ -665,6 +675,11 @@ done
 
 
 %changelog
+* Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
+- Update to NSS_3_15_2_RTM
+- Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
+- Keep the nss-ssl-cbc-random-iv-off-by-default.patch enabled
+
 * Sun Jul 21 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-1
 - Update to NSS_3_15_1_RTM
 - Enable iquote.patch to access newly introduced types
@@ -709,29 +724,31 @@ done
 - Bug 879978 - Install the nssck.api header template in a place where mod_revocator can access it
 - Install nssck.api in /usr/includes/nss3
 
-* Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
+* Mon Nov 19 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-10
 - Bug 870864 - Add support in NSS for Secure Boot
 
-* Fri Nov 09 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
+* Sat Nov 10 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-9
 - Disable bypass code at build time and return failure on attempts to enable at runtime
 - Bug 806588 - Disable SSL PKCS #11 bypass at build time
-- Fix changelog release tags to match what was actually built
 
-* Mon Nov 05 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-5
+* Sun Nov 04 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-8
 - Fix pk11wrap locking which fixes 'fedpkg new-sources' and 'fedpkg update' hangs
 - Bug 872124 - nss-3.14 breaks fedpkg new-sources
-
-* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-4
+- Fix should be considered preliminary since the patch may change upon upstream approval
+ 
+* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Add a dummy source file for testing /preventing fedpkg breakage
 - Helps test the fedpkg new-sources and upload commands for breakage by nss updates
 - Related to Bug 872124 - nss 3.14 breaks fedpkg new-sources
 
-* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-3
-- Reenable patch to set NSS_SSL_CBC_RANDOM_IV to 1 by default
-- Update the patch to account for the new sources
-- Resolves Bug 872124 - nss 3.14 breaks fedpkg new-sources
+* Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-6
+- Fix a previous unwanted merge from f18
+- Update the SS_SSL_CBC_RANDOM_IV patch to match new sources while
+- Keeping the patch disabled while we are still in rawhide and
+- State in comment that patch is needed for both stable and beta branches
+- Update .gitignore to download only the new sources
 
-* Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-2
+* Wed Oct 31 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-5
 - Fix the spec file so sechash.h gets installed
 - Resolves: rhbz#871882 - missing header: sechash.h in nss 3.14
 
@@ -990,7 +1007,7 @@ done
 - Move triggerpostun -n nss-sysinit script ahead of the other ones (#639248)
 
 * Tue Oct 05 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-4
-- Fix invalid %postun scriptlet (#639248)
+- Fix invalid %%postun scriptlet (#639248)
 
 * Wed Sep 29 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-3
 - Replace posttrans sysinit scriptlet with a triggerpostun one (#636787)
