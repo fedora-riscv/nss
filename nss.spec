@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -93,7 +93,7 @@ Patch18:          nss-646045.patch
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
-Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
+# Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 # Prevent users from trying to enable ssl pkcs11 bypass
 # Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
@@ -105,7 +105,7 @@ Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
 Patch46:          disable-ocsp-stapling-tests.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
-# TODO submit this patch upstream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
@@ -193,8 +193,8 @@ low level services.
 %patch18 -p0 -b .646045
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
-# activate for stable and beta branches
-%patch29 -p0 -b .cbcrandomivoff
+# activate for stable and beta branches, disabled for f20
+# %%patch29 -p0 -b .cbcrandomivoff
 # %%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
@@ -755,6 +755,10 @@ fi
 
 
 %changelog
+* Fri Oct 18 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
+- Disable the nss-ssl-cbc-random-iv-off-by-default.patch
+- Resolves: rhbz#1020420 - Turn on the fix for BEAST by default [CVE-2011-3389]
+
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
 - Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
