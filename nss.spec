@@ -287,8 +287,6 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 # nss supports pluggable ecc
 NSS_ENABLE_ECC=1
 export NSS_ENABLE_ECC
-NSS_ECC_MORE_THAN_SUITE_B=1
-export NSS_ECC_MORE_THAN_SUITE_B
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
