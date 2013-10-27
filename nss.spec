@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -47,20 +47,7 @@ BuildRequires:    perl
 %{!?nss_ckbi_suffix:%define full_nss_version %{version}}
 %{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
 
-Source0:          %{name}-%{full_nss_version}-stripped.tar.bz2
-
-# The stripped tar ball is a subset of the upstream sources with
-# patent-encumbered cryptographic algorithms removed.
-# Use this script to remove them and create the stripped archive.
-# 1. Download the sources nss-{version}.tar.gz found within 
-# http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/
-# in a subdirectory named NSS_${major}_${minor}_${maint}_RTM/src
-# 2. In the download directory execute
-# ./mozilla-crypto-strip.sh ${name}-${version}.tar.gz
-# to produce ${name}-${version}-stripped.tar.bz2
-# for uploading to the lookaside cache.
-Source100:        mozilla-crypto-strip.sh
-
+Source0:          %{name}-%{full_nss_version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
@@ -99,7 +86,7 @@ Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
 Patch46:          disable-ocsp-stapling-tests.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
-# TODO submit this patch upstream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:  nss-skip-bltest-and-fipstest.patch
@@ -675,6 +662,10 @@ done
 
 
 %changelog
+* Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
+- Use the full pristine sources from upstream
+- Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
+
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
 - Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
