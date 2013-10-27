@@ -47,20 +47,7 @@ BuildRequires:    perl
 %{!?nss_ckbi_suffix:%define full_nss_version %{version}}
 %{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
 
-Source0:          %{name}-%{full_nss_version}-stripped.tar.bz2
-
-# The stripped tar ball is a subset of the upstream sources with
-# patent-encumbered cryptographic algorithms removed.
-# Use this script to remove them and create the stripped archive.
-# 1. Download the sources nss-{version}.tar.gz found within 
-# http://ftp.mozilla.org/pub/mozilla.org/security/nss/releases/
-# in a subdirectory named NSS_${major}_${minor}_${maint}_RTM/src
-# 2. In the download directory execute
-# ./mozilla-crypto-strip.sh ${name}-${version}.tar.gz
-# to produce ${name}-${version}-stripped.tar.bz2
-# for uploading to the lookaside cache.
-Source100:        mozilla-crypto-strip.sh
-
+Source0:          %{name}-%{full_nss_version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
@@ -755,6 +742,10 @@ fi
 
 
 %changelog
+* Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
+- Use the full pristine sources from upstream
+- Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
+
 * Fri Oct 18 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
 - Disable the nss-ssl-cbc-random-iv-off-by-default.patch
 - Resolves: rhbz#1020420 - Turn on the fix for BEAST by default [CVE-2011-3389]
