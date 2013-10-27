@@ -287,6 +287,8 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 # nss supports pluggable ecc
 NSS_ENABLE_ECC=1
 export NSS_ENABLE_ECC
+NSS_ECC_MORE_THAN_SUITE_B=1
+export NSS_ECC_MORE_THAN_SUITE_B
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
@@ -740,6 +742,9 @@ fi
 
 
 %changelog
+* Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
+- Revert one change from last commit to preserve full nss pluggable ecc supprt [1019245]
+
 * Wed Oct 23 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
 - Use the full sources from upstream
 - Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
