@@ -27,13 +27,9 @@
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>setup-nsssysinit</command>
-      <arg><option>--prefix</option></arg>
-      <arg><option>--exec-prefix</option></arg>
-      <arg><option>--includedir</option></arg>
-      <arg><option>--libs</option></arg>
-      <arg><option>--cflags</option></arg>
-      <arg><option>--libdir</option></arg>
-      <arg><option>--version</option></arg>
+      <arg><option>on</option></arg>
+      <arg><option>off</option></arg>
+      <arg><option>status</option></arg>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -49,17 +45,17 @@
     
     <variablelist>
       <varlistentry>
-        <term><option>--on</option></term>
+        <term><option>on</option></term>
         <listitem><simpara>Turn on nss-sysinit.</simpara></listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><option>--off</option></term>
+        <term><option>off</option></term>
         <listitem><simpara>Turn on nss-sysinit.</simpara></listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><option>--status</option> <replaceable>count</replaceable></term>
+        <term><option>status</option></term>
         <listitem><simpara>returns whether nss-syinit is enabled or not.</simpara></listitem>
       </varlistentry>
 
@@ -71,13 +67,13 @@
 
     <para>The following example will query for the status of nss-sysinit:
       <programlisting>
-        /usr/bin/setup-nsssysinit --status
+        /usr/bin/setup-nsssysinit status
       </programlisting>
     </para>
 
     <para>The following example, when run as superuser, will turn on nss-sysinit:
       <programlisting>
-        /usr/bin/setup-nsssysinit --on
+        /usr/bin/setup-nsssysinit on
       </programlisting>
     </para>
 
@@ -85,7 +81,7 @@
 
   <refsection>
     <title>Files</title>
-    <para><filename>/usr/sbin/setup-nsssysinit</filename></para>
+    <para><filename>/usr/bin/setup-nsssysinit</filename></para>
   </refsection>
 
   <refsection>

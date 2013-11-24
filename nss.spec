@@ -1,4 +1,4 @@
-%global nspr_version 4.10.1
+%global nspr_version 4.10.2
 %global nss_util_version 3.15.2
 %global nss_softokn_fips_version 3.12.9
 %global nss_softokn_version 3.15.2
@@ -19,8 +19,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.2
-Release:          3%{?dist}
+Version:          3.15.3
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -79,8 +79,6 @@ Patch18:          nss-646045.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
-# This patch is currently meant for stable branches
-# Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
 # Prevent users from trying to enable ssl pkcs11 bypass
 # Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
@@ -742,6 +740,11 @@ fi
 
 
 %changelog
+* Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
+- Update to NSS_3_15_3_RTM
+- Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
+- Fix option descriptions for setup-nsssysinit manpage
+
 * Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
 - Revert one change from last commit to preserve full nss pluggable ecc supprt [1019245]
 
