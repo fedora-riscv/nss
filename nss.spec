@@ -528,6 +528,10 @@ done
 %{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
 %{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
+# install a symbolic link to it, without the ".sh" suffix,
+# that matches the man page documentation
+ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
+
 # Copy the man pages for scripts
 for f in nss-config setup-nsssysinit; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
