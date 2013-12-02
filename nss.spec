@@ -1,7 +1,7 @@
-%global nspr_version 4.10.1
-%global nss_util_version 3.15.2
-%global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.15.2
+%global nspr_version 4.10.2
+%global nss_util_version 3.15.3
+%global nss_softokn_fips_version 3.13.5
+%global nss_softokn_version 3.15.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,8 +19,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.2
-Release:          3%{?dist}
+Version:          3.15.3
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -79,10 +79,6 @@ Patch18:          nss-646045.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
-# This patch is currently meant for stable branches
-# Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
-# Prevent users from trying to enable ssl pkcs11 bypass
-# Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
@@ -97,6 +93,10 @@ Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=932001
+Patch54:          document-certutil-email-option.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=937677
+Patch57:          certutil_keyOpFlagsFix.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -180,9 +180,6 @@ low level services.
 %patch18 -p0 -b .646045
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
-# activate for stable and beta branches, disabled for f20
-# %%patch29 -p0 -b .cbcrandomivoff
-# %%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
@@ -191,6 +188,10 @@ low level services.
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+pushd nss
+%patch54 -p1 -b .948495
+%patch57 -p1 -b .948495
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -742,6 +743,14 @@ fi
 
 
 %changelog
+* Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
+- Update to NSS_3_15_3_RTM
+- Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
+- Fix option descriptions for setup-nsssysinit manpage
+- Fix man page of nss-sysinit wrong path and other flaws
+- Document email option for certutil manpage
+- Remove unused patches
+
 * Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
 - Use the full pristine sources from upstream
 - Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
@@ -753,7 +762,6 @@ fi
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
 - Update iquote.patch on account of modified prototype on cert.h installed by nss-devel
-- Keep the nss-ssl-cbc-random-iv-off-by-default.patch enabled
 
 * Wed Aug 28 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.1-7
 - Update pem sources to pick up a patch applied upstream which a faulty merge had missed
