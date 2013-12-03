@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -749,6 +749,9 @@ fi
 
 
 %changelog
+* Tue Dec 03 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-2
+- Bump the release tag
+
 * Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
 - Update to NSS_3_15_3_RTM
 - Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
