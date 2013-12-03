@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -528,6 +528,10 @@ done
 %{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
 %{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
+# install a symbolic link to it, without the ".sh" suffix,
+# that matches the man page documentation
+ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
+
 # Copy the man pages for scripts
 for f in nss-config setup-nsssysinit; do 
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
@@ -629,6 +633,8 @@ fi
 %attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
+# symbolic link to setup-nsssysinit.sh
+%{_bindir}/setup-nsssysinit
 %attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
 
 %files tools
@@ -743,6 +749,9 @@ fi
 
 
 %changelog
+* Tue Dec 03 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-2
+- Install symlink to setup-nsssysinit.sh, without suffix, to match manpage
+
 * Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
 - Update to NSS_3_15_3_RTM
 - Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
