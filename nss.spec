@@ -1,7 +1,7 @@
-%global nspr_version 4.10.1
-%global nss_util_version 3.15.2
-%global nss_softokn_fips_version 3.12.9
-%global nss_softokn_version 3.15.2
+%global nspr_version 4.10.2
+%global nss_util_version 3.15.3
+%global nss_softokn_fips_version 3.13.5
+%global nss_softokn_version 3.15.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,8 +19,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.2
-Release:          2%{?dist}
+Version:          3.15.3
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -75,8 +75,6 @@ Patch18:          nss-646045.patch
 Patch25:          nsspem-use-system-freebl.patch
 # This patch is currently meant for stable branches
 Patch29:          nss-ssl-cbc-random-iv-off-by-default.patch
-# Prevent users from trying to enable ssl pkcs11 bypass
-Patch39:          nss-ssl-enforce-no-pkcs11-bypass.path
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
@@ -176,7 +174,6 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 # activate for stable and beta branches
 %patch29 -p0 -b .cbcrandomivoff
-#%%patch39 -p0 -b .nobypass
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
 %patch45 -p0 -b .notrash
@@ -342,12 +339,22 @@ chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 date +"%e %B %Y" | tr -d '\n' > date.xml
 echo -n %{version} > version.xml
 
-for m in %{SOURCE20} %{SOURCE21}; do
+# configuration files and setup script
+for m in %{SOURCE20} %{SOURCE21} %{SOURCE22}; do
   cp ${m} .
 done
-for m in nss-config.xml setup-nsssysinit.xml; do
+for m in nss-config.xml setup-nsssysinit.xml pkcs11.txt.xml; do
   xmlto man ${m}
 done
+
+# nss databases considered to be configuration files
+for m in %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26} %{SOURCE27}; do
+  cp ${m} .
+done
+for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
+  xmlto man ${m}
+done
+ 
 
 %check
 if [ $DISABLETEST -eq 1 ]; then
@@ -453,10 +460,14 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
+
+touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
+%{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
 
 # Copy the binary libraries we want
-for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnss3.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
 do
   %{__install} -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -662,6 +673,12 @@ done
 
 
 %changelog
+* Mon Dec 09 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
+- Update to NSS_3_15_3_RTM
+- Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
+- Fix option descriptions for setup-nsssysinit manpage
+- Remove unused patches
+
 * Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
 - Use the full pristine sources from upstream
 - Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
