@@ -340,21 +340,12 @@ date +"%e %B %Y" | tr -d '\n' > date.xml
 echo -n %{version} > version.xml
 
 # configuration files and setup script
-for m in %{SOURCE20} %{SOURCE21} %{SOURCE22}; do
+for m in %{SOURCE20} %{SOURCE21}; do
   cp ${m} .
 done
-for m in nss-config.xml setup-nsssysinit.xml pkcs11.txt.xml; do
+for m in nss-config.xml setup-nsssysinit.xml; do
   xmlto man ${m}
 done
-
-# nss databases considered to be configuration files
-for m in %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26} %{SOURCE27}; do
-  cp ${m} .
-done
-for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
-  xmlto man ${m}
-done
- 
 
 %check
 if [ $DISABLETEST -eq 1 ]; then
