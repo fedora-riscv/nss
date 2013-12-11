@@ -752,6 +752,7 @@ fi
 * Wed Dec 11 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1
 - Update to nss-3.15.3.1 (hg tag NSS_3_15_3_1_RTM)
 - Resolves: Bug 1040282 - nss: Mis-issued ANSSI/DCSSI certificate (MFSA 2013-117)
+- Resolves: Bug 1040192 - nss-3.15.3.1 is available
 
 * Tue Dec 03 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-2
 - Bump the release tag
