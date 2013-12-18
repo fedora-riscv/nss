@@ -19,7 +19,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.3
+Version:          3.15.3.1
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -182,7 +182,7 @@ low level services.
 %patch18 -p0 -b .646045
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
-# activate for stable and beta branches
+# activate for stable branches
 %patch29 -p0 -b .cbcrandomivoff
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
@@ -753,6 +753,12 @@ fi
 
 
 %changelog
+* Wed Dec 18 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1
+- Update to nss-3.15.3.1 (hg tag NSS_3_15_3_1_RTM)
+- Resolves: Bug 1040282 - nss: Mis-issued ANSSI/DCSSI certificate (MFSA 2013-117)
+- Resolves: Bug 1040192 - nss-3.15.3.1 is available
+- Install symlink to setup-nsssysinit.sh, without suffix, to match manpage
+
 * Wed Dec 04 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
 - Update to NSS_3_15_3_RTM
 - Resolves: Bug 1031897 - CVE-2013-5605 CVE-2013-5606 CVE-2013-1741 nss: various flaws
