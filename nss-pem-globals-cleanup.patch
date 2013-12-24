@@ -1,0 +1,424 @@
+diff -up ./nss/lib/ckfw/pem/ckpem.h.cleanup1 ./nss/lib/ckfw/pem/ckpem.h
+--- ./nss/lib/ckfw/pem/ckpem.h.cleanup1	2013-08-28 10:38:15.000000000 -0700
++++ ./nss/lib/ckfw/pem/ckpem.h	2013-12-24 10:58:31.266105990 -0800
+@@ -152,18 +152,14 @@ struct pemTokenStr {
+ };
+ typedef struct pemTokenStr pemToken;
+ 
+-/* our raw object data array */
+-NSS_EXTERN_DATA pemInternalObject nss_pem_data[];
+-NSS_EXTERN_DATA const PRUint32               nss_pem_nObjects;
+-
+-  PRBool          logged_in;
+ 
+ /* our raw object data array */
+-NSS_EXTERN_DATA pemInternalObject nss_pem_data[];
+-NSS_EXTERN_DATA const PRUint32               nss_pem_nObjects;
++NSS_EXTERN_DATA pemInternalObject **pem_objs;
++NSS_EXTERN_DATA int pem_nobjs;
++NSS_EXTERN_DATA PRLock *pem_objsLock;
+ 
+-NSS_EXTERN_DATA pemInternalObject pem_data[];
+-NSS_EXTERN_DATA const PRUint32               pem_nObjects;
++NSS_EXTERN_DATA int token_needsLogin[];
++NSS_EXTERN_DATA const SEC_ASN1Template pem_RSAPrivateKeyTemplate[];
+ 
+ NSS_EXTERN_DATA const CK_VERSION   pem_CryptokiVersion;
+ NSS_EXTERN_DATA const NSSUTF8 *    pem_ManufacturerID;
+diff -up ./nss/lib/ckfw/pem/pfind.c.cleanup1 ./nss/lib/ckfw/pem/pfind.c
+--- ./nss/lib/ckfw/pem/pfind.c.cleanup1	2013-08-28 10:38:15.000000000 -0700
++++ ./nss/lib/ckfw/pem/pfind.c	2013-12-24 10:47:59.190166135 -0800
+@@ -36,6 +36,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ 
+ #include "ckpem.h"
++#include "prlock.h"
+ 
+ /*
+  * pfind.c
+@@ -44,9 +45,6 @@
+  * "PEM objects" cryptoki module.
+  */
+ 
+-NSS_EXTERN_DATA pemInternalObject **gobj;
+-NSS_EXTERN_DATA int pem_nobjs;
+-
+ struct pemFOStr {
+     NSSArena *arena;
+     CK_ULONG n;
+@@ -59,7 +57,8 @@ struct pemFOStr {
+ #define PUT_Object(obj,err) \
+   { \
+     if (count >= size) { \
+-    *listp = *listp ? \
++    pemInternalObject **list; \
++    list = *listp ? \
+                 nss_ZREALLOCARRAY(*listp, pemInternalObject *, \
+                                (size+PEM_ITEM_CHUNK) ) : \
+                 nss_ZNEWARRAY(NULL, pemInternalObject *, \
+@@ -69,6 +68,7 @@ struct pemFOStr {
+         goto loser; \
+       } \
+       size += PEM_ITEM_CHUNK; \
++      *listp = list; \
+     } \
+     (*listp)[ count ] = (obj); \
+     count++; \
+@@ -141,36 +141,6 @@ pem_mdFindObjects_Next
+     return pem_CreateMDObject(arena, io, pError);
+ }
+ 
+-#if 0
+-static int
+-pem_derUnwrapInt(unsigned char *src, int size, unsigned char **dest)
+-{
+-    unsigned char *start = src;
+-    int len = 0;
+-
+-    if (*src++ != 2) {
+-        return 0;
+-    }
+-    len = *src++;
+-    if (len & 0x80) {
+-        int count = len & 0x7f;
+-        len = 0;
+-
+-        if (count + 2 > size) {
+-            return 0;
+-        }
+-        while (count-- > 0) {
+-            len = (len << 8) | *src++;
+-        }
+-    }
+-    if (len + (src - start) != size) {
+-        return 0;
+-    }
+-    *dest = src;
+-    return len;
+-}
+-#endif
+-
+ static char * pem_attr_name(CK_ATTRIBUTE_TYPE type) {
+     switch(type) {
+     case CKA_CLASS:
+@@ -321,27 +291,28 @@ collect_objects(CK_ATTRIBUTE_PTR pTempla
+         goto done; /* no other object types we understand in this module */
+     }
+ 
++    PR_Lock(pem_objsLock);
+     /* find objects */
+     for (i = 0; i < pem_nobjs; i++) {
+         int match = 1; /* matches type if type not specified */
+-        if (NULL == gobj[i])
++        if (NULL == pem_objs[i])
+             continue;
+ 
+-        plog("  %d type = %d\n", i, gobj[i]->type);
++        plog("  %d type = %d\n", i, pem_objs[i]->type);
+         if (type != pemAll) {
+             /* type specified - must match given type */
+-            match = (type == gobj[i]->type);
++            match = (type == pem_objs[i]->type);
+         }
+         if (match) {
+-            match = (slotID == gobj[i]->slotID) &&
+-                (CK_TRUE == pem_match(pTemplate, ulAttributeCount, gobj[i]));
++            match = (slotID == pem_objs[i]->slotID) &&
++                (CK_TRUE == pem_match(pTemplate, ulAttributeCount, pem_objs[i]));
+         }
+         if (match) {
+-            pemInternalObject *o = gobj[i];
++            pemInternalObject *o = pem_objs[i];
+             PUT_Object(o, *pError);
+         }
+     }
+-
++    PR_Unlock(pem_objsLock);
+     if (CKR_OK != *pError) {
+         goto loser;
+     }
+diff -up ./nss/lib/ckfw/pem/pinst.c.cleanup1 ./nss/lib/ckfw/pem/pinst.c
+--- ./nss/lib/ckfw/pem/pinst.c.cleanup1	2013-08-28 10:42:56.000000000 -0700
++++ ./nss/lib/ckfw/pem/pinst.c	2013-12-24 10:55:28.283689308 -0800
+@@ -37,6 +37,7 @@
+ #include <stdlib.h>
+ #include "ckpem.h"
+ #include "blapi.h"
++#include "prlock.h"
+ 
+ /*
+  * pinstance.c
+@@ -47,12 +48,12 @@
+ 
+ static PRBool pemInitialized = PR_FALSE;
+ 
+-pemInternalObject **gobj;
++pemInternalObject **pem_objs;
+ int pem_nobjs = 0;
++int pem_objects_capacity = 0;
++PRLock *pem_objsLock;
+ int token_needsLogin[NUM_SLOTS];
+ 
+-PRInt32 size = 0;
+-PRInt32 count = 0;
+ 
+ #define PEM_ITEM_CHUNK  512
+ 
+@@ -357,7 +358,7 @@ LinkSharedKeyObject(int oldKeyIdx, int n
+     int i;
+     for (i = 0; i < pem_nobjs; i++) {
+         CK_RV rv;
+-        const pemInternalObject *obj = gobj[i];
++        pemInternalObject *obj = pem_objs[i];
+         if (NULL == obj)
+             continue;
+ 
+@@ -380,40 +381,50 @@ AddObjectIfNeeded(CK_OBJECT_CLASS objCla
+                   int objid, CK_SLOT_ID slotID)
+ {
+     int i;
++    PRBool found;
+ 
+     /* FIXME: copy-pasted from CreateObject */
+     const char *nickname = strrchr(filename, '/');
++
+     if (nickname && CKO_PRIVATE_KEY != objClass)
+         nickname++;
+     else
+         nickname = filename;
+ 
+-    /* first look for the object in gobj, it might be already there */
+-    for (i = 0; i < pem_nobjs; i++) {
+-        if (NULL == gobj[i])
++    /* first look for the object in pem_objs, it might be already there */
++    PR_Lock(pem_objsLock);
++    found = PR_FALSE;
++    for (i = 0; i < pem_nobjs && !found; i++) {
++        if (NULL == pem_objs[i])
+             continue;
+ 
+         /* Comparing DER encodings is dependable and frees the PEM module
+          * from having to require clients to provide unique nicknames.
+          */
+-        if ((gobj[i]->objClass == objClass)
+-                && (gobj[i]->type == type)
+-                && (gobj[i]->slotID == slotID)
+-                && derEncodingsMatch(objClass, gobj[i], certDER, keyDER)) {
+-
+-            /* While adding a client certificate we (wrongly?) assumed that the
+-             * key object will follow right after the cert object.  However, if
+-             * the key object is shared by multiple client certificates, such
+-             * an assumption does not hold.  We have to update the references.
+-             */
+-            LinkSharedKeyObject(pem_nobjs, i);
+-
+-            plog("AddObjectIfNeeded: re-using internal object #%i\n", i);
+-            gobj[i]->refCount ++;
+-            return gobj[i];
++        if ((pem_objs[i]->objClass == objClass)
++                && (pem_objs[i]->type == type)
++                && (pem_objs[i]->slotID == slotID)
++                && derEncodingsMatch(objClass, pem_objs[i], certDER, keyDER)) {
++
++            found = PR_TRUE;
++            pem_objs[i]->refCount++;
++            break;
+         }
+     }
+ 
++    PR_Unlock(pem_objsLock);
++    if (found) {
++	/* While adding a client certificate we (wrongly?) assumed that the
++	 * key object will follow right after the cert object.  However, if
++	 * the key object is shared by multiple client certificates, such
++	 * an assumption does not hold.  We have to update the references.
++	 */
++	LinkSharedKeyObject(pem_nobjs, i);
++
++	plog("AddObjectIfNeeded: re-using internal object #%i\n", i);
++	return pem_objs[i];
++    }
++
+     /* object not found, we need to create it */
+     pemInternalObject *io = CreateObject(objClass, type, certDER, keyDER,
+                                          filename, objid, slotID);
+@@ -423,25 +434,28 @@ AddObjectIfNeeded(CK_OBJECT_CLASS objCla
+     /* initialize pointers to functions */
+     pem_CreateMDObject(NULL, io, NULL);
+ 
+-    io->gobjIndex = count;
++    io->gobjIndex = pem_nobjs;
+ 
+     /* add object to global array */
+-    if (count >= size) {
+-        gobj = gobj ?
+-            nss_ZREALLOCARRAY(gobj, pemInternalObject *,
+-                    (size+PEM_ITEM_CHUNK) ) :
++    PR_Lock(pem_objsLock);
++
++    if (pem_nobjs >= pem_objects_capacity) {
++        pem_objs = pem_objs ?
++            nss_ZREALLOCARRAY(pem_objs, pemInternalObject *,
++                    (pem_objects_capacity+PEM_ITEM_CHUNK) ) :
+             nss_ZNEWARRAY(NULL, pemInternalObject *,
+-                    (size+PEM_ITEM_CHUNK) ) ;
++                    (pem_objects_capacity+PEM_ITEM_CHUNK) ) ;
+ 
+-        if ((pemInternalObject **)NULL == gobj)
++        if ((pemInternalObject **)NULL == pem_objs)
+             return NULL;
+-        size += PEM_ITEM_CHUNK;
++        pem_objects_capacity += PEM_ITEM_CHUNK;
+     }
+-    gobj[count] = io;
+-    count++;
++    pem_objs[pem_nobjs] = io;
+     pem_nobjs++;
+ 
+     io->refCount ++;
++    PR_Unlock(pem_objsLock);
++
+     return io;
+ }
+ 
+@@ -636,12 +650,10 @@ pem_Finalize
+     if (!pemInitialized)
+         return;
+ 
+-    nss_ZFreeIf(gobj);
+-    gobj = NULL;
++    nss_ZFreeIf(pem_objs);
++    pem_objs = NULL;
+ 
+     pem_nobjs = 0;
+-    size = 0;
+-    count = 0;
+ 
+     PR_AtomicSet(&pemInitialized, PR_FALSE);
+ 
+diff -up ./nss/lib/ckfw/pem/pobject.c.cleanup1 ./nss/lib/ckfw/pem/pobject.c
+--- ./nss/lib/ckfw/pem/pobject.c.cleanup1	2013-08-28 10:38:15.000000000 -0700
++++ ./nss/lib/ckfw/pem/pobject.c	2013-12-24 10:47:59.190166135 -0800
+@@ -36,6 +36,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ 
+ #include "ckpem.h"
++#include "prlock.h"
+ #include "secasn1.h"
+ #include "certt.h"
+ #include "pk11pub.h"
+@@ -47,8 +48,6 @@
+  * "PEM objects" cryptoki module.
+  */
+ 
+-NSS_EXTERN_DATA pemInternalObject **gobj;
+-NSS_EXTERN_DATA int pem_nobjs;
+ NSS_EXTERN_DATA int token_needsLogin[NUM_SLOTS];
+ 
+ #define APPEND_LIST_ITEM(item) do { \
+@@ -631,9 +630,9 @@ pem_DestroyInternalObject
+         break;
+     }
+ 
+-    if (NULL != gobj)
++    if (NULL != pem_objs)
+         /* remove reference to self from the global array */
+-        gobj[io->gobjIndex] = NULL;
++        pem_objs[io->gobjIndex] = NULL;
+ 
+     nss_ZFreeIf(io);
+     return;
+@@ -1167,20 +1166,20 @@ pem_CreateObject
+ 
+         objid = -1;
+         for (i = 0; i < pem_nobjs; i++) {
+-            if (NULL == gobj[i])
++            if (NULL == pem_objs[i])
+                 continue;
+ 
+-            if ((slotID == gobj[i]->slotID) && (gobj[i]->type == pemCert)) {
+-                objid = atoi(gobj[i]->id.data);
++            if ((slotID == pem_objs[i]->slotID) && (pem_objs[i]->type == pemCert)) {
++                objid = atoi(pem_objs[i]->id.data);
+                 certDER.data =
+-                    (void *) nss_ZAlloc(NULL, gobj[i]->derCert->len);
++                    (void *) nss_ZAlloc(NULL, pem_objs[i]->derCert->len);
+ 
+                 if (certDER.data == NULL)
+                     goto loser;
+ 
+-                certDER.len = gobj[i]->derCert->len;
+-                nsslibc_memcpy(certDER.data, gobj[i]->derCert->data,
+-                               gobj[i]->derCert->len);
++                certDER.len = pem_objs[i]->derCert->len;
++                nsslibc_memcpy(certDER.data, pem_objs[i]->derCert->data,
++                               pem_objs[i]->derCert->len);
+             }
+         }
+ 
+diff -up ./nss/lib/ckfw/pem/psession.c.cleanup1 ./nss/lib/ckfw/pem/psession.c
+--- ./nss/lib/ckfw/pem/psession.c.cleanup1	2013-12-24 10:47:59.107165482 -0800
++++ ./nss/lib/ckfw/pem/psession.c	2013-12-24 10:57:08.906467702 -0800
+@@ -40,6 +40,7 @@
+ #include "pk11pub.h"
+ #include "base64.h"
+ #include "blapi.h"
++#include "prlock.h"
+ 
+ /*
+  * psession.c
+@@ -48,10 +49,6 @@
+  * "PEM objects" cryptoki module.
+  */
+ 
+-NSS_EXTERN_DATA pemInternalObject **gobj;
+-NSS_EXTERN_DATA int pem_nobjs;
+-NSS_EXTERN_DATA int token_needsLogin[NUM_SLOTS];
+-NSS_EXTERN_DATA const SEC_ASN1Template pem_RSAPrivateKeyTemplate[];
+ 
+ void prepare_low_rsa_priv_key_for_asn1(NSSLOWKEYPrivateKey * key);
+ void pem_DestroyPrivateKey(NSSLOWKEYPrivateKey * privk);
+@@ -188,6 +185,7 @@ pem_mdSession_CopyObject
+         return (NSSCKMDObject *) NULL;
+     }
+ 
++    PR_Lock(pem_objsLock);
+     if (NULL == io->list) {
+         io->refCount ++;
+     } else {
+@@ -200,7 +198,7 @@ pem_mdSession_CopyObject
+     }
+     /* struct (shallow) copy the old one */
+     *rvmdObject = *mdOldObject;
+-
++    PR_Unlock(pem_objsLock);
+     return rvmdObject;
+ }
+ 
+@@ -245,13 +243,15 @@ pem_mdSession_Login
+ 
+     token_needsLogin[slotID - 1] = PR_FALSE;
+ 
++    PR_Lock(pem_objsLock);
++
+     /* Find the right key object */
+     for (i = 0; i < pem_nobjs; i++) {
+-        if (NULL == gobj[i])
++        if (NULL == pem_objs[i])
+             continue;
+ 
+-        if ((slotID == gobj[i]->slotID) && (gobj[i]->type == pemBareKey)) {
+-            io = gobj[i];
++        if ((slotID == pem_objs[i]->slotID) && (pem_objs[i]->type == pemBareKey)) {
++            io = pem_objs[i];
+             break;
+         }
+     }
+@@ -331,6 +331,7 @@ pem_mdSession_Login
+     rv = CKR_OK;
+ 
+   loser:
++    PR_Unlock(pem_objsLock);
+     if (arena)
+         PORT_FreeArena(arena, PR_FALSE);
+     if (iv)

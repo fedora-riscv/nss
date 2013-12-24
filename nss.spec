@@ -20,7 +20,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.3.1
-Release:          1%{?dist}
+Release:          1.1%{?dist}.cleanup.1
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -97,6 +97,8 @@ Patch50:          iquote.patch
 Patch54:          document-certutil-email-option.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=937677
 Patch57:          certutil_keyOpFlagsFix.patch
+
+Patch61:  nss-pem-globals-cleanup.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -192,6 +194,7 @@ pushd nss
 %patch54 -p1 -b .948495
 %patch57 -p1 -b .948495
 popd
+%patch61 -p0 -b .cleanup1
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -749,6 +752,9 @@ fi
 
 
 %changelog
+* Tue Dec 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1.1.cleanup.1
+- pem module cleanup globals
+
 * Wed Dec 11 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1
 - Update to nss-3.15.3.1 (hg tag NSS_3_15_3_1_RTM)
 - Resolves: Bug 1040282 - nss: Mis-issued ANSSI/DCSSI certificate (MFSA 2013-117)
