@@ -1,7 +1,6 @@
 %global nspr_version 4.10.2
-%global nss_util_version 3.15.3
-%global nss_softokn_fips_version 3.13.5
-%global nss_softokn_version 3.15.3
+%global nss_util_version 3.15.4
+%global nss_softokn_version 3.15.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.3.1
+Version:          3.15.4
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -58,7 +57,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20130828.tar.bz2
+Source12:         %{name}-pem-20131226.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -82,10 +81,6 @@ Patch25:          nsspem-use-system-freebl.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
-Patch45:          Bug-896651-pem-dont-trash-keys-on-failed-login.patch
-# The ocsp stapling tests currently require access to the
-# kuix.de test server but koji forbids outbount connections
-Patch46:          disable-ocsp-stapling-tests.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
@@ -93,10 +88,6 @@ Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=932001
-Patch54:          document-certutil-email-option.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=937677
-Patch57:          certutil_keyOpFlagsFix.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -182,16 +173,10 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch44 -p1 -b .syncupwithupstream
-%patch45 -p0 -b .notrash
-%patch46 -p0 -b .skipoutbound
 %patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-%patch54 -p1 -b .948495
-%patch57 -p1 -b .948495
-popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -749,6 +734,12 @@ fi
 
 
 %changelog
+* Tue Jan 07 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-1
+- Update to nss-3.15.4 (hg tag NSS_3_15_4_RTM)
+- Resolves: Bug 1049229 - nss-3.15.4 is available
+- Update pem sources to latest from the interim upstream for pem
+- Remove no longer needed patches
+
 * Wed Dec 11 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1
 - Update to nss-3.15.3.1 (hg tag NSS_3_15_3_1_RTM)
 - Resolves: Bug 1040282 - nss: Mis-issued ANSSI/DCSSI certificate (MFSA 2013-117)

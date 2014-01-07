@@ -7,5 +7,5 @@ PayPalEE.cert
 TestCA.ca.cert
 TestUser50.cert
 TestUser51.cert
-/nss-pem-20130828.tar.bz2
-/nss-3.15.3.1.tar.gz
+/nss-pem-20131226.tar.bz2
+/nss-3.15.4.tar.gz
