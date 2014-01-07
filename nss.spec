@@ -739,6 +739,8 @@ fi
 - Resolves: Bug 1049229 - nss-3.15.4 is available
 - Update pem sources to latest from the interim upstream for pem
 - Remove no longer needed patches
+- Update pem/rsawrapr.c patch on account of upstream changes to freebl/softoken
+- Update iquote.patch on account of upstream changes
 
 * Wed Dec 11 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3.1-1
 - Update to nss-3.15.3.1 (hg tag NSS_3_15_3_1_RTM)

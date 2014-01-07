@@ -1,40 +1,64 @@
-From d6dbecfea317a468be12423595e584f43d84d8ec Mon Sep 17 00:00:00 2001
-From: Elio Maldonado <emaldona@redhat.com>
-Date: Sat, 9 Feb 2013 17:11:00 -0500
-Subject: [PATCH] Sync up with upstream softokn changes
-
-- Disable RSA OEP case in FormatBlock, RSA_OAEP support is experimental and in a state of flux
-- Numerous change upstream due to the work for TLS/DTLS 'Lucky 13' vulnerability CVE-2013-0169
-- It now compiles with the NSS_3_14_3_BETA1 source
----
- mozilla/security/nss/lib/ckfw/pem/rsawrapr.c |  338 +++++++-------------------
- 1 files changed, 82 insertions(+), 256 deletions(-)
-
-diff --git a/nss/lib/ckfw/pem/rsawrapr.c b/nss/lib/ckfw/pem/rsawrapr.c
-index 5ac4f39..3780d30 100644
---- a/nss/lib/ckfw/pem/rsawrapr.c
-+++ b/nss/lib/ckfw/pem/rsawrapr.c
-@@ -46,6 +46,7 @@
- #include "sechash.h"
- #include "base.h"
+diff -up ./nss/lib/ckfw/pem/rsawrapr.c.syncupwithupstream ./nss/lib/ckfw/pem/rsawrapr.c
+--- ./nss/lib/ckfw/pem/rsawrapr.c.syncupwithupstream	2013-12-26 14:21:08.000000000 -0800
++++ ./nss/lib/ckfw/pem/rsawrapr.c	2014-01-07 13:26:43.350502692 -0800
+@@ -1,5 +1,10 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this
++ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
++
+ /*
+- * PKCS#1 encoding and decoding functions.
++ RSA PKCS#1 v2.1 (RFC 3447) encoding and decoding functions.
++
+  * This file is believed to contain no code licensed from other parties.
+  *
+  * ***** BEGIN LICENSE BLOCK *****
+@@ -42,21 +47,38 @@
  
-+#include "lowkeyi.h"
+ #include "ckpem.h"
+ #include "blapi.h"
++#include "secitem.h"
++/*#include "blapii.h"*/
++/*
+ #include "softoken.h"
+ #include "sechash.h"
+-#include "base.h"
+-
++#include "base.h"#include "lowkeyi.h"
++*/
  #include "secerr.h"
  
  #define RSA_BLOCK_MIN_PAD_LEN		8
-@@ -54,9 +55,8 @@
+ #define RSA_BLOCK_FIRST_OCTET		0x00
+-#define RSA_BLOCK_PRIVATE0_PAD_OCTET	0x00
  #define RSA_BLOCK_PRIVATE_PAD_OCTET	0xff
  #define RSA_BLOCK_AFTER_PAD_OCTET	0x00
  
 -#define OAEP_SALT_LEN		8
 -#define OAEP_PAD_LEN		8
 -#define OAEP_PAD_OCTET		0x00
++/*
++ * RSA block types
++ *
++ * The actual values are important -- they are fixed, *not* arbitrary.
++ * The explicit value assignments are not needed (because C would give
++ * us those same values anyway) but are included as a reminder...
++ */
++typedef enum {
++    RSA_BlockUnused = 0,    /* unused */
++    RSA_BlockPrivate = 1,   /* pad for a private-key operation */
++    RSA_BlockPublic = 2,    /* pad for a public-key operation */
++    RSA_BlockRaw = 4,       /* simply justify the block appropriately */
++    RSA_BlockTotal
++} RSA_BlockType;
++
++
 +/* Needed for RSA-PSS functions */
 +static const unsigned char eightZeros[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
  
  #define FLAT_BUFSIZE 512        /* bytes to hold flattened SHA1Context. */
  
-@@ -78,127 +78,39 @@ pem_PublicModulusLen(NSSLOWKEYPublicKey *pubk)
+@@ -78,141 +100,62 @@ pem_PublicModulusLen(NSSLOWKEYPublicKey
      return 0;
  }
  
@@ -69,7 +93,7 @@ index 5ac4f39..3780d30 100644
 + * Note: For ranges of bytes, use constantTimeCompare.
 + */
 +static unsigned char constantTimeEQ8(unsigned char a, unsigned char b) {
-+    unsigned char c = ~(a - b | b - a);
++    unsigned char c = ~((a - b) | (b - a));
 +    c >>= 7;
 +    return c;
  }
@@ -182,13 +206,30 @@ index 5ac4f39..3780d30 100644
 -    while (psalt < saltend) {
 -        *psalt++ ^= *psha1++;
 -    }
--
--    return SECSuccess;
 +    return (~(c - 1) & a) | ((c - 1) & b);
++}
+ 
+-    return SECSuccess;
++static unsigned int
++rsa_modulusLen(SECItem * modulus)
++{
++    unsigned char byteZero = modulus->data[0];
++    unsigned int modLen = modulus->len - !byteZero;
++    return modLen;
  }
  
  /*
-@@ -212,7 +124,7 @@ static unsigned char *rsa_FormatOneBlock(unsigned modulusLen,
+  * Format one block of data for public/private key encryption using
+  * the rules defined in PKCS #1.
+  */
+-static unsigned char *rsa_FormatOneBlock(unsigned modulusLen,
+-                                         RSA_BlockType blockType,
+-                                         SECItem * data)
++static unsigned char *
++rsa_FormatOneBlock(unsigned modulusLen,
++                   RSA_BlockType blockType,
++                   SECItem * data)
+ {
      unsigned char *block;
      unsigned char *bp;
      int padLen;
@@ -197,10 +238,49 @@ index 5ac4f39..3780d30 100644
      SECStatus rv;
  
      block = (unsigned char *) nss_ZAlloc(NULL, modulusLen);
-@@ -260,124 +172,58 @@ static unsigned char *rsa_FormatOneBlock(unsigned modulusLen,
-          */
-     case RSA_BlockPublic:
+@@ -223,18 +166,17 @@ static unsigned char *rsa_FormatOneBlock
  
+     /*
+      * All RSA blocks start with two octets:
+-     *  0x00 || BlockType
++     *	0x00 || BlockType
+      */
+     *bp++ = RSA_BLOCK_FIRST_OCTET;
+     *bp++ = (unsigned char) blockType;
+ 
+     switch (blockType) {
+ 
+-        /*
+-         * Blocks intended for private-key operation.
+-         */
+-    case RSA_BlockPrivate0:    /* essentially unused */
+-    case RSA_BlockPrivate:     /* preferred method */
++      /*
++       * Blocks intended for private-key operation.
++       */
++      case RSA_BlockPrivate:	 /* preferred method */
+         /*
+          * 0x00 || BT || Pad || 0x00 || ActualData
+          *   1      1   padLen    1      data->len
+@@ -246,138 +188,69 @@ static unsigned char *rsa_FormatOneBlock
+             nss_ZFreeIf(block);
+             return NULL;
+         }
+-        nsslibc_memset(bp,
+-                       blockType == RSA_BlockPrivate0
+-                       ? RSA_BLOCK_PRIVATE0_PAD_OCTET
+-                       : RSA_BLOCK_PRIVATE_PAD_OCTET, padLen);
++        nsslibc_memset(bp, RSA_BLOCK_PRIVATE_PAD_OCTET, padLen);
+         bp += padLen;
+         *bp++ = RSA_BLOCK_AFTER_PAD_OCTET;
+         nsslibc_memcpy(bp, data->data, data->len);
+         break;
+ 
+-        /*
+-         * Blocks intended for public-key operation.
+-         */
+-    case RSA_BlockPublic:
+-
 -        /*
 -         * 0x00 || BT || Pad || 0x00 || ActualData
 -         *   1      1   padLen    1      data->len
@@ -319,6 +399,11 @@ index 5ac4f39..3780d30 100644
 -        }
 -
 -        break;
++      /*
++       * Blocks intended for public-key operation.
++       */
++      case RSA_BlockPublic:
++
 +	/*
 +	 * 0x00 || BT || Pad || 0x00 || ActualData
 +	 *   1      1   padLen    1      data->len
@@ -374,20 +459,44 @@ index 5ac4f39..3780d30 100644
  
      default:
          PORT_Assert(0);
-@@ -427,26 +273,6 @@ rsa_FormatBlock(SECItem * result, unsigned modulusLen,
+@@ -389,54 +262,21 @@ static unsigned char *rsa_FormatOneBlock
+ }
  
-         break;
- 
--    case RSA_BlockOAEP:
--        /*
--         * 0x00 || BT || M1(Salt) || M2(Pad1||ActualData[||Pad2])
--         *
--         * The "2" below is the first octet + the second octet.
--         * (The other fields do not contain the clear values, but are
--         * the same length as the clear values.)
--         */
--        PORT_Assert(data->len <= (modulusLen - (2 + OAEP_SALT_LEN
--                                                + OAEP_PAD_LEN)));
+ static SECStatus
+-rsa_FormatBlock(SECItem * result, unsigned modulusLen,
+-                RSA_BlockType blockType, SECItem * data)
++rsa_FormatBlock(SECItem * result,
++                unsigned modulusLen,
++                RSA_BlockType blockType,
++                SECItem * data)
+ {
+-    /*
+-     * XXX For now assume that the data length fits in a single
+-     * XXX encryption block; the ASSERTs below force this.
+-     * XXX To fix it, each case will have to loop over chunks whose
+-     * XXX lengths satisfy the assertions, until all data is handled.
+-     * XXX (Unless RSA has more to say about how to handle data
+-     * XXX which does not fit in a single encryption block?)
+-     * XXX And I do not know what the result is supposed to be,
+-     * XXX so the interface to this function may need to change
+-     * XXX to allow for returning multiple blocks, if they are
+-     * XXX not wanted simply concatenated one after the other.
+-     */
+-
+     switch (blockType) {
+-    case RSA_BlockPrivate0:
+-    case RSA_BlockPrivate:
+-    case RSA_BlockPublic:
++      case RSA_BlockPrivate:
++      case RSA_BlockPublic:
+         /*
+          * 0x00 || BT || Pad || 0x00 || ActualData
+          *
+          * The "3" below is the first octet + the second octet + the 0x00
+          * octet that always comes just before the ActualData.
+          */
+-        PORT_Assert(data->len <=
+-                    (modulusLen - (3 + RSA_BLOCK_MIN_PAD_LEN)));
 -
 -        result->data = rsa_FormatOneBlock(modulusLen, blockType, data);
 -        if (result->data == NULL) {
@@ -398,9 +507,489 @@ index 5ac4f39..3780d30 100644
 -
 -        break;
 -
-     case RSA_BlockRaw:
+-    case RSA_BlockOAEP:
+-        /*
+-         * 0x00 || BT || M1(Salt) || M2(Pad1||ActualData[||Pad2])
+-         *
+-         * The "2" below is the first octet + the second octet.
+-         * (The other fields do not contain the clear values, but are
+-         * the same length as the clear values.)
+-         */
+-        PORT_Assert(data->len <= (modulusLen - (2 + OAEP_SALT_LEN
+-                                                + OAEP_PAD_LEN)));
++        PORT_Assert(data->len <= (modulusLen - (3 + RSA_BLOCK_MIN_PAD_LEN)));
+ 
+         result->data = rsa_FormatOneBlock(modulusLen, blockType, data);
+         if (result->data == NULL) {
+@@ -447,7 +287,7 @@ rsa_FormatBlock(SECItem * result, unsign
+ 
+         break;
+ 
+-    case RSA_BlockRaw:
++      case RSA_BlockRaw:
          /*
           * Pad || ActualData
--- 
-1.7.1
-
+          * Pad is zeros. The application is responsible for recovering
+@@ -476,36 +316,34 @@ rsa_FormatBlock(SECItem * result, unsign
+ SECStatus
+ pem_RSA_Sign(pemLOWKEYPrivateKey * key,
+              unsigned char *output,
+-             unsigned int *output_len,
++             unsigned int *outputLen,
+              unsigned int maxOutputLen,
+-             unsigned char *input, unsigned int input_len)
++             unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv = SECSuccess;
+-    unsigned int modulus_len = pem_PrivateModulusLen(key);
++    unsigned int modulusLen = pem_PrivateModulusLen(key);
+     SECItem formatted;
+     SECItem unformatted;
+ 
+-    if (maxOutputLen < modulus_len)
++    if (maxOutputLen < modulusLen)
+         return SECFailure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         return SECFailure;
+ 
+-    unformatted.len = input_len;
++    unformatted.len = inputLen;
+     unformatted.data = input;
+     formatted.data = NULL;
+-    rv = rsa_FormatBlock(&formatted, modulus_len, RSA_BlockPrivate,
++    rv = rsa_FormatBlock(&formatted, modulusLen, RSA_BlockPrivate,
+                          &unformatted);
+     if (rv != SECSuccess)
+         goto done;
+ 
+     rv = RSA_PrivateKeyOpDoubleChecked(&key->u.rsa, output,
+                                        formatted.data);
+-    *output_len = modulus_len;
++    *outputLen = modulusLen;
+ 
+-    goto done;
+-
+-  done:
++done:
+     if (formatted.data != NULL)
+         nss_ZFreeIf(formatted.data);
+     return rv;
+@@ -515,17 +353,17 @@ pem_RSA_Sign(pemLOWKEYPrivateKey * key,
+ /* XXX Doesn't set error code */
+ SECStatus
+ RSA_CheckSign(NSSLOWKEYPublicKey * key,
+-              unsigned char *sign,
+-              unsigned int sign_len,
++              unsigned char *sig,
++              unsigned int sigLen,
+               unsigned char *hash, unsigned int hash_len)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+     unsigned int i;
+     unsigned char *buffer;
+ 
+-    modulus_len = pem_PublicModulusLen(key);
+-    if (sign_len != modulus_len)
++    modulusLen = pem_PublicModulusLen(key);
++    if (sigLen != modulusLen)
+         goto failure;
+     /*
+      * 0x00 || BT || Pad || 0x00 || ActualData
+@@ -533,17 +371,17 @@ RSA_CheckSign(NSSLOWKEYPublicKey * key,
+      * The "3" below is the first octet + the second octet + the 0x00
+      * octet that always comes just before the ActualData.
+      */
+-    if (hash_len > modulus_len - (3 + RSA_BLOCK_MIN_PAD_LEN))
++    if (hash_len > modulusLen - (3 + RSA_BLOCK_MIN_PAD_LEN))
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    buffer = (unsigned char *) nss_ZAlloc(NULL, modulus_len + 1);
++    buffer = (unsigned char *) nss_ZAlloc(NULL, modulusLen + 1);
+     if (!buffer)
+         goto failure;
+ 
+-    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sign);
++    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sig);
+     if (rv != SECSuccess)
+         goto loser;
+ 
+@@ -552,7 +390,7 @@ RSA_CheckSign(NSSLOWKEYPublicKey * key,
+      */
+     if (buffer[0] != 0 || buffer[1] != 1)
+         goto loser;
+-    for (i = 2; i < modulus_len - hash_len - 1; i++) {
++    for (i = 2; i < modulusLen - hash_len - 1; i++) {
+         if (buffer[i] != 0xff)
+             goto loser;
+     }
+@@ -562,7 +400,7 @@ RSA_CheckSign(NSSLOWKEYPublicKey * key,
+     /*
+      * make sure we get the same results
+      */
+-    if (memcmp(buffer + modulus_len - hash_len, hash, hash_len) != 0)
++    if (memcmp(buffer + modulusLen - hash_len, hash, hash_len) != 0)
+         goto loser;
+ 
+     nss_ZFreeIf(buffer);
+@@ -579,25 +417,25 @@ SECStatus
+ RSA_CheckSignRecover(NSSLOWKEYPublicKey * key,
+                      unsigned char *data,
+                      unsigned int *data_len,
+-                     unsigned int max_output_len,
+-                     unsigned char *sign, unsigned int sign_len)
++                     unsigned int maxOutputLen,
++                     unsigned char *sig, unsigned int sigLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+     unsigned int i;
+     unsigned char *buffer;
+ 
+-    if (sign_len != modulus_len)
++    if (sigLen != modulusLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    buffer = (unsigned char *) nss_ZAlloc(NULL, modulus_len + 1);
++    buffer = (unsigned char *) nss_ZAlloc(NULL, modulusLen + 1);
+     if (!buffer)
+         goto failure;
+ 
+-    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sign);
++    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sig);
+     if (rv != SECSuccess)
+         goto loser;
+     *data_len = 0;
+@@ -607,9 +445,9 @@ RSA_CheckSignRecover(NSSLOWKEYPublicKey
+      */
+     if (buffer[0] != 0 || buffer[1] != 1)
+         goto loser;
+-    for (i = 2; i < modulus_len; i++) {
++    for (i = 2; i < modulusLen; i++) {
+         if (buffer[i] == 0) {
+-            *data_len = modulus_len - i - 1;
++            *data_len = modulusLen - i - 1;
+             break;
+         }
+         if (buffer[i] != 0xff)
+@@ -617,13 +455,13 @@ RSA_CheckSignRecover(NSSLOWKEYPublicKey
+     }
+     if (*data_len == 0)
+         goto loser;
+-    if (*data_len > max_output_len)
++    if (*data_len > maxOutputLen)
+         goto loser;
+ 
+     /*
+      * make sure we get the same results
+      */
+-    nsslibc_memcpy(data, buffer + modulus_len - *data_len, *data_len);
++    nsslibc_memcpy(data, buffer + modulusLen - *data_len, *data_len);
+ 
+     nss_ZFreeIf(buffer);
+     return SECSuccess;
+@@ -638,26 +476,26 @@ RSA_CheckSignRecover(NSSLOWKEYPublicKey
+ SECStatus
+ RSA_EncryptBlock(NSSLOWKEYPublicKey * key,
+                  unsigned char *output,
+-                 unsigned int *output_len,
+-                 unsigned int max_output_len,
+-                 unsigned char *input, unsigned int input_len)
++                 unsigned int *outputLen,
++                 unsigned int maxOutputLen,
++                 unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+     SECItem formatted;
+     SECItem unformatted;
+ 
+     formatted.data = NULL;
+-    if (max_output_len < modulus_len)
++    if (maxOutputLen < modulusLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    unformatted.len = input_len;
++    unformatted.len = inputLen;
+     unformatted.data = input;
+     formatted.data = NULL;
+-    rv = rsa_FormatBlock(&formatted, modulus_len, RSA_BlockPublic,
++    rv = rsa_FormatBlock(&formatted, modulusLen, RSA_BlockPublic,
+                          &unformatted);
+     if (rv != SECSuccess)
+         goto failure;
+@@ -667,7 +505,7 @@ RSA_EncryptBlock(NSSLOWKEYPublicKey * ke
+         goto failure;
+ 
+     nss_ZFreeIf(formatted.data);
+-    *output_len = modulus_len;
++    *outputLen = modulusLen;
+     return SECSuccess;
+ 
+   failure:
+@@ -681,22 +519,22 @@ RSA_EncryptBlock(NSSLOWKEYPublicKey * ke
+ SECStatus
+ pem_RSA_DecryptBlock(pemLOWKEYPrivateKey * key,
+                      unsigned char *output,
+-                     unsigned int *output_len,
+-                     unsigned int max_output_len,
+-                     unsigned char *input, unsigned int input_len)
++                     unsigned int *outputLen,
++                     unsigned int maxOutputLen,
++                     unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PrivateModulusLen(key);
++    unsigned int modulusLen = pem_PrivateModulusLen(key);
+     unsigned int i;
+     unsigned char *buffer;
+ 
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+-    if (input_len != modulus_len)
++    if (inputLen != modulusLen)
+         goto failure;
+ 
+-    buffer = (unsigned char *) nss_ZAlloc(NULL, modulus_len + 1);
++    buffer = (unsigned char *) nss_ZAlloc(NULL, modulusLen + 1);
+     if (!buffer)
+         goto failure;
+ 
+@@ -707,19 +545,19 @@ pem_RSA_DecryptBlock(pemLOWKEYPrivateKey
+ 
+     if (buffer[0] != 0 || buffer[1] != 2)
+         goto loser;
+-    *output_len = 0;
+-    for (i = 2; i < modulus_len; i++) {
++    *outputLen = 0;
++    for (i = 2; i < modulusLen; i++) {
+         if (buffer[i] == 0) {
+-            *output_len = modulus_len - i - 1;
++            *outputLen = modulusLen - i - 1;
+             break;
+         }
+     }
+-    if (*output_len == 0)
++    if (*outputLen == 0)
+         goto loser;
+-    if (*output_len > max_output_len)
++    if (*outputLen > maxOutputLen)
+         goto loser;
+ 
+-    nsslibc_memcpy(output, buffer + modulus_len - *output_len, *output_len);
++    nsslibc_memcpy(output, buffer + modulusLen - *outputLen, *outputLen);
+ 
+     nss_ZFreeIf(buffer);
+     return SECSuccess;
+@@ -739,32 +577,32 @@ pem_RSA_DecryptBlock(pemLOWKEYPrivateKey
+ SECStatus
+ pem_RSA_SignRaw(pemLOWKEYPrivateKey * key,
+                 unsigned char *output,
+-                unsigned int *output_len,
++                unsigned int *outputLen,
+                 unsigned int maxOutputLen,
+-                unsigned char *input, unsigned int input_len)
++                unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv = SECSuccess;
+-    unsigned int modulus_len = pem_PrivateModulusLen(key);
++    unsigned int modulusLen = pem_PrivateModulusLen(key);
+     SECItem formatted;
+     SECItem unformatted;
+ 
+-    if (maxOutputLen < modulus_len)
++    if (maxOutputLen < modulusLen)
+         return SECFailure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         return SECFailure;
+ 
+-    unformatted.len = input_len;
++    unformatted.len = inputLen;
+     unformatted.data = input;
+     formatted.data = NULL;
+-    rv = rsa_FormatBlock(&formatted, modulus_len, RSA_BlockRaw,
++    rv = rsa_FormatBlock(&formatted, modulusLen, RSA_BlockRaw,
+                          &unformatted);
+     if (rv != SECSuccess)
+         goto done;
+ 
+     rv = RSA_PrivateKeyOpDoubleChecked(&key->u.rsa, output,
+                                        formatted.data);
+-    *output_len = modulus_len;
++    *outputLen = modulusLen;
+ 
+   done:
+     if (formatted.data != NULL)
+@@ -775,27 +613,27 @@ pem_RSA_SignRaw(pemLOWKEYPrivateKey * ke
+ /* XXX Doesn't set error code */
+ SECStatus
+ RSA_CheckSignRaw(NSSLOWKEYPublicKey * key,
+-                 unsigned char *sign,
+-                 unsigned int sign_len,
++                 unsigned char *sig,
++                 unsigned int sigLen,
+                  unsigned char *hash, unsigned int hash_len)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+     unsigned char *buffer;
+ 
+-    if (sign_len != modulus_len)
++    if (sigLen != modulusLen)
+         goto failure;
+-    if (hash_len > modulus_len)
++    if (hash_len > modulusLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    buffer = (unsigned char *) nss_ZAlloc(NULL, modulus_len + 1);
++    buffer = (unsigned char *) nss_ZAlloc(NULL, modulusLen + 1);
+     if (!buffer)
+         goto failure;
+ 
+-    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sign);
++    rv = RSA_PublicKeyOp(&key->u.rsa, buffer, sig);
+     if (rv != SECSuccess)
+         goto loser;
+ 
+@@ -803,7 +641,7 @@ RSA_CheckSignRaw(NSSLOWKEYPublicKey * ke
+      * make sure we get the same results
+      */
+     /* NOTE: should we verify the leading zeros? */
+-    if (memcmp(buffer + (modulus_len - hash_len), hash, hash_len) !=
++    if (memcmp(buffer + (modulusLen - hash_len), hash, hash_len) !=
+         0)
+         goto loser;
+ 
+@@ -821,25 +659,25 @@ SECStatus
+ RSA_CheckSignRecoverRaw(NSSLOWKEYPublicKey * key,
+                         unsigned char *data,
+                         unsigned int *data_len,
+-                        unsigned int max_output_len,
+-                        unsigned char *sign, unsigned int sign_len)
++                        unsigned int maxOutputLen,
++                        unsigned char *sig, unsigned int sigLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+ 
+-    if (sign_len != modulus_len)
++    if (sigLen != modulusLen)
+         goto failure;
+-    if (max_output_len < modulus_len)
++    if (maxOutputLen < modulusLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    rv = RSA_PublicKeyOp(&key->u.rsa, data, sign);
++    rv = RSA_PublicKeyOp(&key->u.rsa, data, sig);
+     if (rv != SECSuccess)
+         goto failure;
+ 
+-    *data_len = modulus_len;
++    *data_len = modulusLen;
+     return SECSuccess;
+ 
+   failure:
+@@ -851,26 +689,26 @@ RSA_CheckSignRecoverRaw(NSSLOWKEYPublicK
+ SECStatus
+ RSA_EncryptRaw(NSSLOWKEYPublicKey * key,
+                unsigned char *output,
+-               unsigned int *output_len,
+-               unsigned int max_output_len,
+-               unsigned char *input, unsigned int input_len)
++               unsigned int *outputLen,
++               unsigned int maxOutputLen,
++               unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PublicModulusLen(key);
++    unsigned int modulusLen = pem_PublicModulusLen(key);
+     SECItem formatted;
+     SECItem unformatted;
+ 
+     formatted.data = NULL;
+-    if (max_output_len < modulus_len)
++    if (maxOutputLen < modulusLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+ 
+-    unformatted.len = input_len;
++    unformatted.len = inputLen;
+     unformatted.data = input;
+     formatted.data = NULL;
+-    rv = rsa_FormatBlock(&formatted, modulus_len, RSA_BlockRaw,
++    rv = rsa_FormatBlock(&formatted, modulusLen, RSA_BlockRaw,
+                          &unformatted);
+     if (rv != SECSuccess)
+         goto failure;
+@@ -880,7 +718,7 @@ RSA_EncryptRaw(NSSLOWKEYPublicKey * key,
+         goto failure;
+ 
+     nss_ZFreeIf(formatted.data);
+-    *output_len = modulus_len;
++    *outputLen = modulusLen;
+     return SECSuccess;
+ 
+   failure:
+@@ -893,21 +731,21 @@ RSA_EncryptRaw(NSSLOWKEYPublicKey * key,
+ SECStatus
+ pem_RSA_DecryptRaw(pemLOWKEYPrivateKey * key,
+                    unsigned char *output,
+-                   unsigned int *output_len,
+-                   unsigned int max_output_len,
+-                   unsigned char *input, unsigned int input_len)
++                   unsigned int *outputLen,
++                   unsigned int maxOutputLen,
++                   unsigned char *input, unsigned int inputLen)
+ {
+     SECStatus rv;
+-    unsigned int modulus_len = pem_PrivateModulusLen(key);
++    unsigned int modulusLen = pem_PrivateModulusLen(key);
+ 
+-    if (modulus_len <= 0)
++    if (modulusLen <= 0)
+         goto failure;
+-    if (modulus_len > max_output_len)
++    if (modulusLen > maxOutputLen)
+         goto failure;
+     PORT_Assert(key->keyType == pemLOWKEYRSAKey);
+     if (key->keyType != pemLOWKEYRSAKey)
+         goto failure;
+-    if (input_len != modulus_len)
++    if (inputLen != modulusLen)
+         goto failure;
+ 
+     rv = RSA_PrivateKeyOp(&key->u.rsa, output, input);
+@@ -915,7 +753,7 @@ pem_RSA_DecryptRaw(pemLOWKEYPrivateKey *
+         goto failure;
+     }
+ 
+-    *output_len = modulus_len;
++    *outputLen = modulusLen;
+     return SECSuccess;
+ 
+   failure:
