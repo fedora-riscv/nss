@@ -80,7 +80,7 @@ Patch18:          nss-646045.patch
 Patch25:          nsspem-use-system-freebl.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-Patch44:          0001-sync-up-with-upstream-softokn-changes.patch
+Patch44:          0039-Sync-up-with-nss-3.15.4-changes-in-freebl-and-softok.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
@@ -172,7 +172,7 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
-%patch44 -p1 -b .syncupwithupstream
+%patch44 -p3 -b .syncupwithupstream
 %patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
