@@ -9,19 +9,6 @@ diff -up nss/cmd/bltest/Makefile.iquote nss/cmd/bltest/Makefile
  
  
  #######################################################################
-diff -up nss/cmd/httpserv/Makefile.iquote nss/cmd/httpserv/Makefile
---- nss/cmd/httpserv/Makefile.iquote	2014-01-07 13:34:00.859358160 -0800
-+++ nss/cmd/httpserv/Makefile	2014-01-07 13:35:06.100212103 -0800
-@@ -35,7 +35,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
- # (6) Execute "component" rules. (OPTIONAL)                           #
- #######################################################################
- 
--
-+INCLUDES += -iquote $(DIST)/../private/nss
-+INCLUDES += -iquote $(DIST)/../public/nss
- 
- #######################################################################
- # (7) Execute "local" rules. (OPTIONAL).                              #
 diff -up nss/cmd/lib/Makefile.iquote nss/cmd/lib/Makefile
 --- nss/cmd/lib/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
 +++ nss/cmd/lib/Makefile	2014-01-07 13:30:04.465429623 -0800
@@ -73,20 +60,6 @@ diff -up nss/lib/cryptohi/Makefile.iquote nss/lib/cryptohi/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/libpkix/pkix/checker/Makefile.iquote nss/lib/libpkix/pkix/checker/Makefile
---- nss/lib/libpkix/pkix/checker/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
-+++ nss/lib/libpkix/pkix/checker/Makefile	2014-01-07 13:30:04.466429634 -0800
-@@ -38,7 +38,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
- # (6) Execute "component" rules. (OPTIONAL)                           #
- #######################################################################
- 
--
-+INCLUDES += -iquote $(DIST)/../private/nss
-+INCLUDES += -iquote $(DIST)/../public/nss
- 
- #######################################################################
- # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/nss/Makefile.iquote nss/lib/nss/Makefile
 --- nss/lib/nss/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
 +++ nss/lib/nss/Makefile	2014-01-07 13:30:04.466429634 -0800
 @@ -37,7 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
