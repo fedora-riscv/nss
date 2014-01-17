@@ -1,6 +1,6 @@
 diff -up nss/cmd/bltest/Makefile.iquote nss/cmd/bltest/Makefile
---- nss/cmd/bltest/Makefile.iquote	2013-06-27 10:58:08.000000000 -0700
-+++ nss/cmd/bltest/Makefile	2013-07-02 15:02:26.656643246 -0700
+--- nss/cmd/bltest/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/cmd/bltest/Makefile	2014-01-07 13:30:04.465429623 -0800
 @@ -45,6 +45,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -10,8 +10,8 @@ diff -up nss/cmd/bltest/Makefile.iquote nss/cmd/bltest/Makefile
  
  #######################################################################
 diff -up nss/cmd/lib/Makefile.iquote nss/cmd/lib/Makefile
---- nss/cmd/lib/Makefile.iquote	2013-07-02 15:07:47.260622471 -0700
-+++ nss/cmd/lib/Makefile	2013-07-02 15:08:47.219179157 -0700
+--- nss/cmd/lib/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/cmd/lib/Makefile	2014-01-07 13:30:04.465429623 -0800
 @@ -38,7 +38,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -23,8 +23,8 @@ diff -up nss/cmd/lib/Makefile.iquote nss/cmd/lib/Makefile
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
 diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
---- nss/coreconf/location.mk.iquote	2013-06-27 10:58:08.000000000 -0700
-+++ nss/coreconf/location.mk	2013-07-02 15:02:26.656643246 -0700
+--- nss/coreconf/location.mk.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/coreconf/location.mk	2014-01-07 13:30:04.465429623 -0800
 @@ -45,6 +45,10 @@ endif
  
  ifdef NSS_INCLUDE_DIR
@@ -37,8 +37,8 @@ diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
  
  ifndef NSS_LIB_DIR
 diff -up nss/lib/certhigh/Makefile.iquote nss/lib/certhigh/Makefile
---- nss/lib/certhigh/Makefile.iquote	2013-09-27 11:13:55.158689314 -0700
-+++ nss/lib/certhigh/Makefile	2013-09-27 11:14:38.181042336 -0700
+--- nss/lib/certhigh/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/lib/certhigh/Makefile	2014-01-07 13:30:04.466429634 -0800
 @@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -49,14 +49,26 @@ diff -up nss/lib/certhigh/Makefile.iquote nss/lib/certhigh/Makefile
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
 diff -up nss/lib/cryptohi/Makefile.iquote nss/lib/cryptohi/Makefile
---- nss/lib/cryptohi/Makefile.iquote	2013-09-27 11:11:30.117494489 -0700
-+++ nss/lib/cryptohi/Makefile	2013-09-27 11:12:54.704194915 -0700
+--- nss/lib/cryptohi/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/lib/cryptohi/Makefile	2014-01-07 13:30:04.466429634 -0800
 @@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
  
 -
 +INCLUDES += -iquote $(DIST)/../public/nss
+ 
+ #######################################################################
+ # (7) Execute "local" rules. (OPTIONAL).                              #
+--- nss/lib/nss/Makefile.iquote	2014-01-03 11:59:10.000000000 -0800
++++ nss/lib/nss/Makefile	2014-01-07 13:30:04.466429634 -0800
+@@ -37,7 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
+-
++INCLUDES += -iquote $(DIST)/../public/nss
++INCLUDES += -iquote $(DIST)/../private/nss
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
