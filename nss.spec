@@ -87,6 +87,12 @@ Patch47:          utilwrap-include-templates.patch
 Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
+# This patch uses the gcc-iquote dir option documented at
+# http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
+# to place the in-tree directories at the head of the list of list of directories
+# to be searched for for header files. This ensures a build even when system 
+# headers are older. Such is the case when starting an update with API changes or even private export changes.
+# Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
 
 %description
