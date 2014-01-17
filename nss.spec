@@ -737,6 +737,7 @@ fi
 * Tue Jan 07 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-1
 - Update to nss-3.15.4 (hg tag NSS_3_15_4_RTM)
 - Resolves: Bug 1049229 - nss-3.15.4 is available
+- Resolves: Bug 1054456 - CVE-2013-1740 nss: false start PR_Recv information disclosure security issue
 - Update pem sources to latest from the interim upstream for pem
 - Remove no longer needed patches
 - Update pem/rsawrapr.c patch on account of upstream changes to freebl/softoken
