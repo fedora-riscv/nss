@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -433,14 +433,11 @@ cd ../../
 killall $RANDSERV || :
 
 TEST_FAILURES=`grep -c FAILED ./tests_results/security/localhost.1/output.log` || :
-# test suite is failing on arm and has for awhile let's run the test suite but make it non fatal on arm
-%ifnarch %{arm}
 if [ $TEST_FAILURES -ne 0 ]; then
   echo "error: test suite returned failure(s)"
   exit 1
 fi
 echo "test suite completed"
-%endif
 
 %install
 
@@ -734,6 +731,9 @@ fi
 
 
 %changelog
+* Mon Jan 20 2014 Peter Robinson <pbrobinson@fedoraproject.org> 3.15.4-2
+- ARM tests pass so remove ARM conditional
+
 * Tue Jan 07 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-1
 - Update to nss-3.15.4 (hg tag NSS_3_15_4_RTM)
 - Resolves: Bug 1049229 - nss-3.15.4 is available
