@@ -5,7 +5,7 @@
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches ppc64 sparc64 x86_64
+%define multilib_arches ppc64 sparc64 x86_64 ppc64le
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.4
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -57,7 +57,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20131226.tar.bz2
+Source12:         %{name}-pem-20140125.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -80,7 +80,6 @@ Patch18:          nss-646045.patch
 Patch25:          nsspem-use-system-freebl.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-Patch44:          0039-Sync-up-with-nss-3.15.4-changes-in-freebl-and-softok.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
@@ -172,7 +171,6 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
-%patch44 -p3 -b .syncupwithupstream
 %patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
@@ -250,7 +248,7 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
 USE_64=1
 export USE_64
 %endif
@@ -364,7 +362,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
 USE_64=1
 export USE_64
 %endif
@@ -600,10 +598,12 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
-%attr(0644,root,root) %doc /usr/share/man/man5/*
 %attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -611,9 +611,6 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
@@ -731,6 +728,14 @@ fi
 
 
 %changelog
+* Sat Jan 25 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-3
+- Update pem sources to latest from nss-pem upstream
+- Pick up pem fixes verified on RHEL and applied upstream
+- Fix a problem where same files in two rpms created rpm conflict
+- Move some nss-sysinit manpages tar archives to the %%files the
+- All man pages are listed by name so there shouldn't be wildcard inclusion
+- Add support for ppc64le, Resolves: Bug 1052545
+
 * Mon Jan 20 2014 Peter Robinson <pbrobinson@fedoraproject.org> 3.15.4-2
 - ARM tests pass so remove ARM conditional
 
