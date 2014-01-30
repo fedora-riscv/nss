@@ -761,7 +761,7 @@ fi
 - Resolves: Bug 1040192 - nss-3.15.3.1 is available
 
 * Tue Dec 03 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-2
-- Bump the release tag
+- Install symlink to setup-nsssysinit.sh, without suffix, to match manpage
 
 * Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
 - Update to NSS_3_15_3_RTM
@@ -772,11 +772,12 @@ fi
 - Remove unused patches
 
 * Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
-- Revert one change from last commit to preserve full nss pluggable ecc supprt [1019245]
-
-* Wed Oct 23 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
-- Use the full sources from upstream
+- Use the full pristine sources from upstream
 - Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
+
+* Fri Oct 18 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
+- Disable the nss-ssl-cbc-random-iv-off-by-default.patch
+- Resolves: rhbz#1020420 - Turn on the fix for BEAST by default [CVE-2011-3389]
 
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
