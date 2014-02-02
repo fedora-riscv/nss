@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -57,7 +57,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20131226.tar.bz2
+Source12:         %{name}-pem-20140125.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -80,7 +80,6 @@ Patch18:          nss-646045.patch
 Patch25:          nsspem-use-system-freebl.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
-Patch44:          0039-Sync-up-with-nss-3.15.4-changes-in-freebl-and-softok.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
@@ -178,7 +177,6 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
-%patch44 -p3 -b .syncupwithupstream
 %patch47 -p0 -b .templates
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
@@ -609,10 +607,12 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
-%attr(0644,root,root) %doc /usr/share/man/man5/*
 %attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -620,9 +620,6 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
@@ -740,6 +737,13 @@ fi
 
 
 %changelog
+* Sun Feb 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-2
+- Selective merge fom master to pick up various fixes
+- Update pem sources to latest from nss-pem upstream
+- Pick up pem fixes verified on RHEL and applied upstream
+- Fix a problem where same files in two rpms created rpm conflict
+- All man pages are listed by name so there shouldn't be wildcard inclusion
+
 * Tue Jan 07 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-1
 - Update to nss-3.15.4 (hg tag NSS_3_15_4_RTM)
 - Resolves: Bug 1049229 - nss-3.15.4 is available
