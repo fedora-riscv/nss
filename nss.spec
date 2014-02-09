@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.4
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -614,9 +614,6 @@ fi
 %attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -624,6 +621,9 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
@@ -741,6 +741,11 @@ fi
 
 
 %changelog
+* Sat Feb 08 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-3
+- Revert previous change that moved some sysinit manpages
+- Restore nss-sysinit manpages tar archives to %%files sysinit
+- Removing spurious wildcard entry was the only change needed
+
 * Sun Feb 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-2
 - Selective merge fom f20 to pick up various fixes
 - Update pem sources to latest from nss-pem upstream
