@@ -93,8 +93,6 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-# Upstream: to be filed
-Patch51:          dont-disable-internal-module.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,7 +181,6 @@ low level services.
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-%patch51 -p0 -b .segfault
 
 #########################################################
 # Higher-level libraries and test tools need access to
