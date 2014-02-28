@@ -1,6 +1,6 @@
 %global nspr_version 4.10.2
-%global nss_util_version 3.15.4
-%global nss_softokn_version 3.15.4
+%global nss_util_version 3.15.5
+%global nss_softokn_version 3.15.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.4
-Release:          3%{?dist}
+Version:          3.15.5
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -607,19 +607,19 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
 %attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
+%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
@@ -737,6 +737,11 @@ fi
 
 
 %changelog
+* Fri Feb 28 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.5-1
+- Update to nss-3.15.5 - Resolves: Bug 1066877
+- Pick fix for same files in two packages that can create rpm conflict
+- Move cert9.db, key4.db, and pkcs11.txt and their man pages to the main package where they rightfully belong
+
 * Sat Feb 08 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.4-3
 - Revert previous change that moved some sysinit manpages
 - Restore nss-sysinit manpages tar archives to %%files sysinit
@@ -764,7 +769,7 @@ fi
 - Resolves: Bug 1040192 - nss-3.15.3.1 is available
 
 * Tue Dec 03 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-2
-- Install symlink to setup-nsssysinit.sh, without suffix, to match manpage
+- Bump the release tag
 
 * Sun Nov 24 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.3-1
 - Update to NSS_3_15_3_RTM
@@ -775,12 +780,11 @@ fi
 - Remove unused patches
 
 * Sun Oct 27 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-3
-- Use the full pristine sources from upstream
-- Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
+- Revert one change from last commit to preserve full nss pluggable ecc supprt [1019245]
 
-* Fri Oct 18 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
-- Disable the nss-ssl-cbc-random-iv-off-by-default.patch
-- Resolves: rhbz#1020420 - Turn on the fix for BEAST by default [CVE-2011-3389]
+* Wed Oct 23 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-2
+- Use the full sources from upstream
+- Bug 1019245 - ECDHE in openssl available -> NSS needs too for Firefox/Thunderbird
 
 * Thu Sep 26 2013 Elio Maldonado <emaldona@redhat.com> - 3.15.2-1
 - Update to NSS_3_15_2_RTM
