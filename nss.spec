@@ -1,6 +1,6 @@
 %global nspr_version 4.10.2
 %global nss_util_version 3.15.5
-%global nss_softokn_version 3.15.4
+%global nss_softokn_version 3.15.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.15.5
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -734,6 +734,9 @@ fi
 
 
 %changelog
+* Tue Mar 04 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.5-2
+- Restore requiring nss_softokn_version >= 3.15.5
+
 * Wed Feb 19 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.5-1
 - Update to nss-3.15.5
 - Temporarily requiring only nss_softokn_version >= 3.15.4
