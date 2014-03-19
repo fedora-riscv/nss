@@ -1,4 +1,4 @@
-%global nspr_version 4.10.2
+%global nspr_version 4.10.4
 %global nss_util_version 3.16.0
 %global nss_softokn_version 3.16.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
