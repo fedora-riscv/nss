@@ -1,6 +1,6 @@
 %global nspr_version 4.10.2
-%global nss_util_version 3.15.5
-%global nss_softokn_version 3.15.5
+%global nss_util_version 3.16.0
+%global nss_softokn_version 3.16.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.15.5
-Release:          2%{?dist}
+Version:          3.16.0
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -274,9 +274,7 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 %{__rm} -rf ./mozilla/security/nss/cmd/rsaperf_low
 
 ##### phase 2: build the rest of nss
-# nss supports pluggable ecc
-NSS_ENABLE_ECC=1
-export NSS_ENABLE_ECC
+# nss supports pluggable ecc with more than suite-b
 NSS_ECC_MORE_THAN_SUITE_B=1
 export NSS_ECC_MORE_THAN_SUITE_B
 
@@ -291,10 +289,9 @@ pushd ./nss
 %{__make} clean_docs build_docs
 popd
 
-# and copy them here
-for m in "%{allTools}"; do 
-  cp ./nss/doc/nroff/${m}.1 .
-done
+# and copy them to the dist directory
+%{__mkdir_p} ./dist/docs/nroff
+%{__cp} ./nss/doc/nroff/* ./dist/docs/nroff
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
@@ -524,7 +521,7 @@ for f in nss-config setup-nsssysinit; do
 done
 # Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
-   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
@@ -734,6 +731,11 @@ fi
 
 
 %changelog
+* Tue Mar 18 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.0-1
+- Update to nss-3.16.0
+- Cleanup the copying of the tools man pages
+- Update the iquote.patch on account of the rebase
+
 * Tue Mar 04 2014 Elio Maldonado <emaldona@redhat.com> - 3.15.5-2
 - Restore requiring nss_softokn_version >= 3.15.5
 
