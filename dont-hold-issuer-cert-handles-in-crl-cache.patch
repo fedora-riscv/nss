@@ -1,0 +1,123 @@
+diff -up ./nss/lib/certdb/certi.h.1034409 ./nss/lib/certdb/certi.h
+--- ./nss/lib/certdb/certi.h.1034409	2014-01-03 11:59:10.000000000 -0800
++++ ./nss/lib/certdb/certi.h	2014-02-20 08:46:10.345136599 -0800
+@@ -116,11 +116,16 @@ struct CRLDPCacheStr {
+ #else
+     PRLock* lock;
+ #endif
+-    CERTCertificate* issuer;    /* issuer cert
+-                                   XXX there may be multiple issuer certs,
+-                                       with different validity dates. Also
+-                                       need to deal with SKID/AKID . See
+-                                       bugzilla 217387, 233118 */
++    SECItem *issuerDERCert;    /* issuer DER cert. Don't hold a reference
++				  to the actual cert so the trust can be
++				  updated on the cert automatically.
++				  XXX there may be multiple issuer certs,
++				  with different validity dates. Also
++				  need to deal with SKID/AKID . See
++				  bugzilla 217387, 233118 */
++
++    CERTCertDBHandle *dbHandle;
++
+     SECItem* subject;           /* DER of issuer subject */
+     SECItem* distributionPoint; /* DER of distribution point. This may be
+                                    NULL when distribution points aren't
+@@ -172,7 +177,7 @@ struct CRLIssuerCacheStr {
+     NSSRWLock* lock;
+     CRLDPCache** dps;
+     PLHashTable* distributionpoints;
+-    CERTCertificate* issuer;
++    CERTCertificate* issuer; /* This should be the DER Cert, not a cert handle */
+ #endif
+ };
+ 
+diff -up ./nss/lib/certdb/crl.c.1034409 ./nss/lib/certdb/crl.c
+--- ./nss/lib/certdb/crl.c.1034409	2014-01-03 11:59:10.000000000 -0800
++++ ./nss/lib/certdb/crl.c	2014-02-20 08:49:30.835466687 -0800
+@@ -1123,9 +1123,9 @@ static SECStatus DPCache_Destroy(CRLDPCa
+ 	PORT_Free(cache->crls);
+     }
+     /* destroy the cert */
+-    if (cache->issuer)
++    if (cache->issuerDERCert)
+     {
+-        CERT_DestroyCertificate(cache->issuer);
++        SECITEM_FreeItem(cache->issuerDERCert, PR_TRUE);
+     }
+     /* free the subject */
+     if (cache->subject)
+@@ -1571,14 +1571,20 @@ static SECStatus CachedCrl_Verify(CRLDPC
+     else
+     {
+         SECStatus signstatus = SECFailure;
+-        if (cache->issuer)
++        if (cache->issuerDERCert)
+         {
+-            signstatus = CERT_VerifyCRL(crlobject->crl, cache->issuer, vfdate,
++	    CERTCertificate *issuer = CERT_NewTempCertificate(cache->dbHandle,
++		cache->issuerDERCert, NULL, PR_FALSE, PR_TRUE);
++
++	    if (issuer) {
++                signstatus = CERT_VerifyCRL(crlobject->crl, issuer, vfdate,
+                                         wincx);
++		CERT_DestroyCertificate(issuer);
++	    }
+         }
+         if (SECSuccess != signstatus)
+         {
+-            if (!cache->issuer)
++            if (!cache->issuerDERCert)
+             {
+                 /* we tried to verify without an issuer cert . This is
+                    because this CRL came through a call to SEC_FindCrlByName.
+@@ -1925,15 +1931,16 @@ static SECStatus DPCache_GetUpToDate(CRL
+     }
+ 
+     /* add issuer certificate if it was previously unavailable */
+-    if (issuer && (NULL == cache->issuer) &&
++    if (issuer && (NULL == cache->issuerDERCert) &&
+         (SECSuccess == CERT_CheckCertUsage(issuer, KU_CRL_SIGN)))
+     {
+         /* if we didn't have a valid issuer cert yet, but we do now. add it */
+         DPCache_LockWrite();
+-        if (!cache->issuer)
++        if (!cache->issuerDERCert)
+         {
+             dirty = PR_TRUE;
+-            cache->issuer = CERT_DupCertificate(issuer);    
++	    cache->dbHandle = issuer->dbhandle;
++    	    cache->issuerDERCert = SECITEM_DupItem(&issuer->derCert);
+         }
+         DPCache_UnlockWrite();
+     }
+@@ -1944,7 +1951,7 @@ static SECStatus DPCache_GetUpToDate(CRL
+        SEC_FindCrlByName, or through manual insertion, rather than through a
+        certificate verification (CERT_CheckCRL) */
+ 
+-    if (cache->issuer && vfdate )
++    if (cache->issuerDERCert && vfdate )
+     {
+ 	mustunlock = PR_FALSE;
+         /* re-process all unverified CRLs */
+@@ -2201,7 +2208,8 @@ static SECStatus DPCache_Create(CRLDPCac
+     }
+     if (issuer)
+     {
+-        cache->issuer = CERT_DupCertificate(issuer);
++	cache->dbHandle = issuer->dbhandle;
++    	cache->issuerDERCert = SECITEM_DupItem(&issuer->derCert);
+     }
+     cache->distributionPoint = SECITEM_DupItem(dp);
+     cache->subject = SECITEM_DupItem(subject);
+diff -up ./nss/tests/chains/chains.sh.1034409 ./nss/tests/chains/chains.sh
+--- ./nss/tests/chains/chains.sh.1034409	2014-02-20 08:16:34.867686934 -0800
++++ ./nss/tests/chains/chains.sh	2014-02-20 08:34:35.149603340 -0800
+@@ -974,6 +974,7 @@ check_ocsp()
+     OCSP_HOST=$(${BINDIR}/pp -w -t certificate -i ${CERT_FILE} | grep URI | sed "s/.*:\/\///" | sed "s/:.*//")
+     OCSP_PORT=$(${BINDIR}/pp -w -t certificate -i ${CERT_FILE} | grep URI | sed "s/^.*:.*:\/\/.*:\([0-9]*\).*$/\1/")
+ 
++    echo "Cert = ${CERT_NICK}.cert"
+     echo "tstclnt -h ${OCSP_HOST} -p ${OCSP_PORT} -q -t 20"
+     tstclnt -h ${OCSP_HOST} -p ${OCSP_PORT} -q -t 20
+     return $?

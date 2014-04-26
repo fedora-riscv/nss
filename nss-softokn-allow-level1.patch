@@ -1,0 +1,42 @@
+diff -up ./nss/lib/softoken/fipstokn.c.allow_level1 ./nss/lib/softoken/fipstokn.c
+--- ./nss/lib/softoken/fipstokn.c.allow_level1	2013-10-11 11:47:31.265670032 -0700
++++ ./nss/lib/softoken/fipstokn.c	2013-10-11 11:58:12.730655827 -0700
+@@ -97,6 +97,7 @@ libaudit_init(void)
+  * ******************** Password Utilities *******************************
+  */
+ static PRBool isLoggedIn = PR_FALSE;
++static PRBool isLevel2 = PR_TRUE;
+ PRBool sftk_fatalError = PR_FALSE;
+ 
+ /*
+@@ -197,7 +198,7 @@ static CK_RV sftk_newPinCheck(CK_CHAR_PT
+ static CK_RV sftk_fipsCheck(void) {
+     if (sftk_fatalError) 
+ 	return CKR_DEVICE_ERROR;
+-    if (!isLoggedIn) 
++    if (isLevel2 && !isLoggedIn) 
+ 	return CKR_USER_NOT_LOGGED_IN;
+     return CKR_OK;
+ }
+@@ -498,6 +499,7 @@ CK_RV FC_Initialize(CK_VOID_PTR pReserve
+ 	return crv;
+     }
+     nsf_init = PR_TRUE;
++    isLevel2 = PR_TRUE; /* assume level 2 unless we learn otherwise */
+ 
+     return CKR_OK;
+ }
+@@ -552,8 +554,11 @@ CK_RV FC_GetSlotInfo(CK_SLOT_ID slotID,
+     CHECK_FORK();
+ 
+     crv = NSC_GetTokenInfo(slotID,pInfo);
+-    if (crv == CKR_OK) 
+-       pInfo->flags |= CKF_LOGIN_REQUIRED;
++    if (crv == CKR_OK) {
++	if ((pInfo->flags & CKF_LOGIN_REQUIRED) == 0) {
++	    isLevel2 = PR_FALSE;
++ 	}
++    }
+     return crv;
+ 
+ }
