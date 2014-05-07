@@ -1,11 +1,11 @@
-%global nspr_version 4.10.4
-%global nss_util_version 3.16.0
-%global nss_softokn_version 3.16.0
+%global nspr_version 4.10.5
+%global nss_util_version 3.16.1
+%global nss_softokn_version 3.16.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches ppc64 sparc64 x86_64
+%define multilib_arches ppc64 sparc64 x86_64 ppc64le
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.0
+Version:          3.16.1
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -254,7 +254,7 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
 USE_64=1
 export USE_64
 %endif
@@ -365,7 +365,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64
+%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
 USE_64=1
 export USE_64
 %endif
@@ -413,7 +413,7 @@ find ./nss/tests -type f |\
 killall $RANDSERV || :
 
 rm -rf ./tests_results
-cd ./nss/tests/
+pushd ./nss/tests/
 # all.sh is the test suite script
 
 #  don't need to run all the tests when testing packaging
@@ -429,19 +429,36 @@ nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge 
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
-cd ../../
+popd
 
+# Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
+# Grep exits with status greater than 1 if an error ocurred. 
+# If there are test failures we expect TEST_FAILURES > 0 and GREP_EXIT_STATUS = 0, 
+# With no test failures we expect TEST_FAILURES = 0 and GREP_EXIT_STATUS = 1, whereas 
+# GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
-TEST_FAILURES=`grep -c FAILED ./tests_results/security/localhost.1/output.log` || :
-# test suite is failing on arm and has for awhile let's run the test suite but make it non fatal on arm
-%ifnarch %{arm}
-if [ $TEST_FAILURES -ne 0 ]; then
-  echo "error: test suite returned failure(s)"
-  exit 1
+TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
+  echo "okay: test suite detected no failures"
+else 
+  if [ ${GREP_EXIT_STATUS:-0} -eq 0 ]; then
+    # while a situation in which grep return status is 0 and it doesn't output
+    # anything shouldn't happen, set the default to something that is
+    # obviously wrong (-1)
+    echo "error: test suite had ${TEST_FAILURES:--1} test failure(s)"
+    exit 1
+  else
+    if [ ${GREP_EXIT_STATUS:-0} -eq 2 ]; then
+      echo "error: grep has not found log file"
+      exit 1
+    else
+      echo "error: grep failed with exit code: ${GREP_EXIT_STATUS}"
+      exit 1
+    fi
+  fi
 fi
 echo "test suite completed"
-%endif
 
 %install
 
@@ -734,6 +751,12 @@ fi
 
 
 %changelog
+* Tue May 06 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-1
+- Update to nss-3.16.1
+- Update the iquote patch on account of the rebase
+- Improve test error detection in the %%section
+- Resolves: Bug 1094702 - nss-3.16.1 is available
+
 * Tue Mar 18 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.0-1
 - Update to nss-3.16.0
 - Cleanup the copying of the tools man pages
