@@ -5,7 +5,7 @@
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches ppc64 sparc64 x86_64 ppc64le
+%define multilib_arches %{power64} sparc64 x86_64
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.1
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -254,7 +254,7 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
+%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -365,7 +365,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
+%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -751,6 +751,10 @@ fi
 
 
 %changelog
+* Mon May 12 2014 Jaromir Capik <jcapik@redhat.com> - 3.16.1-2
+- Replacing ppc64 and ppc64le with the power64 macro
+- Related: Bug 1052545 - Trivial change for ppc64le in nss spec
+
 * Tue May 06 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-1
 - Update to nss-3.16.1
 - Update the iquote patch on account of the rebase
