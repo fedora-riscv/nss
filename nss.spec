@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.1
-Release:          2%{?dist}
+Release:          2.1%{?dist}.ssl2disabled.1
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -93,6 +93,11 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
+
+Patch51:          disable-sslv2-libssl.patch
+Patch52:          disable-sslv2-tests.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1007126
+Patch70: manfixes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -181,6 +186,9 @@ low level services.
 %patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+%patch51 -p0 -b .disableSSL2
+%patch52 -p0 -b .disableSSL2
+%patch70 -p0 -b .cleanup
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -200,6 +208,10 @@ done
 
 
 %build
+
+if [ ${DISABLE_SSL2:-0} -eq 1 ]; then
+export NSS_NO_SSL2=1
+fi
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -289,7 +301,7 @@ pushd ./nss
 %{__make} clean_docs build_docs
 popd
 
-# and copy them to the dist directory
+# and copy them to the dist directory for %%install to find them
 %{__mkdir_p} ./dist/docs/nroff
 %{__cp} ./nss/doc/nroff/* ./dist/docs/nroff
 
@@ -353,12 +365,18 @@ done
  
 
 %check
-if [ $DISABLETEST -eq 1 ]; then
+if [ ${DISABLETEST:-0} -eq 1 ]; then
   echo "testing disabled"
   exit 0
 fi
 
 # Begin -- copied from the build section
+
+# inform the ssl test scripts that SSL2 is disabled
+if [ ${DISABLE_SSL2:-0} -eq 1 ]; then
+export NSS_NO_SSL2=1
+fi
+
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -441,7 +459,7 @@ killall $RANDSERV || :
 TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
   echo "okay: test suite detected no failures"
-else 
+else
   if [ ${GREP_EXIT_STATUS:-0} -eq 0 ]; then
     # while a situation in which grep return status is 0 and it doesn't output
     # anything shouldn't happen, set the default to something that is
@@ -541,7 +559,7 @@ for f in nss-config setup-nsssysinit; do
 done
 # Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
-   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+  install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
@@ -751,6 +769,12 @@ fi
 
 
 %changelog
+* Mon Jun 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-2.1.ssl2disabled.1
+- rebuilt with ssl2 disabled
+
+* Mon Jun 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-2.1.ssl2allowed.1
+- Add option to disable SSL2, SSL2 enabled by default
+
 * Mon May 12 2014 Jaromir Capik <jcapik@redhat.com> - 3.16.1-2
 - Replacing ppc64 and ppc64le with the power64 macro
 - Related: Bug 1052545 - Trivial change for ppc64le in nss spec

@@ -1,22 +1,26 @@
 diff -up nss/tests/all.sh.crypto nss/tests/all.sh
---- nss/tests/all.sh.crypto	2013-05-28 14:43:24.000000000 -0700
-+++ nss/tests/all.sh	2013-06-13 12:14:12.741082184 -0700
-@@ -299,9 +299,10 @@ fi
+--- nss/tests/all.sh.crypto	2013-11-09 09:23:30.000000000 -0800
++++ nss/tests/all.sh	2013-11-27 14:20:57.918671042 -0800
+@@ -299,9 +299,14 @@ fi
  # created, we check for modutil to know whether the build
  # is complete. If a new file is created after that, the 
  # following test for modutil should check for that instead.
 +# Except when building softoken only where shlibsign is the last one built.
-+export LAST_BUILT=[ ${NSS_BUILD_SOFTOKEN_ONLY} -eq "1" ] && shlibsign || modutil
++if [ ${NSS_BUILD_SOFTOKEN_ONLY} -eq "1" ]; then
++  export LAST_BUILT=shlibsign
++else
++  export LAST_BUILT=modutil
++fi
  
 -if [ ! -f ${DIST}/${OBJDIR}/bin/modutil -a  \
 -     ! -f ${DIST}/${OBJDIR}/bin/modutil.exe ]; then
-+if [ ! -f ${DIST}/${OBJDIR}/bin/${LAST_BUILT}${PROG_SUFFIX} -a ]; then
++if [ ! -f ${DIST}/${OBJDIR}/bin/${LAST_BUILT}${PROG_SUFFIX} ]; then
      echo "Build Incomplete. Aborting test." >> ${LOGFILE}
      html_head "Testing Initialization"
      Exit "Checking for build"
 diff -up nss/tests/cipher/cipher.sh.crypto nss/tests/cipher/cipher.sh
---- nss/tests/cipher/cipher.sh.crypto	2013-05-28 14:43:24.000000000 -0700
-+++ nss/tests/cipher/cipher.sh	2013-06-13 11:58:00.956064976 -0700
+--- nss/tests/cipher/cipher.sh.crypto	2013-11-09 09:23:30.000000000 -0800
++++ nss/tests/cipher/cipher.sh	2013-11-27 14:18:29.817581578 -0800
 @@ -129,6 +129,16 @@ if [ ! -x ${DIST}/${OBJDIR}/bin/bltest${
      return 0
  fi
