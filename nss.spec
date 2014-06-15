@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.1
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -57,7 +57,7 @@ Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
-Source12:         %{name}-pem-20140125.tar.bz2
+Source12:         %{name}-pem-20140615.tar.bz2
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -750,6 +750,9 @@ fi
 
 
 %changelog
+* Sun Jun 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-5
+- rebuilt with latest changes from pem upstream
+
 * Sun Jun 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-4
 - Remove unwanted source directories at end of %%prep so it truly does it
 - Skip the cipher suite already run as part of the nss-softokn build
