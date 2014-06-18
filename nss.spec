@@ -139,6 +139,8 @@ Source203:          nss-softokn-config.in
 
 Patch211:           nss-softokn-allow-level1.patch
 
+# Upstrem: https://bugzilla.mozilla.org/show_bug.cgi?id=1020395
+Patch98: determineLastFileBuilt.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -309,8 +311,11 @@ low level services.
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
-%patch48 -p0 -b .crypto
-%patch49 -p0 -b .skipthem
+pushd nss
+%patch98 -p1 -b .lastbuild
+%patch48 -p1 -b .crypto
+%patch49 -p1 -b .skipthem
+popd
 %patch55 -p0 -b .852023
 pushd nss
 %patch56 -p1 -b .1026677
