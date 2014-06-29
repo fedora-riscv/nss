@@ -1,6 +1,6 @@
-%global nspr_version 4.10.5
-%global nss_util_version 3.16.1
-%global nss_softokn_version 3.16.1
+%global nspr_version 4.10.6
+%global nss_util_version 3.16.2
+%global nss_softokn_version 3.16.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.1
-Release:          4%{?dist}
+Version:          3.16.2
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -82,8 +82,6 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
-Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 # This patch uses the gcc-iquote dir option documented at
@@ -178,7 +176,6 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
-%patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 
@@ -750,6 +747,9 @@ fi
 
 
 %changelog
+* Sun Jun 29 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
+- Update to nss-3.16.2
+
 * Sun Jun 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-4
 - Remove unwanted source directories at end of %%prep so it truly does it
 - Skip the cipher suite already run as part of the nss-softokn build
