@@ -1,6 +1,6 @@
-%global nspr_version 4.10.5
-%global nss_util_version 3.16.1
-%global nss_softokn_version 3.16.1
+%global nspr_version 4.10.6
+%global nss_util_version 3.16.2
+%global nss_softokn_version 3.16.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.1
+Version:          3.16.2
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -82,8 +82,6 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
-Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 # This patch uses the gcc-iquote dir option documented at
@@ -178,7 +176,6 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
-%patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 
@@ -198,6 +195,16 @@ done
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
 
+##### Remove util/freebl/softoken and low level tools
+######## Remove freebl, softoken and util
+%{__rm} -rf ./nss/lib/freebl
+%{__rm} -rf ./nss/lib/softoken
+%{__rm} -rf ./nss/lib/util
+######## Remove nss-softokn test tools as we already ran
+# the cipher test suite as part of the nss-softokn build
+%{__rm} -rf ./nss/cmd/bltest
+%{__rm} -rf ./nss/cmd/fipstest
+%{__rm} -rf ./nss/cmd/rsaperf_low
 
 %build
 
@@ -262,17 +269,6 @@ export USE_64
 # uncomment if the iquote patch is activated
 export IN_TREE_FREEBL_HEADERS_FIRST=1
 
-##### phase 1: remove util/freebl/softoken and low level tools
-#
-######## Remove freebl, softoken and util
-%{__rm} -rf ./mozilla/security/nss/lib/freebl
-%{__rm} -rf ./mozilla/security/nss/lib/softoken
-%{__rm} -rf ./mozilla/security/nss/lib/util
-######## Remove nss-softokn test tools
-%{__rm} -rf ./mozilla/security/nss/cmd/bltest
-%{__rm} -rf ./mozilla/security/nss/cmd/fipstest
-%{__rm} -rf ./mozilla/security/nss/cmd/rsaperf_low
-
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc with more than suite-b
 NSS_ECC_MORE_THAN_SUITE_B=1
@@ -289,7 +285,7 @@ pushd ./nss
 %{__make} clean_docs build_docs
 popd
 
-# and copy them to the dist directory
+# and copy them to the dist directory for %%install to find them
 %{__mkdir_p} ./dist/docs/nroff
 %{__cp} ./nss/doc/nroff/* ./dist/docs/nroff
 
@@ -353,7 +349,7 @@ done
  
 
 %check
-if [ $DISABLETEST -eq 1 ]; then
+if [ ${DISABLETEST:-0} -eq 1 ]; then
   echo "testing disabled"
   exit 0
 fi
@@ -418,7 +414,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -441,7 +437,7 @@ killall $RANDSERV || :
 TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
   echo "okay: test suite detected no failures"
-else 
+else
   if [ ${GREP_EXIT_STATUS:-0} -eq 0 ]; then
     # while a situation in which grep return status is 0 and it doesn't output
     # anything shouldn't happen, set the default to something that is
@@ -751,6 +747,12 @@ fi
 
 
 %changelog
+* Mon Jun 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
+- Update to nss-3.16.2
+- Remove unwanted source directories at end of %%prep so it truly removes them
+- Skip the cipher suite already run as part of the nss-softokn build
+- Resolves: Bug 1114319 - nss-3.16.2 is available
+
 * Tue May 06 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-1
 - Update to nss-3.16.1
 - Update the iquote patch on account of the rebase
