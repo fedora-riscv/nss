@@ -10,16 +10,16 @@ diff -up nss/lib/ssl/sslsock.c.cbcrandomivoff nss/lib/ssl/sslsock.c
      PR_FALSE,   /* enableOCSPStapling */
      PR_TRUE,    /* enableNPN          */
      PR_FALSE    /* enableALPN         */
-@@ -2880,9 +2880,9 @@ ssl_SetDefaultsFromEnvironment(void)
- 	                PR_TRUE));
- 	}
- 	ev = getenv("NSS_SSL_CBC_RANDOM_IV");
--	if (ev && ev[0] == '0') {
--	    ssl_defaults.cbcRandomIV = PR_FALSE;
--	    SSL_TRACE(("SSL: cbcRandomIV set to 0"));
-+	if (ev && ev[0] == '1') {
-+	    ssl_defaults.cbcRandomIV = PR_TRUE;
-+	    SSL_TRACE(("SSL: cbcRandomIV set to 1"));
- 	}
+@@ -2885,9 +2885,9 @@ ssl_SetDefaultsFromEnvironment(void)
+                         PR_TRUE));
+         }
+         ev = getenv("NSS_SSL_CBC_RANDOM_IV");
+-        if (ev && ev[0] == '0') {
+-            ssl_defaults.cbcRandomIV = PR_FALSE;
+-            SSL_TRACE(("SSL: cbcRandomIV set to 0"));
++        if (ev && ev[0] == '1') {
++            ssl_defaults.cbcRandomIV = PR_TRUE;
++            SSL_TRACE(("SSL: cbcRandomIV set to 1"));
+         }
      }
  #endif /* NSS_HAVE_GETENV */
