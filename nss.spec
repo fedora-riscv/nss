@@ -1,6 +1,6 @@
-%global nspr_version 4.10.5
-%global nss_util_version 3.16.1
-%global nss_softokn_version 3.16.1
+%global nspr_version 4.10.6
+%global nss_util_version 3.16.2
+%global nss_softokn_version 3.16.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.1
-Release:          2.1%{?dist}.ssl2disabled.1
+Version:          3.16.2
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -82,8 +82,6 @@ Patch25:          nsspem-use-system-freebl.patch
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=902171
-Patch48:          nss-versus-softoken-tests.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
 # This patch uses the gcc-iquote dir option documented at
@@ -96,8 +94,6 @@ Patch50:          iquote.patch
 
 Patch51:          disable-sslv2-libssl.patch
 Patch52:          disable-sslv2-tests.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1007126
-Patch70: manfixes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,12 +179,10 @@ low level services.
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
-%patch48 -p0 -b .crypto
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 %patch51 -p0 -b .disableSSL2
 %patch52 -p0 -b .disableSSL2
-%patch70 -p0 -b .cleanup
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -206,6 +200,16 @@ done
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
 
+##### Remove util/freebl/softoken and low level tools
+######## Remove freebl, softoken and util
+%{__rm} -rf ./nss/lib/freebl
+%{__rm} -rf ./nss/lib/softoken
+%{__rm} -rf ./nss/lib/util
+######## Remove nss-softokn test tools as we already ran
+# the cipher test suite as part of the nss-softokn build
+%{__rm} -rf ./nss/cmd/bltest
+%{__rm} -rf ./nss/cmd/fipstest
+%{__rm} -rf ./nss/cmd/rsaperf_low
 
 %build
 
@@ -273,17 +277,6 @@ export USE_64
 
 # uncomment if the iquote patch is activated
 export IN_TREE_FREEBL_HEADERS_FIRST=1
-
-##### phase 1: remove util/freebl/softoken and low level tools
-#
-######## Remove freebl, softoken and util
-%{__rm} -rf ./mozilla/security/nss/lib/freebl
-%{__rm} -rf ./mozilla/security/nss/lib/softoken
-%{__rm} -rf ./mozilla/security/nss/lib/util
-######## Remove nss-softokn test tools
-%{__rm} -rf ./mozilla/security/nss/cmd/bltest
-%{__rm} -rf ./mozilla/security/nss/cmd/fipstest
-%{__rm} -rf ./mozilla/security/nss/cmd/rsaperf_low
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc with more than suite-b
@@ -436,7 +429,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="cipher libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -769,11 +762,18 @@ fi
 
 
 %changelog
-* Mon Jun 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-2.1.ssl2disabled.1
+* Thu Jul 10 2014 Elio Maldonado <emaldona@redhat.com> -3.16.1-2
 - rebuilt with ssl2 disabled
 
-* Mon Jun 02 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-2.1.ssl2allowed.1
-- Add option to disable SSL2, SSL2 enabled by default
+* Sun Jun 29 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
+- Update to nss-3.16.2
+
+* Sun Jun 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.1-4
+- Remove unwanted source directories at end of %%prep so it truly does it
+- Skip the cipher suite already run as part of the nss-softokn build
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.16.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
 * Mon May 12 2014 Jaromir Capik <jcapik@redhat.com> - 3.16.1-2
 - Replacing ppc64 and ppc64le with the power64 macro
