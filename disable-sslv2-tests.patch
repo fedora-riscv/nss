@@ -1,0 +1,54 @@
+diff -up ./nss/tests/chains/chains.sh.disableSSL2 ./nss/tests/chains/chains.sh
+--- ./nss/tests/chains/chains.sh.disableSSL2	2014-06-24 13:45:27.000000000 -0700
++++ ./nss/tests/chains/chains.sh	2014-07-12 12:38:36.407821766 -0700
+@@ -40,7 +40,11 @@ is_httpserv_alive()
+   fi
+ 
+   echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
++  if [[ "${NSS_NO_SSL2}" = "1" ]]; then
++  echo "skipping kill because SSL2 was disabled"
++  else
+   kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - httpserv process not detectable"
++  fi
+ 
+   echo "httpserv with PID ${PID} found at `date`"
+ }
+@@ -59,7 +63,11 @@ wait_for_httpserv()
+       echo "tstclnt -p ${NSS_AIA_PORT} -h ${HOSTADDR} -q -v"
+       ${BINDIR}/tstclnt -p ${NSS_AIA_PORT} -h ${HOSTADDR} -q -v
+       if [ $? -ne 0 ]; then
+-          html_failed "Waiting for Server"
++          if [[ "${NSS_NO_SSL2}" = "1" ]]; then
++              html_passed "Waiting for Server is supposed to fail"
++          else
++              html_failed "Waiting for Server"
++          fi
+       fi
+   fi
+   is_httpserv_alive
+             TESTNAME="Test that OCSP server is reachable"
+             check_ocsp ${VALUE}
+             if [ $? -ne 0 ]; then
++                if [[ "${NSS_NO_SSL2}" = "1" ]]; then
++                html_passed "$TESTNAME"
++                else
+                 html_failed "$TESTNAME"
++                fi
+                 break;
+             else
+                 html_passed "$TESTNAME"
+diff -up ./nss/tests/ssl/ssl.sh.disableSSL2 ./nss/tests/ssl/ssl.sh
+--- ./nss/tests/ssl/ssl.sh.disableSSL2	2014-06-24 13:45:27.000000000 -0700
++++ ./nss/tests/ssl/ssl.sh	2014-07-12 12:37:25.476697212 -0700
+@@ -278,6 +278,11 @@ ssl_cov()
+       echo "${testname}" | grep "SSL2" > /dev/null
+       SSL2=$?
+ 
++      # skip export and ssl2 tests when build has disabled SSL2
++      if [[ "${NSS_NO_SSL2}" = "1" ]] && [[ -n ${EXP} -o -n ${SSL2} ]] ; then
++          continue
++      fi
++
+       if [ "${SSL2}" -eq 0 ] ; then
+           # We cannot use asynchronous cert verification with SSL2
+           SSL2_FLAGS=-O

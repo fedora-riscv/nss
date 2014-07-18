@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,6 +91,8 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
+Patch52:          disable-sslv2-libssl.patch
+Patch53:          disable-sslv2-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -178,6 +180,8 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+%patch52 -p0 -b .disableSSL2
+%patch53 -p0 -b .disableSSL2
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -207,6 +211,8 @@ done
 %{__rm} -rf ./nss/cmd/rsaperf_low
 
 %build
+
+export NSS_NO_SSL2=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -355,6 +361,10 @@ if [ ${DISABLETEST:-0} -eq 1 ]; then
 fi
 
 # Begin -- copied from the build section
+
+# inform the ssl test scripts that SSL2 is disabled
+export NSS_NO_SSL2=1
+
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -537,7 +547,7 @@ for f in nss-config setup-nsssysinit; do
 done
 # Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
-   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+  install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
@@ -747,6 +757,9 @@ fi
 
 
 %changelog
+* Fri Jul 18 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-2
+- Disable support for ssl2
+
 * Sun Jun 29 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
 - Update to nss-3.16.2
 

@@ -1,0 +1,72 @@
+diff -up ./nss/lib/ssl/config.mk.disableSSL2 ./nss/lib/ssl/config.mk
+--- ./nss/lib/ssl/config.mk.disableSSL2	2014-06-24 13:45:27.000000000 -0700
++++ ./nss/lib/ssl/config.mk	2014-07-12 12:32:06.011646588 -0700
+@@ -7,6 +7,10 @@ ifdef NISCC_TEST
+ DEFINES += -DNISCC_TEST
+ endif
+ 
++ifdef NSS_NO_SSL2
++DEFINES += -DNSS_NO_SSL2
++endif
++
+ ifdef NSS_NO_PKCS11_BYPASS
+ DEFINES += -DNO_PKCS11_BYPASS
+ else
+diff -up ./nss/lib/ssl/sslsock.c.disableSSL2 ./nss/lib/ssl/sslsock.c
+--- ./nss/lib/ssl/sslsock.c.disableSSL2	2014-07-12 12:32:05.970645943 -0700
++++ ./nss/lib/ssl/sslsock.c	2014-07-12 12:36:46.096072901 -0700
+@@ -653,6 +653,12 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+         break;
+ 
+       case SSL_ENABLE_SSL2:
++#ifdef NSS_NO_SSL2
++        if (on) {
++            PORT_SetError(SSL_ERROR_SSL2_DISABLED);
++            rv = SECFailure; /* not allowed */
++        }
++#else
+         if (IS_DTLS(ss)) {
+             if (on) {
+                 PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -670,6 +676,7 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+             ss->cipherSpecs     = NULL;
+             ss->sizeCipherSpecs = 0;
+         }
++#endif /* NSS_NO_SSL2 */
+         break;
+ 
+       case SSL_NO_CACHE:
+@@ -685,6 +692,12 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+         break;
+ 
+       case SSL_V2_COMPATIBLE_HELLO:
++#ifdef NSS_NO_SSL2
++        if (on) {
++            PORT_SetError(SSL_ERROR_SSL2_DISABLED);
++            rv = SECFailure; /* not allowed */
++        }
++#else
+         if (IS_DTLS(ss)) {
+             if (on) {
+                 PORT_SetError(SEC_ERROR_INVALID_ARGS);
+@@ -696,6 +709,7 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+         if (!on) {
+             ss->opt.enableSSL2    = on;
+         }
++#endif /* NSS_NO_SSL2 */
+         break;
+ 
+       case SSL_ROLLBACK_DETECTION:
+@@ -1146,7 +1160,12 @@ SSL_CipherPolicySet(PRInt32 which, PRInt
+     if (ssl_IsRemovedCipherSuite(which)) {
+         rv = SECSuccess;
+     } else if (SSL_IS_SSL2_CIPHER(which)) {
++#ifdef NSS_NO_SSL2
++        PORT_SetError(SSL_ERROR_SSL2_DISABLED);
++        rv = SECFailure; /* not allowed */
++#else
+         rv = ssl2_SetPolicy(which, policy);
++#endif
+     } else {
+         rv = ssl3_SetPolicy((ssl3CipherSuite)which, policy);
+     }
