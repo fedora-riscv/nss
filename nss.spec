@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -607,6 +607,8 @@ fi
 
 %files
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -747,6 +749,9 @@ fi
 
 
 %changelog
+* Fri Jul 18 2014 Tom Callaway <spot@fedoraproject.org> - 3.16.2-2
+- fix license handling
+
 * Sun Jun 29 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
 - Update to nss-3.16.2
 
