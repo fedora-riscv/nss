@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.16.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -747,6 +747,9 @@ fi
 
 
 %changelog
+* Wed Jul 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-2
+- Replace expired PayPal test cert with current one to prevent build failure
+
 * Mon Jun 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
 - Update to nss-3.16.2
 - Remove unwanted source directories at end of %%prep so it truly removes them
