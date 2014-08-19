@@ -1,6 +1,6 @@
-%global nspr_version 4.10.6
-%global nss_util_version 3.16.2
-%global nss_softokn_version 3.16.2
+%global nspr_version 4.10.7
+%global nss_util_version 3.17.0
+%global nss_softokn_version 3.17.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.2
-Release:          4%{?dist}
+Version:          3.17.0
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -749,6 +749,9 @@ fi
 
 
 %changelog
+* Tue Aug 19 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
+- Update to nss-3.17.0
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.16.2-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
