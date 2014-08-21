@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.0
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -749,6 +749,9 @@ fi
 
 
 %changelog
+* Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 3.17.0-2
+- Rebuild for rpm bug 1131960
+
 * Tue Aug 19 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
 - Update to nss-3.17.0
 
