@@ -1,6 +1,6 @@
-%global nspr_version 4.10.6
-%global nss_util_version 3.16.2
-%global nss_softokn_version 3.16.2
+%global nspr_version 4.10.7
+%global nss_util_version 3.17.0
+%global nss_softokn_version 3.17.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.2
-Release:          2%{?dist}
+Version:          3.17.0
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -611,6 +611,8 @@ fi
 
 %files
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -751,6 +753,9 @@ fi
 
 
 %changelog
+* Fri Aug 22 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
+- Update to nss-3.17.0
+
 * Wed Jul 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-2
 - Replace expired PayPal test cert with current one to prevent build failure
 
