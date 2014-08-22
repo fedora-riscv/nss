@@ -1,11 +1,11 @@
-%global nspr_version 4.10.6
-%global nss_util_version 3.16.2
-%global nss_softokn_version 3.16.2
+%global nspr_version 4.10.7
+%global nss_util_version 3.17.0
+%global nss_softokn_version 3.17.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches ppc64 sparc64 x86_64 ppc64le
+%define multilib_arches %{power64} sparc64 x86_64
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.2
-Release:          2%{?dist}
+Version:          3.17.0
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -261,7 +261,7 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
+%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -361,7 +361,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 ppc64 ia64 s390x sparc64 aarch64 ppc64le
+%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
 USE_64=1
 export USE_64
 %endif
@@ -607,6 +607,8 @@ fi
 
 %files
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -747,6 +749,9 @@ fi
 
 
 %changelog
+* Fri Aug 22 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
+- Update to nss-3.17.0
+
 * Wed Jul 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-2
 - Replace expired PayPal test cert with current one to prevent build failure
 
