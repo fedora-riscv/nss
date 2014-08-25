@@ -1,6 +1,6 @@
 diff -up nss/lib/ssl/sslsock.c.cbcrandomivoff nss/lib/ssl/sslsock.c
---- nss/lib/ssl/sslsock.c.cbcrandomivoff	2014-03-02 14:42:44.392782189 -0800
-+++ nss/lib/ssl/sslsock.c	2014-03-02 14:48:34.858494718 -0800
+--- nss/lib/ssl/sslsock.c.cbcrandomivoff	2014-08-25 11:43:06.706511447 -0700
++++ nss/lib/ssl/sslsock.c	2014-08-25 11:45:49.931041264 -0700
 @@ -77,7 +77,7 @@ static sslOptions ssl_defaults = {
      3,          /* enableRenegotiation (default: transitional) */
      PR_FALSE,   /* requireSafeNegotiation */
@@ -9,8 +9,8 @@ diff -up nss/lib/ssl/sslsock.c.cbcrandomivoff nss/lib/ssl/sslsock.c
 +    PR_FALSE,   /* cbcRandomIV       */ /* defaults to off for compatibility */
      PR_FALSE,   /* enableOCSPStapling */
      PR_TRUE,    /* enableNPN          */
-     PR_FALSE    /* enableALPN         */
-@@ -2885,9 +2885,9 @@ ssl_SetDefaultsFromEnvironment(void)
+     PR_FALSE,   /* enableALPN         */
+@@ -2899,9 +2899,9 @@ ssl_SetDefaultsFromEnvironment(void)
                          PR_TRUE));
          }
          ev = getenv("NSS_SSL_CBC_RANDOM_IV");
