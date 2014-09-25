@@ -1,6 +1,6 @@
 %global nspr_version 4.10.7
-%global nss_util_version 3.17.0
-%global nss_softokn_version 3.17.0
+%global nss_util_version 3.17.1
+%global nss_softokn_version 3.17.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.17.0
+Version:          3.17.1
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -427,7 +427,13 @@ nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits c
 # global nss_ssl_tests "normal_fips"
 # global nss_ssl_run "cov auth"
 
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
+
+if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
+  HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+else
+  echo "skipped test suite"
+fi
 
 popd
 
@@ -438,7 +444,13 @@ popd
 # GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
-TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
+  TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+else
+  TEST_FAILURES=0
+  GREP_EXIT_STATUS=1
+fi
+
 if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
   echo "okay: test suite detected no failures"
 else
@@ -753,6 +765,10 @@ fi
 
 
 %changelog
+* Wed Sep 24 2014 Kai Engert <kaie@redhat.com> - 3.17.1-1
+- Update to nss-3.17.1
+- Add a mechanism to skip test suite execution during development work
+
 * Fri Aug 22 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
 - Update to nss-3.17.0
 
