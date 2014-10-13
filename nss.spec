@@ -1,6 +1,6 @@
 %global nspr_version 4.10.7
-%global nss_util_version 3.17.1
-%global nss_softokn_version 3.17.1
+%global nss_util_version 3.17.2
+%global nss_softokn_version 3.17.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.17.1
+Version:          3.17.2
 Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -761,6 +761,9 @@ fi
 
 
 %changelog
+* Mon Oct 13 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-1
+- Update to nss-3.17.2
+
 * Wed Sep 24 2014 Kai Engert <kaie@redhat.com> - 3.17.1-1
 - Update to nss-3.17.1
 - Add a mechanism to skip test suite execution during development work
