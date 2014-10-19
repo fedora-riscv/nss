@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.2
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,6 +91,8 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1083900
+Patch51:          tls12.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -178,6 +180,9 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+pushd nss
+%patch51 -p1 -b .994599
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -761,6 +766,9 @@ fi
 
 
 %changelog
+* Thu Oct 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-2
+- Resolves: Bug 994599 - Enable TLS 1.2 by default
+
 * Sun Oct 12 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-1
 - Update to nss-3.17.2
 
