@@ -2,7 +2,7 @@
 %global nss_util_version 3.17.2
 %global nss_softokn_version 3.17.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.2
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -485,6 +485,9 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%if %{defined fedora}
+%{__mkdir_p} $RPM_BUILD_ROOT/usr/share/doc/nss-tools
+%endif
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
@@ -556,6 +559,12 @@ done
 for f in "%{allTools}"; do 
    install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
+%if %{defined rhel}
+install -c -m 644 ./dist/doc/nroff/pp.1 $RPM_BUILD_ROOT%{_mandir}/man1/pp.1
+%else
+install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT/usr/share/doc/nss-tools/pp.1
+%endif
+
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
@@ -686,7 +695,11 @@ fi
 %attr(0644,root,root) %doc /usr/share/man/man1/signver.1.gz
 # unsupported tools
 %attr(0644,root,root) %doc /usr/share/man/man1/derdump.1.gz
+%if %{defined rhel}
 %attr(0644,root,root) %doc /usr/share/man/man1/pp.1.gz
+%else
+%attr(0644,root,root) %doc /usr/share/doc/nss-tools/pp.1
+%endif
 %attr(0644,root,root) %doc /usr/share/man/man1/ssltap.1.gz
 %attr(0644,root,root) %doc /usr/share/man/man1/vfychain.1.gz
 %attr(0644,root,root) %doc /usr/share/man/man1/vfyserv.1.gz
@@ -766,6 +779,9 @@ fi
 
 
 %changelog
+* Sun Nov 23 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-3
+- Resolves: Bug 987189 - nss-tools RPM conflicts with perl-PAR-Packer
+
 * Thu Oct 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-2
 - Resolves: Bug 994599 - Enable TLS 1.2 by default
 
