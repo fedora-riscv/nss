@@ -1,6 +1,6 @@
 %global nspr_version 4.10.7
-%global nss_util_version 3.17.2
-%global nss_softokn_version 3.17.2
+%global nss_util_version 3.17.3
+%global nss_softokn_version 3.17.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.17.2
-Release:          2%{?dist}
+Version:          3.17.3
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -766,6 +766,10 @@ fi
 
 
 %changelog
+* Fri Dec 05 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-1
+- Update to nss-3.17.3
+- Resolves: Bug 1171012 - nss-3.17.3 is available
+
 * Thu Oct 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-2
 - Resolves: Bug 994599 - Enable TLS 1.2 by default
 
