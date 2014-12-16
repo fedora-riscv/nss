@@ -2,7 +2,7 @@
 %global nss_util_version 3.17.3
 %global nss_softokn_version 3.17.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64
@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.3
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -485,6 +485,12 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%if %{defined rhel}
+# not needed for rhel and its derivatives only fedora
+%else
+# because of the pp.1 conflict with perl-PAR-Packer
+%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools
+%endif
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
@@ -556,6 +562,12 @@ done
 for f in "%{allTools}"; do 
    install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
+%if %{defined rhel}
+install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_mandir}/man1/pp.1
+%else
+install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools/pp.1
+%endif
+
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
@@ -639,12 +651,12 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/cert8.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/key3.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/secmod.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/key4.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -652,7 +664,7 @@ fi
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
-%attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/setup-nsssysinit.1.gz
 
 %files tools
 %defattr(-,root,root)
@@ -677,26 +689,30 @@ fi
 %{unsupported_tools_directory}/vfychain
 # instead of %%{_mandir}/man*/* let's list them explicitely
 # supported tools
-%attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/crlutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/modutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/pk12util.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/signtool.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/signver.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/certutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/cmsutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
 # unsupported tools
-%attr(0644,root,root) %doc /usr/share/man/man1/derdump.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/pp.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/ssltap.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/vfychain.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/vfyserv.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
+%if %{defined rhel}
+%attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
+%else
+%attr(0644,root,root) %doc %{_datadir}/doc/nss-tools/pp.1
+%endif
+%attr(0644,root,root) %doc %{_mandir}/man1/ssltap.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/vfychain.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/vfyserv.1.gz
 
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
-%attr(0644,root,root) %doc /usr/share/man/man1/nss-config.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/nss-config.1.gz
 
 %dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
@@ -766,6 +782,11 @@ fi
 
 
 %changelog
+* Mon Dec 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-2
+- Resolves: Bug 987189 - nss-tools RPM conflicts with perl-PAR-Packer
+- Install pp man page in %%{_datadir}/doc/nss-tools/pp.1
+- Use %%{_mandir} instead of /usr/share/man as more generic
+
 * Sat Dec 06 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-1
 - Update to nss-3.17.3
 - Resolves: Bug 1171012 - nss-3.17.3 is available
