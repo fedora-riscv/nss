@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.3
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -701,6 +701,7 @@ fi
 %if %{defined rhel}
 %attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
 %else
+%dir %{_datadir}/doc/nss-tools
 %attr(0644,root,root) %doc %{_datadir}/doc/nss-tools/pp.1
 %endif
 %attr(0644,root,root) %doc %{_mandir}/man1/ssltap.1.gz
@@ -782,6 +783,9 @@ fi
 
 
 %changelog
+* Sat Jan 24 2015 Ville Skyttä <ville.skytta@iki.fi> - 3.17.3-4
+- Own the %%{_datadir}/doc/nss-tools dir
+
 * Tue Dec 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-3
 - Resolves: Bug 987189 - nss-tools RPM conflicts with perl-PAR-Packer
 - Install pp man page in %%{_datadir}/doc/nss-tools/pp.1
