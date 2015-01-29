@@ -1,6 +1,6 @@
 %global nspr_version 4.10.7
-%global nss_util_version 3.17.3
-%global nss_softokn_version 3.17.3
+%global nss_util_version 3.17.4
+%global nss_softokn_version 3.17.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.17.3
-Release:          4%{?dist}
+Version:          3.17.4
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -74,7 +74,6 @@ Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch16:          nss-539183.patch
-Patch18:          nss-646045.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
@@ -173,7 +172,6 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
-%patch18 -p0 -b .646045
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
@@ -783,6 +781,9 @@ fi
 
 
 %changelog
+* Wed Jan 28 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-1
+- Update to nss-3.17.4
+
 * Sat Jan 24 2015 Ville Skyttä <ville.skytta@iki.fi> - 3.17.3-4
 - Own the %%{_datadir}/doc/nss-tools dir
 
