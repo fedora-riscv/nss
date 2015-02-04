@@ -1,8 +1,8 @@
-%global nspr_version 4.10.6
-%global nss_util_version 3.16.2
-%global nss_softokn_version 3.16.2
+%global nspr_version 4.10.7
+%global nss_util_version 3.17.4
+%global nss_softokn_version 3.17.4
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util pp signtool signver ssltap vfychain vfyserv"
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.16.2
+Version:          3.17.4
 Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
@@ -74,7 +74,6 @@ Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 Patch6:           nss-enable-pem.patch
 Patch16:          nss-539183.patch
-Patch18:          nss-646045.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
 Patch25:          nsspem-use-system-freebl.patch
@@ -91,8 +90,15 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-Patch52:          disable-sslv2-libssl.patch
-Patch53:          disable-sslv2-tests.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1083900
+Patch51:          tls12.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1057463
+# Implementing TLS 1.3 is a tracking bug and it's possible that
+# it may necessitate disabling SSL2 support. SSL2 support has been
+# disabled downstream in Red Hat Enterprise Linux since RHEL-7.0
+Patch52:          disableSSL2.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1128367
+Patch92:          scripts-syntax-errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -173,15 +179,17 @@ low level services.
 %patch3 -p0 -b .transitional
 %patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
-%patch18 -p0 -b .646045
 # link pem against buildroot's freebl, essential when mixing and matching
 %patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-%patch52 -p0 -b .disableSSL2
-%patch53 -p0 -b .disableSSL2
+pushd nss
+%patch51 -p1 -b .994599
+%patch52 -p1 -b .disableSSL2
+%patch92 -p1 -b .syntax
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -433,7 +441,13 @@ nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits c
 # global nss_ssl_tests "normal_fips"
 # global nss_ssl_run "cov auth"
 
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
+
+if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
+  HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+else
+  echo "skipped test suite"
+fi
 
 popd
 
@@ -444,7 +458,13 @@ popd
 # GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
-TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
+  TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+else
+  TEST_FAILURES=0
+  GREP_EXIT_STATUS=1
+fi
+
 if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
   echo "okay: test suite detected no failures"
 else
@@ -478,6 +498,12 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%if %{defined rhel}
+# not needed for rhel and its derivatives only fedora
+%else
+# because of the pp.1 conflict with perl-PAR-Packer
+%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools
+%endif
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
@@ -549,6 +575,12 @@ done
 for f in "%{allTools}"; do 
   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
+%if %{defined rhel}
+install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_mandir}/man1/pp.1
+%else
+install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools/pp.1
+%endif
+
 # Copy the man pages for the configuration files
 for f in pkcs11.txt; do 
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
@@ -617,6 +649,8 @@ fi
 
 %files
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
@@ -630,12 +664,12 @@ fi
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc /usr/share/man/man5/cert8.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key3.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/secmod.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/key4.db.5.gz
-%attr(0644,root,root) %doc /usr/share/man/man5/pkcs11.txt.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/cert8.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/key3.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/secmod.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/cert9.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/key4.db.5.gz
+%attr(0644,root,root) %doc %{_mandir}/man5/pkcs11.txt.5.gz
 
 %files sysinit
 %defattr(-,root,root)
@@ -643,7 +677,7 @@ fi
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
-%attr(0644,root,root) %doc /usr/share/man/man1/setup-nsssysinit.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/setup-nsssysinit.1.gz
 
 %files tools
 %defattr(-,root,root)
@@ -668,26 +702,31 @@ fi
 %{unsupported_tools_directory}/vfychain
 # instead of %%{_mandir}/man*/* let's list them explicitely
 # supported tools
-%attr(0644,root,root) %doc /usr/share/man/man1/certutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/cmsutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/crlutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/modutil.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/pk12util.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/signtool.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/signver.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/certutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/cmsutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
 # unsupported tools
-%attr(0644,root,root) %doc /usr/share/man/man1/derdump.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/pp.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/ssltap.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/vfychain.1.gz
-%attr(0644,root,root) %doc /usr/share/man/man1/vfyserv.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
+%if %{defined rhel}
+%attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
+%else
+%dir %{_datadir}/doc/nss-tools
+%attr(0644,root,root) %doc %{_datadir}/doc/nss-tools/pp.1
+%endif
+%attr(0644,root,root) %doc %{_mandir}/man1/ssltap.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/vfychain.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/vfyserv.1.gz
 
 %files devel
 %defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
-%attr(0644,root,root) %doc /usr/share/man/man1/nss-config.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/nss-config.1.gz
 
 %dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
@@ -757,8 +796,52 @@ fi
 
 
 %changelog
-* Fri Jul 18 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-2
-- Disable support for ssl2
+* Wed Feb 04 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-2
+- Disable SSL2 support and fix syntax errors in various shell scripts
+
+* Wed Jan 28 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-1
+- Update to nss-3.17.4
+
+* Sat Jan 24 2015 Ville Skyttä <ville.skytta@iki.fi> - 3.17.3-4
+- Own the %%{_datadir}/doc/nss-tools dir
+
+* Tue Dec 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-3
+- Resolves: Bug 987189 - nss-tools RPM conflicts with perl-PAR-Packer
+- Install pp man page in %%{_datadir}/doc/nss-tools/pp.1
+- Use %%{_mandir} instead of /usr/share/man as more generic
+
+* Mon Dec 15 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-2
+- Install pp man page in alternative location
+- Resolves: Bug 987189 - nss-tools RPM conflicts with perl-PAR-Packer
+
+* Fri Dec 05 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.3-1
+- Update to nss-3.17.3
+- Resolves: Bug 1171012 - nss-3.17.3 is available
+
+* Thu Oct 16 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-2
+- Resolves: Bug 994599 - Enable TLS 1.2 by default
+
+* Sun Oct 12 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.2-1
+- Update to nss-3.17.2
+
+* Wed Sep 24 2014 Kai Engert <kaie@redhat.com> - 3.17.1-1
+- Update to nss-3.17.1
+- Add a mechanism to skip test suite execution during development work
+
+* Thu Aug 21 2014 Kevin Fenzi <kevin@scrye.com> - 3.17.0-2
+- Rebuild for rpm bug 1131960
+
+* Tue Aug 19 2014 Elio Maldonado <emaldona@redhat.com> - 3.17.0-1
+- Update to nss-3.17.0
+
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.16.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Wed Jul 30 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-3
+- Replace expired PayPal test cert with current one to prevent build failure
+
+* Fri Jul 18 2014 Tom Callaway <spot@fedoraproject.org> - 3.16.2-2
+- fix license handling
 
 * Sun Jun 29 2014 Elio Maldonado <emaldona@redhat.com> - 3.16.2-1
 - Update to nss-3.16.2
