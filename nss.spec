@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.4
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -92,6 +92,11 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1083900
 Patch51:          tls12.patch
+# SSL2 support has been disabled downstream in RHEL since RHEL-7.0
+Patch52:          disableSSL2libssl.patch
+Patch53:          disableSSL2tests.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1128367
+Patch92:          scripts-syntax-errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -180,6 +185,9 @@ low level services.
 %patch50 -p0 -b .iquote
 pushd nss
 %patch51 -p1 -b .994599
+%patch52 -p1 -b .disableSSL2libssl
+%patch53 -p1 -b .disableSSL2tests
+%patch92 -p1 -b .syntax
 popd
 
 #########################################################
@@ -210,6 +218,8 @@ done
 %{__rm} -rf ./nss/cmd/rsaperf_low
 
 %build
+
+export NSS_NO_SSL2=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -358,6 +368,10 @@ if [ ${DISABLETEST:-0} -eq 1 ]; then
 fi
 
 # Begin -- copied from the build section
+
+# inform the ssl test scripts that SSL2 is disabled
+export NSS_NO_SSL2=1
+
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -781,6 +795,11 @@ fi
 
 
 %changelog
+* Mon Feb 09 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-2
+- Disable SSL2 support at build time 
+- Fix syntax errors in various shell scripts
+- Resolves: Bug 1189952 - Disable SSL2 and the export cipher suites
+
 * Wed Jan 28 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-1
 - Update to nss-3.17.4
 
