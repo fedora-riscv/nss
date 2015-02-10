@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.4
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -219,7 +219,8 @@ done
 
 %build
 
-export NSS_NO_SSL2=1
+# uncomment this line when the work is ready
+#export NSS_NO_SSL2=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -370,7 +371,8 @@ fi
 # Begin -- copied from the build section
 
 # inform the ssl test scripts that SSL2 is disabled
-export NSS_NO_SSL2=1
+# uncomment this line when the work is ready
+#export NSS_NO_SSL2=1
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -795,6 +797,10 @@ fi
 
 
 %changelog
+* Tue Feb 10 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-3
+- Commented out the export NSS_NO_SSL2=1 line to not disable ssl2
+- Backing out from disabling ssl2 until the patches are fixed
+
 * Mon Feb 09 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-2
 - Disable SSL2 support at build time 
 - Fix syntax errors in various shell scripts
