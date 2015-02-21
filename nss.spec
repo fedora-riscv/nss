@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.4
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -797,6 +797,10 @@ fi
 
 
 %changelog
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 3.17.4-4
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
 * Tue Feb 10 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-3
 - Commented out the export NSS_NO_SSL2=1 line to not disable ssl2
 - Backing out from disabling ssl2 until the patches are fixed
