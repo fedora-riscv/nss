@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.17.4
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -92,7 +92,6 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1083900
 Patch51:          tls12.patch
-# SSL2 support has been disabled downstream in RHEL since RHEL-7.0
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1128367
@@ -219,8 +218,7 @@ done
 
 %build
 
-# uncomment this line when the work is ready
-#export NSS_NO_SSL2=1
+export NSS_NO_SSL2_NO_EXPORT=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -371,8 +369,7 @@ fi
 # Begin -- copied from the build section
 
 # inform the ssl test scripts that SSL2 is disabled
-# uncomment this line when the work is ready
-#export NSS_NO_SSL2=1
+export NSS_NO_SSL2_NO_EXPORT=1
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -797,6 +794,11 @@ fi
 
 
 %changelog
+* Tue Mar 03 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-5
+- Disable export suites and SSL2 support at build time
+- Fix syntax errors in various shell scripts
+- Resolves: Bug 1189952 - Disable SSL2 and the export cipher suites
+
 * Sat Feb 21 2015 Till Maas <opensource@till.name> - 3.17.4-4
 - Rebuilt for Fedora 23 Change
   https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code

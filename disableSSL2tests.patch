@@ -1,7 +1,7 @@
 diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
 --- a/tests/ssl/ssl.sh
 +++ b/tests/ssl/ssl.sh
-@@ -57,18 +57,23 @@ ssl_init()
+@@ -57,19 +57,23 @@ ssl_init()
    fi
  
    PORT=${PORT-8443}
@@ -11,14 +11,15 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
  
    # Test case files
 -  SSLCOV=${QADIR}/ssl/sslcov.txt
-+  SSLCOV=[ "${NSS_NO_SSL2}" = "1" ] \
-+    && ${QADIR}/ssl/sslcov.noSSL2orExport.txt \
-+    || ${QADIR}/ssl/sslcov.txt
-   SSLAUTH=${QADIR}/ssl/sslauth.txt
-+  SSLSTRESS=[ "${NSS_NO_SSL2}" = "1" ] \
-+    && ${QADIR}/ssl/sslstress.noSSL2orExport.txt \
-+    || ${QADIR}/ssl/sslstress.txt
-   SSLSTRESS=${QADIR}/ssl/sslstress.txt
+-  SSLAUTH=${QADIR}/ssl/sslauth.txt
+-  SSLSTRESS=${QADIR}/ssl/sslstress.txt
++  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ]; then
++    SSLCOV=${QADIR}/ssl/sslcov.noSSL2orExport.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.noSSL2orExport.txt
++  else
++    SSLCOV=${QADIR}/ssl/sslcov.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.txt
++  fi
    REQUEST_FILE=${QADIR}/ssl/sslreq.dat
  
    #temparary files
@@ -26,7 +27,8 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
    SERVERPID=${TMP}/tests_pid.$$
  
    R_SERVERPID=../tests_pid.$$
-@@ -115,17 +120,21 @@ is_selfserv_alive()
+ 
+@@ -115,17 +119,21 @@ is_selfserv_alive()
    if [ "${OS_ARCH}" = "WINNT" ] && \
       [ "$OS_NAME" = "CYGWIN_NT" -o "$OS_NAME" = "MINGW32_NT" ]; then
        PID=${SHELL_SERVERPID}
@@ -35,7 +37,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
    fi
  
    echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
-+  if [[ "${NSS_NO_SSL2}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ]]; then
++  if [[ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ]]; then
 +  echo "No server to kill"
 +  else
    kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
@@ -48,7 +50,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
  # local shell function to wait until selfserver is running and initialized
  ########################################################################
  wait_for_selfserv()
-@@ -138,17 +147,21 @@ wait_for_selfserv()
+@@ -138,17 +146,21 @@ wait_for_selfserv()
    if [ $? -ne 0 ]; then
        sleep 5
        echo "retrying to connect to selfserv at `date`"
@@ -57,7 +59,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
        ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
                -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
        if [ $? -ne 0 ]; then
-+          if [ "${NSS_NO_SSL2}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ]; then
++          if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ]; then
 +              html_passed "Server never started"
 +          else
            html_failed "Waiting for Server"
@@ -70,7 +72,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
  ########################### kill_selfserv ##############################
  # local shell function to kill the selfserver after the tests are done
  ########################################################################
-@@ -273,16 +286,19 @@ ssl_cov()
+@@ -273,16 +285,19 @@ ssl_cov()
    exec < ${SSLCOV}
    while read ectype testmax param testname
    do
@@ -80,7 +82,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
        SSL2=$?
  
 +      #  skip export and ssl2 tests when build has disabled SSL2
-+      [ "${NSS_NO_SSL2}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ] && continue
++      [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ -n ${EXP} -o -n ${SSL2} ] && continue
 +
        if [ "${SSL2}" -eq 0 ] ; then
            # We cannot use asynchronous cert verification with SSL2
