@@ -1,6 +1,6 @@
-%global nspr_version 4.10.7
-%global nss_util_version 3.17.4
-%global nss_softokn_version 3.17.4
+%global nspr_version 4.10.8
+%global nss_util_version 3.18.0
+%global nss_softokn_version 3.18.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,8 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.17.4
-Release:          5%{?dist}
+Version:          3.18.0
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -90,12 +90,8 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1083900
-Patch51:          tls12.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1128367
-Patch92:          scripts-syntax-errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,10 +179,8 @@ low level services.
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 pushd nss
-%patch51 -p1 -b .994599
 %patch52 -p1 -b .disableSSL2libssl
 %patch53 -p1 -b .disableSSL2tests
-%patch92 -p1 -b .syntax
 popd
 
 #########################################################
@@ -794,6 +788,10 @@ fi
 
 
 %changelog
+* Thu Mar 19 2015 Elio Maldonado <emaldona@redhat.com> - 3.18.0-1
+- Update to nss-3.18.0
+- Resolves: Bug 1203689 - nss-3.18 is available
+
 * Tue Mar 03 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-5
 - Disable export suites and SSL2 support at build time
 - Fix syntax errors in various shell scripts
