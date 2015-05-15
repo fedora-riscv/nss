@@ -19,7 +19,7 @@
 Summary:          Network Security Services
 Name:             nss
 Version:          3.18.0
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -58,6 +58,8 @@ Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
 Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20140125.tar.bz2
+Source13:         PayPalICA.cert
+Source14:         PayPalRootCA.cert
 Source17:         TestCA.ca.cert
 Source18:         TestUser50.cert
 Source19:         TestUser51.cert
@@ -92,6 +94,8 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
+# fix upstream bug 1151037, until we rebase to 3.19
+Patch60:          nss-moz-1151037.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -163,6 +167,8 @@ low level services.
 %prep
 %setup -q
 %{__cp} %{SOURCE10} -f ./nss/tests/libpkix/certs
+%{__cp} %{SOURCE13} -f ./nss/tests/libpkix/certs
+%{__cp} %{SOURCE14} -f ./nss/tests/libpkix/certs
 %{__cp} %{SOURCE17} -f ./nss/tests/libpkix/certs
 %{__cp} %{SOURCE18} -f ./nss/tests/libpkix/certs
 %{__cp} %{SOURCE19} -f ./nss/tests/libpkix/certs
@@ -181,6 +187,7 @@ low level services.
 pushd nss
 %patch52 -p1 -b .disableSSL2libssl
 %patch53 -p1 -b .disableSSL2tests
+%patch60 -p1 -b .testcert-1151037
 popd
 
 #########################################################
@@ -788,6 +795,9 @@ fi
 
 
 %changelog
+* Fri May 15 2015 Kai Engert <kaie@redhat.com> - 3.18.0-2
+- Replace expired test certificates, upstream bug 1151037
+
 * Thu Mar 19 2015 Elio Maldonado <emaldona@redhat.com> - 3.18.0-1
 - Update to nss-3.18.0
 - Resolves: Bug 1203689 - nss-3.18 is available
