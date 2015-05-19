@@ -1,6 +1,6 @@
 %global nspr_version 4.10.8
-%global nss_util_version 3.18.0
-%global nss_softokn_version 3.18.0
+%global nss_util_version 3.19.0
+%global nss_softokn_version 3.19.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,8 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.18.0
-Release:          1%{?dist}
+Version:          3.19.0
+# for Rawhide, please always use release >= 2
+# for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -56,11 +58,7 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source10:         PayPalEE.cert
 Source12:         %{name}-pem-20140125.tar.bz2
-Source17:         TestCA.ca.cert
-Source18:         TestUser50.cert
-Source19:         TestUser51.cert
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -160,10 +158,6 @@ low level services.
 
 %prep
 %setup -q
-%{__cp} %{SOURCE10} -f ./nss/tests/libpkix/certs
-%{__cp} %{SOURCE17} -f ./nss/tests/libpkix/certs
-%{__cp} %{SOURCE18} -f ./nss/tests/libpkix/certs
-%{__cp} %{SOURCE19} -f ./nss/tests/libpkix/certs
 %setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .relro
@@ -776,6 +770,9 @@ fi
 
 
 %changelog
+* Tue May 19 2015 Kai Engert <kaie@redhat.com> - 3.19.0-1.0
+- Update to NSS 3.19
+
 * Mon Mar 23 2015 Elio Maldonado <emaldona@redhat.com> - 3.18.0-1
 - Update to nss-3.18.0
 
