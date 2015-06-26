@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.19.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -90,6 +90,7 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
+# fix upstream bug 1151037, until we rebase to 3.19
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -188,7 +189,7 @@ for file in ${pemNeedsFromSoftoken}; do
     %{__cp} ./nss/lib/softoken/${file}.h ./nss/lib/ckfw/pem/
 done
 
-# Copying these header util the upstream bug is accepted
+# Copying these header until the upstream bug is accepted
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
@@ -203,6 +204,13 @@ done
 %{__rm} -rf ./nss/cmd/bltest
 %{__rm} -rf ./nss/cmd/fipstest
 %{__rm} -rf ./nss/cmd/rsaperf_low
+
+pushd nss/tests/ssl
+# Create versions of sslcov.txt and sslstress.txt that disable tests
+# for SSL2 and EXPORT ciphers.
+cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslcov.noSSL2orExport.txt
+cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslstress.noSSL2orExport.txt
+popd
 
 %build
 
@@ -513,7 +521,7 @@ done
 %{__install} -p -m 644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert9.db
 %{__install} -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key4.db
 %{__install} -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.txt
-     
+
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
@@ -559,7 +567,7 @@ for f in nss-config setup-nsssysinit; do
 done
 # Copy the man pages for the nss tools
 for f in "%{allTools}"; do 
-   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+  install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 %if %{defined rhel}
 install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_mandir}/man1/pp.1
@@ -782,6 +790,9 @@ fi
 
 
 %changelog
+* Mon Jun 29 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.2-3
+- Create on the fly versions of sslcov.txt and sslstress.txt that disable tests for SSL2 and EXPORT ciphers
+
 * Thu Jun 18 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.2-1.0
 - Update to NSS 3.19.2
 
