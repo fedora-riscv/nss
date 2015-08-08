@@ -1,6 +1,6 @@
 %global nspr_version 4.10.8
-%global nss_util_version 3.19.2
-%global nss_softokn_version 3.19.2
+%global nss_util_version 3.19.3
+%global nss_softokn_version 3.19.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.19.2
+Version:          3.19.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -790,6 +790,9 @@ fi
 
 
 %changelog
+* Sat Aug 08 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.3-2
+- Update to NSS 3.19.3
+
 * Fri Jun 26 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.2-3
 - Create on the fly versions of sslcov.txt and sslstress.txt that disable tests for SSL2 and EXPORT ciphers
 
