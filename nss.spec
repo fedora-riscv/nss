@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.19.2
+Version:          3.19.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -790,6 +790,9 @@ fi
 
 
 %changelog
+* Tue Aug 11 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.3-1.0
+- Update to NSS 3.19.3
+
 * Mon Jun 29 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.2-3
 - Create on the fly versions of sslcov.txt and sslstress.txt that disable tests for SSL2 and EXPORT ciphers
 
