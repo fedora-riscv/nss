@@ -790,7 +790,7 @@ fi
 
 %changelog
 * Thu Aug 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-2
-- Update to NSS 3.120
+- Update to NSS 3.20
 
 * Sat Aug 08 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.3-2
 - Update to NSS 3.19.3
