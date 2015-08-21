@@ -1,6 +1,6 @@
 %global nspr_version 4.10.8
-%global nss_util_version 3.19.2
-%global nss_softokn_version 3.19.2
+%global nss_util_version 3.20.0
+%global nss_softokn_version 3.20.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.19.3
+Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -90,7 +90,6 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
-# fix upstream bug 1151037, until we rebase to 3.19
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -790,6 +789,9 @@ fi
 
 
 %changelog
+* Fri Aug 21 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.0
+- Update to NSS 3.20
+
 * Tue Aug 11 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.3-1.0
 - Update to NSS 3.19.3
 
