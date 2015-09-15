@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -90,6 +90,8 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
+Patch54:          tstclnt-ssl2-off-by-default.patch
+Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -176,6 +178,8 @@ pushd nss
 %patch52 -p1 -b .disableSSL2libssl
 %patch53 -p1 -b .disableSSL2tests
 popd
+%patch54 -p0 -b .ssl2_off
+%patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -789,6 +793,13 @@ fi
 
 
 %changelog
+* Mon Sep 14 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-3
+- Fix patches that disable ssl2 and export cipher suites support
+- Fix libssl patch that disable ssl2 & export cipher suites to not disable RSA_WITH_NULL ciphers
+- Fix syntax erros in patch to skip ssl2 and export cipher suite tests
+- Turn ssl2 off by default in the tstclnt tool
+- Disable ssl stress tests containing TLS RC4 128 with MD5
+
 * Thu Aug 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-2
 - Update to NSS 3.20
 
