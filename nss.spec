@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -803,13 +803,17 @@ fi
 
 
 %changelog
+* Wed Sep 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-5
+- Enable ECC cipher-suites by default [hrbz#1185708]
+- Implement corrections requested in code review
+
 * Tue Sep 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-4
 - Enable ECC cipher-suites by default [hrbz#1185708]
 
 * Mon Sep 14 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-3
 - Fix patches that disable ssl2 and export cipher suites support
 - Fix libssl patch that disable ssl2 & export cipher suites to not disable RSA_WITH_NULL ciphers
-- Fix syntax erros in patch to skip ssl2 and export cipher suite tests
+- Fix syntax errors in patch to skip ssl2 and export cipher suite tests
 - Turn ssl2 off by default in the tstclnt tool
 - Disable ssl stress tests containing TLS RC4 128 with MD5
 
