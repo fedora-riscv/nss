@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -90,6 +90,14 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
+Patch54:          tstclnt-ssl2-off-by-default.patch
+Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=923089
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1009429
+# See https://hg.mozilla.org/projects/nss/raw-rev/dc7bb2f8cc50
+Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
+# TODO: File a bug usptream
+Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -175,6 +183,12 @@ low level services.
 pushd nss
 %patch52 -p1 -b .disableSSL2libssl
 %patch53 -p1 -b .disableSSL2tests
+popd
+%patch54 -p0 -b .ssl2_off
+%patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
+%patch56 -p1 -b .ocsp_sni
+pushd nss
+%patch57 -p1 -b .1185708
 popd
 
 #########################################################
@@ -789,6 +803,14 @@ fi
 
 
 %changelog
+* Tue Sep 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1
+- Enable ECC cipher-suites by default [rhbz#1185708]
+- Fix patches that disable ssl2 and export cipher suites support [rhbz#1263005]
+- Fix libssl patch that disable ssl2 & export cipher suites to not disable RSA_WITH_NULL ciphers
+- Fix syntax erros in patch to skip ssl2 and export cipher suite tests
+- Turn ssl2 off by default in the tstclnt tool
+- Disable ssl stress tests containing TLS RC4 128 with MD5
+
 * Fri Aug 21 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.0
 - Update to NSS 3.20
 

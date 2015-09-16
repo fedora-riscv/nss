@@ -25,7 +25,7 @@ diff --git a/lib/ssl/config.mk b/lib/ssl/config.mk
 diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
 --- a/lib/ssl/sslsock.c
 +++ b/lib/ssl/sslsock.c
-@@ -650,16 +650,22 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+@@ -674,16 +674,22 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
          if (ss->cipherSpecs) {
              PORT_Free(ss->cipherSpecs);
              ss->cipherSpecs     = NULL;
@@ -48,7 +48,7 @@ diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
              break;
          }
          ss->opt.enableSSL2       = on;
-@@ -667,52 +673,67 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
+@@ -691,52 +697,67 @@ SSL_OptionSet(PRFileDesc *fd, PRInt32 wh
              ss->opt.v2CompatibleHello = on;
          }
          ss->preferredCipher     = NULL;
@@ -116,7 +116,7 @@ diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
              rv = SECFailure;
          } else {
              if (PR_FALSE != on) {
-@@ -1127,16 +1148,23 @@ SSL_OptionSetDefault(PRInt32 which, PRBo
+@@ -1163,16 +1184,32 @@ SSL_OptionSetDefault(PRInt32 which, PRBo
      }
      return SECSuccess;
  }
@@ -129,8 +129,17 @@ diff --git a/lib/ssl/sslsock.c b/lib/ssl/sslsock.c
 +    /* both ssl2 and export cipher suites disabled */
 +    if (SSL_IS_SSL2_CIPHER(suite))
 +        return PR_TRUE;
-+    if (SSL_IsExportCipherSuite(suite))
-+      return PR_TRUE;
++    if (SSL_IsExportCipherSuite(suite)) {
++        SSLCipherSuiteInfo csdef;
++        if (SSL_GetCipherSuiteInfo(suite, &csdef, sizeof(csdef)) != SECSuccess) {
++            /* failure to retrieve info, disable */
++            return PR_TRUE;
++        }
++        if (csdef.symCipher != ssl_calg_null) {
++            /* disable all except NULL ciphersuites */
++            return PR_TRUE;
++        }
++    }
 +#endif /* NSS_NO_SSL2_NO_EXPORT */
      switch (suite) {
      case SSL_FORTEZZA_DMS_WITH_NULL_SHA:
