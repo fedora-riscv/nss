@@ -807,7 +807,7 @@ fi
 - Enable ECC cipher-suites by default [rhbz#1185708]
 - Fix patches that disable ssl2 and export cipher suites support [rhbz#1263005]
 - Fix libssl patch that disable ssl2 & export cipher suites to not disable RSA_WITH_NULL ciphers
-- Fix syntax erros in patch to skip ssl2 and export cipher suite tests
+- Fix syntax errors in patch to skip ssl2 and export cipher suite tests
 - Turn ssl2 off by default in the tstclnt tool
 - Disable ssl stress tests containing TLS RC4 128 with MD5
 
