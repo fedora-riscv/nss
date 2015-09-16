@@ -803,7 +803,7 @@ fi
 
 
 %changelog
-* Tue Sep 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1
+* Wed Sep 16 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1
 - Enable ECC cipher-suites by default [rhbz#1185708]
 - Fix patches that disable ssl2 and export cipher suites support [rhbz#1263005]
 - Fix libssl patch that disable ssl2 & export cipher suites to not disable RSA_WITH_NULL ciphers
