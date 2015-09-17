@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -88,6 +88,12 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=923089
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1009429
+# See https://hg.mozilla.org/projects/nss/raw-rev/dc7bb2f8cc50
+Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
+# TODO: File a bug usptream
+Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -170,6 +176,10 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
+%patch56 -p1 -b .ocsp_sni
+pushd nss
+%patch57 -p1 -b .1185708
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -770,6 +780,9 @@ fi
 
 
 %changelog
+* Thu Sep 17 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1
+- Enable ECC cipher-suites by default [rhbz#1185708]
+
 * Sat Aug 22 2015 Elio Maldonado <emaldona@redhat.com> - 3.19.3-2.0
 - Update to NSS 3.20
 
