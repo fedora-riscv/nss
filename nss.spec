@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -96,8 +96,10 @@ Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1009429
 # See https://hg.mozilla.org/projects/nss/raw-rev/dc7bb2f8cc50
 Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
-# TODO: File a bug usptream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1205688
 Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
+# Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
+Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -190,6 +192,7 @@ popd
 pushd nss
 %patch57 -p1 -b .1185708
 popd
+%patch58 -p0 -b .1185708_3des
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -803,6 +806,11 @@ fi
 
 
 %changelog
+* Wed Sep 30 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-6
+- Enable ECC cipher-suites by default [hrbz#1185708]
+- Split the enabling patch in two for easier maintenance
+- Remove unused patches rendered obsolete by prior rebase
+
 * Wed Sep 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-5
 - Enable ECC cipher-suites by default [hrbz#1185708]
 - Implement corrections requested in code review
