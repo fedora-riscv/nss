@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.20.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -783,7 +783,7 @@ fi
 
 
 %changelog
-* Mon Oct 05 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.2
+* Mon Oct 05 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1.1
 - Enable ECC cipher-suites by default [hrbz#1185708]
 - Split the enabling patch in two for easier maintenance
 
