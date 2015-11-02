@@ -1,6 +1,6 @@
-%global nspr_version 4.10.8
-%global nss_util_version 3.20.0
-%global nss_softokn_version 3.20.0
+%global nspr_version 4.10.10
+%global nss_util_version 3.20.1
+%global nss_softokn_version 3.20.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.20.0
+Version:          3.20.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -783,6 +783,9 @@ fi
 
 
 %changelog
+* Mon Nov 02 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.1-1.0
+- Update to NSS 3.20.1
+
 * Mon Oct 05 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-1.1.1
 - Enable ECC cipher-suites by default [hrbz#1185708]
 - Split the enabling patch in two for easier maintenance
