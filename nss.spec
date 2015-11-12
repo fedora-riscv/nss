@@ -94,11 +94,11 @@ Patch54:          tstclnt-ssl2-off-by-default.patch
 Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# TODO: consolidate the following patches and submit the resultant
-# one to the interim usptream project
-Patch59: pem-pobject-handle-pemAll.patch
-Patch60: pem-rsawrapr-disable-unused-functions.patch
-Patch61: pem-remove-unused-variables.patch
+# TODO: submit to the interim usptream project
+# As of nss-3.21 we compile NSS with -Werror per upstream
+# see: https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
+# which requires  quite a bit of clean up of the PEM module
+Patch59: pem-compile-with-Werror.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -188,9 +188,7 @@ popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
-%patch59 -p0 -b .pemAll
-%patch60 -p0 -b .unused_functions
-%patch61 -p0 -b .unused_vars
+%patch59 -p0 -b .compile_Werror
 
 #########################################################
 # Higher-level libraries and test tools need access to
