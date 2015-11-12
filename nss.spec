@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.20.1
+Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          2%{?dist}
@@ -92,14 +92,13 @@ Patch52:          disableSSL2libssl.patch
 Patch53:          disableSSL2tests.patch
 Patch54:          tstclnt-ssl2-off-by-default.patch
 Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=923089
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1009429
-# See https://hg.mozilla.org/projects/nss/raw-rev/dc7bb2f8cc50
-Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1205688
-Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+# TODO: consolidate the following patches and submit the resultant
+# one to the interim usptream project
+Patch59: pem-pobject-handle-pemAll.patch
+Patch60: pem-rsawrapr-disable-unused-functions.patch
+Patch61: pem-remove-unused-variables.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -188,11 +187,10 @@ pushd nss
 popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
-%patch56 -p1 -b .ocsp_sni
-pushd nss
-%patch57 -p1 -b .1185708
-popd
 %patch58 -p0 -b .1185708_3des
+%patch59 -p0 -b .pemAll
+%patch60 -p0 -b .unused_functions
+%patch61 -p0 -b .unused_vars
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -209,6 +207,17 @@ done
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
+
+# TODO: bring this up with nss upstream
+# nssinit.c needs verref.h from nss/lib/util
+# copy it locally so it it can find it
+%{__cp} ./nss/lib/util/verref.h ./nss/lib/nss/
+# ./nss/lib/ssl/sslcon.c needs it also
+%{__cp} ./nss/lib/util/verref.h ./nss/lib/ssl/
+# and so does smimeutil.c
+%{__cp} ./nss/lib/util/verref.h ./nss/lib/smime/
+# yet another one, for binst.c
+%{__cp} ./nss/lib/util/verref.h ./nss/lib/ckfw/builtins/
 
 ##### Remove util/freebl/softoken and low level tools
 ######## Remove freebl, softoken and util
@@ -285,7 +294,11 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
+# external tests are causing build problems because they access ssl internal types
+# TODO: Investigate as there may be a better solution
+export NSS_DISABLE_GTESTS=1
+
+%if %{__isa_bits} == 64
 USE_64=1
 export USE_64
 %endif
@@ -389,7 +402,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
+%if %{__isa_bits} == 64
 USE_64=1
 export USE_64
 %endif
@@ -551,7 +564,7 @@ do
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump listsuites ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -702,6 +715,7 @@ fi
 %{unsupported_tools_directory}/atob
 %{unsupported_tools_directory}/btoa
 %{unsupported_tools_directory}/derdump
+%{unsupported_tools_directory}/listsuites
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
@@ -806,8 +820,12 @@ fi
 
 
 %changelog
-* Fri Oct 30 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.1-2
-- Update to NSS 3.20.1
+* Thu Nov 12 2015 Elio Maldonado Batiz <emaldona@redhat.com> - 3.21.1-2
+- Update to NSS 3.21
+- Package listsuites as part of the unsupported tools set
+- Resolves: Bug 1279912 - nss-3.21 is available
+- Resolves: Bug 1258425 - Use __isa_bits macro instead of list of 64-bit
+- Resolves: Bug 1280032 - Package listsuites as part of the nss unsupported tools set
 
 * Wed Sep 30 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.0-6
 - Enable ECC cipher-suites by default [hrbz#1185708]

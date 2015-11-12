@@ -5,7 +5,7 @@ diff -up nss/cmd/httpserv/httpserv.c.539183 nss/cmd/httpserv/httpserv.c
      PRStatus	       prStatus;
      PRNetAddr          addr;
      PRSocketOptionData opt;
-+    PRUint16           socketDomain = PR_AF_INET;
++    /*PRUint16           socketDomain = PR_AF_INET;*/
  
 -    addr.inet.family = PR_AF_INET;
 -    addr.inet.ip     = PR_INADDR_ANY;
@@ -16,7 +16,7 @@ diff -up nss/cmd/httpserv/httpserv.c.539183 nss/cmd/httpserv/httpserv.c
  
 -    listen_sock = PR_NewTCPSocket();
 +    if (PR_GetEnv("NSS_USE_SDP")) {
-+        socketDomain = PR_AF_INET_SDP;
++        ; /*socketDomain = PR_AF_INET_SDP;*/
 +    }
 +    listen_sock = PR_OpenTCPSocket(PR_AF_INET6);
      if (listen_sock == NULL) {
@@ -32,7 +32,7 @@ diff -up nss/cmd/selfserv/selfserv.c.539183 nss/cmd/selfserv/selfserv.c
      PRStatus	       prStatus;
      PRNetAddr          addr;
      PRSocketOptionData opt;
-+    PRUint16           socketDomain = PR_AF_INET;
++    /*PRUint16           socketDomain = PR_AF_INET;*/
  
 -    addr.inet.family = PR_AF_INET;
 -    addr.inet.ip     = PR_INADDR_ANY;
@@ -43,7 +43,7 @@ diff -up nss/cmd/selfserv/selfserv.c.539183 nss/cmd/selfserv/selfserv.c
  
 -    listen_sock = PR_NewTCPSocket();
 +    if (PR_GetEnv("NSS_USE_SDP")) {
-+        socketDomain = PR_AF_INET_SDP;
++        ; /*socketDomain = PR_AF_INET_SDP;*/
 +    }
 +    listen_sock = PR_OpenTCPSocket(PR_AF_INET6);
      if (listen_sock == NULL) {
