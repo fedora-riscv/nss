@@ -821,7 +821,7 @@ fi
 
 
 %changelog
-* Thu Nov 12 2015 Elio Maldonado Batiz <emaldona@redhat.com> - 3.21.1-2
+* Fri Nov 13 2015 Elio Maldonado Batiz <emaldona@redhat.com> - 3.21.1-2
 - Update to NSS 3.21
 - Package listsuites as part of the unsupported tools set
 - Resolves: Bug 1279912 - nss-3.21 is available

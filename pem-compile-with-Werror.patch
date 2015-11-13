@@ -86,7 +86,7 @@ diff -up ./nss/lib/ckfw/pem/pobject.c.compile_Werror ./nss/lib/ckfw/pem/pobject.
 +        SECStatus status;
 +        nobjs = ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring,
 +			        PR_TRUE /* certs only */, &status);
-+	/* TODO: How do we map status to *pError */
++        /* TODO: How do we map status to *pError */
          if (nobjs < 1)
              goto loser;
  
