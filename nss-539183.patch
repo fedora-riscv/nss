@@ -1,11 +1,9 @@
-diff -up nss/cmd/httpserv/httpserv.c.539183 nss/cmd/httpserv/httpserv.c
---- nss/cmd/httpserv/httpserv.c.539183	2013-05-28 14:43:24.000000000 -0700
-+++ nss/cmd/httpserv/httpserv.c	2013-05-30 22:16:46.685373471 -0700
-@@ -661,14 +661,18 @@ getBoundListenSocket(unsigned short port
-     PRStatus	       prStatus;
+diff -up ./nss/cmd/httpserv/httpserv.c.539183 ./nss/cmd/httpserv/httpserv.c
+--- ./nss/cmd/httpserv/httpserv.c.539183	2015-11-08 21:12:59.000000000 -0800
++++ ./nss/cmd/httpserv/httpserv.c	2015-11-12 13:28:01.574855325 -0800
+@@ -938,13 +938,13 @@ getBoundListenSocket(unsigned short port
      PRNetAddr          addr;
      PRSocketOptionData opt;
-+    PRUint16           socketDomain = PR_AF_INET;
  
 -    addr.inet.family = PR_AF_INET;
 -    addr.inet.ip     = PR_INADDR_ANY;
@@ -15,9 +13,6 @@ diff -up nss/cmd/httpserv/httpserv.c.539183 nss/cmd/httpserv/httpserv.c
 +    }
  
 -    listen_sock = PR_NewTCPSocket();
-+    if (PR_GetEnv("NSS_USE_SDP")) {
-+        socketDomain = PR_AF_INET_SDP;
-+    }
 +    listen_sock = PR_OpenTCPSocket(PR_AF_INET6);
      if (listen_sock == NULL) {
 -	errExit("PR_NewTCPSocket");
@@ -25,14 +20,12 @@ diff -up nss/cmd/httpserv/httpserv.c.539183 nss/cmd/httpserv/httpserv.c
      }
  
      opt.option = PR_SockOpt_Nonblocking;
-diff -up nss/cmd/selfserv/selfserv.c.539183 nss/cmd/selfserv/selfserv.c
---- nss/cmd/selfserv/selfserv.c.539183	2013-05-28 14:43:24.000000000 -0700
-+++ nss/cmd/selfserv/selfserv.c	2013-05-30 22:16:46.688373495 -0700
-@@ -1687,14 +1687,18 @@ getBoundListenSocket(unsigned short port
-     PRStatus	       prStatus;
+diff -up ./nss/cmd/selfserv/selfserv.c.539183 ./nss/cmd/selfserv/selfserv.c
+--- ./nss/cmd/selfserv/selfserv.c.539183	2015-11-08 21:12:59.000000000 -0800
++++ ./nss/cmd/selfserv/selfserv.c	2015-11-12 13:26:40.498345875 -0800
+@@ -1707,13 +1707,13 @@ getBoundListenSocket(unsigned short port
      PRNetAddr          addr;
      PRSocketOptionData opt;
-+    PRUint16           socketDomain = PR_AF_INET;
  
 -    addr.inet.family = PR_AF_INET;
 -    addr.inet.ip     = PR_INADDR_ANY;
@@ -42,9 +35,6 @@ diff -up nss/cmd/selfserv/selfserv.c.539183 nss/cmd/selfserv/selfserv.c
 +    }
  
 -    listen_sock = PR_NewTCPSocket();
-+    if (PR_GetEnv("NSS_USE_SDP")) {
-+        socketDomain = PR_AF_INET_SDP;
-+    }
 +    listen_sock = PR_OpenTCPSocket(PR_AF_INET6);
      if (listen_sock == NULL) {
 -	errExit("PR_NewTCPSocket");
