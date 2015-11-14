@@ -292,9 +292,11 @@ export NSS_USE_SYSTEM_SQLITE
 # TODO: Investigate as there may be a better solution
 export NSS_DISABLE_GTESTS=1
 
+%ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 # uncomment if the iquote patch is activated
@@ -403,9 +405,11 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
+%ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
