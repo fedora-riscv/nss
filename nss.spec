@@ -292,7 +292,7 @@ export NSS_USE_SYSTEM_SQLITE
 # TODO: Investigate as there may be a better solution
 export NSS_DISABLE_GTESTS=1
 
-%if %{__isa_bits} == 64
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
 %endif
@@ -403,7 +403,7 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%if %{__isa_bits} == 64
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
 %endif
