@@ -1,2 +1,0 @@
-Dummy source file that we by uploading it lets us verify that nss builds
-do not cause the 'fedpkg upload' or 'fedpg new-sources' commands to hang.
