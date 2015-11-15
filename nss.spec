@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -70,7 +70,10 @@ Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=402712
 Patch6:           nss-enable-pem.patch
+# Below reference applies to most pem module related patches
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
@@ -825,6 +828,9 @@ fi
 
 
 %changelog
+* Sun Nov 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-3
+- Add references to bugs filed upstream
+
 * Fri Nov 13 2015 Elio Maldonado Batiz <emaldona@redhat.com> - 3.21.1-2
 - Update to NSS 3.21
 - Package listsuites as part of the unsupported tools set
