@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.20.1
+Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -96,6 +96,14 @@ Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
 Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+
+# As of nss-3.21 we compile NSS with -Werror.
+# see https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
+# This requires a cleanup of the PEM module as we have it here.
+# TODO: submit a patch to the interim nss-pem upstream project
+# The submission will be very different from this patch as
+# cleanup there is already in progress there.
+Patch59: pem-compile-with-Werror.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,6 +191,7 @@ pushd nss
 %patch57 -p1 -b .1185708
 popd
 %patch58 -p0 -b .1185708_3des
+%patch59 -p0 -b .compile_Werror
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -199,6 +208,10 @@ done
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
+
+# Before removing util directory we must save verref.h
+# as it will be needed later during the build phase.
+%{__mv} ./nss/lib/util/verref.h ./nss/verref.h
 
 ##### Remove util/freebl/softoken and low level tools
 ######## Remove freebl, softoken and util
@@ -266,9 +279,15 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
+# external tests are causing build problems because they access ssl internal types
+# TODO: Investigate as there may be a better solution
+export NSS_DISABLE_GTESTS=1
+
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 # uncomment if the iquote patch is activated
@@ -282,6 +301,13 @@ export NSS_ECC_MORE_THAN_SUITE_B
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
+
+# nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
+# need nss/lib/util/verref.h which is which is exported privately,
+# copy the one we saved during prep so it they can find it.
+%{__mkdir_p} ./dist/private/nss
+%{__mv} ./nss/verref.h ./dist/private/nss/verref.h
+
 %{__make} -C ./nss
 unset NSS_BLTEST_NOT_AVAILABLE
 
@@ -366,9 +392,11 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%ifarch x86_64 %{power64} ia64 s390x sparc64 aarch64
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
@@ -528,7 +556,7 @@ do
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump listsuites ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -679,6 +707,7 @@ fi
 %{unsupported_tools_directory}/atob
 %{unsupported_tools_directory}/btoa
 %{unsupported_tools_directory}/derdump
+%{unsupported_tools_directory}/listsuites
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
@@ -783,6 +812,13 @@ fi
 
 
 %changelog
+* Mon Nov 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.0
+- Update to NSS 3.21
+- Package listsuites as part of the unsupported tools set
+- Resolves: Bug 1279912 - nss-3.21 is available
+- Resolves: Bug 1258425 - Use __isa_bits macro instead of list of 64-bit
+- Resolves: Bug 1280032 - Package listsuites as part of the nss unsupported tools set
+
 * Mon Nov 02 2015 Elio Maldonado <emaldona@redhat.com> - 3.20.1-1.0
 - Update to NSS 3.20.1
 
