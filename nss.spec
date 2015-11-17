@@ -92,8 +92,6 @@ Patch50:          iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1009429
 # See https://hg.mozilla.org/projects/nss/raw-rev/dc7bb2f8cc50
 Patch56: ocsp_stapling_sslauth_sni_tests_client_side_fixes.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1205688
-Patch57: rhbz1185708-enable-ecc-ciphers-by-default.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 
@@ -188,7 +186,6 @@ low level services.
 %patch50 -p0 -b .iquote
 %patch56 -p1 -b .ocsp_sni
 pushd nss
-%patch57 -p1 -b .1185708
 popd
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
