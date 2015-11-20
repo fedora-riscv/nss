@@ -1,6 +1,6 @@
 %global nspr_version 4.10.10
-%global nss_util_version 3.20.1
-%global nss_softokn_version 3.20.1
+%global nss_util_version 3.21.0
+%global nss_softokn_version 3.21.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -70,7 +70,10 @@ Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=402712
 Patch6:           nss-enable-pem.patch
+# Below reference applies to most pem module related patches
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
@@ -825,6 +828,11 @@ fi
 
 
 %changelog
+* Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.1
+- Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
+- Resolves: Bug 1284095 - all https fails with sec_error_no_token
+- Add references to bugs filed upstream
+
 * Mon Nov 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.0
 - Update to NSS 3.21
 - Package listsuites as part of the unsupported tools set
