@@ -808,7 +808,7 @@ fi
 %changelog
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.1
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
-- Bug 1284095 - all https fails with sec_error_no_token
+- Resolves: Bug 1284095 - all https fails with sec_error_no_token
 
 * Mon Nov 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.0
 - Update to NSS 3.21
