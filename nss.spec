@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -70,7 +70,10 @@ Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=402712
 Patch6:           nss-enable-pem.patch
+# Below reference applies to most pem module related patches
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
@@ -96,11 +99,11 @@ Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 
 # As of nss-3.21 we compile NSS with -Werror.
-# See https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
+# see https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
 # This requires a cleanup of the PEM module as we have it here.
-# TODO: submit a variant to the interim nss-pem upstream project
-# Note that the submission will be quite different from this patch
-# as a cleanup there is already in progress there.
+# TODO: submit a patch to the interim nss-pem upstream project
+# The submission will be very different from this patch as
+# cleanup there is already in progress there.
 Patch59: pem-compile-with-Werror.patch
 
 %description
@@ -292,9 +295,11 @@ export NSS_USE_SYSTEM_SQLITE
 # TODO: Investigate as there may be a better solution
 export NSS_DISABLE_GTESTS=1
 
-%if %{__isa_bits} == 64
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 # uncomment if the iquote patch is activated
@@ -403,9 +408,11 @@ export FREEBL_NO_DEPEND
 BUILD_OPT=1
 export BUILD_OPT
 
-%if %{__isa_bits} == 64
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
 USE_64=1
 export USE_64
+%endif
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
@@ -821,6 +828,9 @@ fi
 
 
 %changelog
+* Sun Nov 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-3
+- Add references to bugs filed upstream
+
 * Fri Nov 13 2015 Elio Maldonado Batiz <emaldona@redhat.com> - 3.21.1-2
 - Update to NSS 3.21
 - Package listsuites as part of the unsupported tools set

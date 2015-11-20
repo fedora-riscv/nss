@@ -1,114 +1,93 @@
 diff -up ./nss/lib/ckfw/pem/ckpem.h.compile_Werror ./nss/lib/ckfw/pem/ckpem.h
 --- ./nss/lib/ckfw/pem/ckpem.h.compile_Werror	2014-01-23 06:28:18.000000000 -0800
-+++ ./nss/lib/ckfw/pem/ckpem.h	2015-11-12 06:59:07.831377167 -0800
-@@ -233,7 +233,7 @@ struct pemLOWKEYPrivateKeyStr {
++++ ./nss/lib/ckfw/pem/ckpem.h	2015-11-13 12:07:29.219887390 -0800
+@@ -233,6 +233,9 @@ struct pemLOWKEYPrivateKeyStr {
  };
  typedef struct pemLOWKEYPrivateKeyStr pemLOWKEYPrivateKey;
  
--SECStatus ReadDERFromFile(SECItem ***derlist, char *filename, PRBool ascii, int *cipher, char **ivstring, PRBool certsonly);
-+int ReadDERFromFile(SECItem ***derlist, char *filename, PRBool ascii, int *cipher, char **ivstring, PRBool certsonly, SECStatus *pError);
++/* NOTE: Discrepancy with the the way callers use of the return value as a count
++ * Fix this when we sync. up with the cleanup work being done at nss-pem project.
++ */
+ SECStatus ReadDERFromFile(SECItem ***derlist, char *filename, PRBool ascii, int *cipher, char **ivstring, PRBool certsonly);
  const NSSItem * pem_FetchAttribute ( pemInternalObject *io, CK_ATTRIBUTE_TYPE type);
  void pem_PopulateModulusExponent(pemInternalObject *io);
- NSSCKMDObject * pem_CreateObject(NSSCKFWInstance *fwInstance, NSSCKFWSession *fwSession, NSSCKMDToken *mdToken, CK_ATTRIBUTE_PTR pTemplate, CK_ULONG ulAttributeCount, CK_RV *pError);
 diff -up ./nss/lib/ckfw/pem/pinst.c.compile_Werror ./nss/lib/ckfw/pem/pinst.c
 --- ./nss/lib/ckfw/pem/pinst.c.compile_Werror	2014-01-23 06:28:18.000000000 -0800
-+++ ./nss/lib/ckfw/pem/pinst.c	2015-11-12 06:59:07.831377167 -0800
-@@ -466,15 +466,17 @@ AddCertificate(char *certfile, char *key
- {
-     pemInternalObject *o;
-     CK_RV error = 0;
-+    SECStatus status;
-     int objid, i;
-     int nobjs = 0;
-     SECItem **objs = NULL;
++++ ./nss/lib/ckfw/pem/pinst.c	2015-11-13 12:07:29.219887390 -0800
+@@ -472,7 +472,9 @@ AddCertificate(char *certfile, char *key
      char *ivstring = NULL;
      int cipher;
  
 -    nobjs = ReadDERFromFile(&objs, certfile, PR_TRUE, &cipher, &ivstring, PR_TRUE /* certs only */);
-+    nobjs = ReadDERFromFile(&objs, certfile, PR_TRUE, &cipher, &ivstring, PR_TRUE /* certs only */, &status);
++    /* TODO: Fix discrepancy between our usage of the return value as
++     * as an int (a count) and the declaration as a SECStatus. */
++    nobjs = (int) ReadDERFromFile(&objs, certfile, PR_TRUE, &cipher, &ivstring, PR_TRUE /* certs only */);
      if (nobjs <= 0) {
          nss_ZFreeIf(objs);
-+        /* TODO: map the status to a CK_RV  error */
          return CKR_GENERAL_ERROR;
-     }
- 
-@@ -513,12 +515,14 @@ AddCertificate(char *certfile, char *key
-         o = NULL;
- 
+@@ -515,8 +517,10 @@ AddCertificate(char *certfile, char *key
          if (keyfile) {          /* add the private key */
-+            SECStatus status;
              SECItem **keyobjs = NULL;
              int kobjs = 0;
++            /* TODO: Fix discrepancy between our usage of the return value as
++             * as an int and the declaration as a SECStatus. */
              kobjs =
-                 ReadDERFromFile(&keyobjs, keyfile, PR_TRUE, &cipher,
--                                &ivstring, PR_FALSE);
-+                                &ivstring, PR_FALSE, &status);
+-                ReadDERFromFile(&keyobjs, keyfile, PR_TRUE, &cipher,
++                (int) ReadDERFromFile(&keyobjs, keyfile, PR_TRUE, &cipher,
+                                 &ivstring, PR_FALSE);
              if (kobjs < 1) {
-+                /* TODO: map the status to an error */
                  error = CKR_GENERAL_ERROR;
-                 goto loser;
-             }
 diff -up ./nss/lib/ckfw/pem/pobject.c.compile_Werror ./nss/lib/ckfw/pem/pobject.c
 --- ./nss/lib/ckfw/pem/pobject.c.compile_Werror	2014-01-23 06:28:18.000000000 -0800
-+++ ./nss/lib/ckfw/pem/pobject.c	2015-11-12 06:59:07.831377167 -0800
-@@ -630,6 +630,8 @@ pem_DestroyInternalObject
++++ ./nss/lib/ckfw/pem/pobject.c	2015-11-13 12:07:29.220887368 -0800
+@@ -630,6 +630,11 @@ pem_DestroyInternalObject
          if (io->u.key.ivstring)
              free(io->u.key.ivstring);
          break;
 +    case pemAll:
++        /* pemAll is not used, keep the compiler happy
++         * TODO: investigate a proper solution
++         */
 +        return;
      }
  
      if (NULL != gobj)
-@@ -1044,7 +1046,7 @@ pem_CreateObject
+@@ -1044,7 +1049,9 @@ pem_CreateObject
      int nobjs = 0;
      int i;
      int objid;
--    pemToken *token;
-+    /*pemToken *token = NULL;*/
++#if 0
+     pemToken *token;
++#endif
      int cipher;
      char *ivstring = NULL;
      pemInternalObject *listObj = NULL;
-@@ -1073,7 +1075,7 @@ pem_CreateObject
+@@ -1073,7 +1080,9 @@ pem_CreateObject
      }
      slotID = nssCKFWSlot_GetSlotID(fwSlot);
  
--    token = (pemToken *) mdToken->etc;
-+    /*token = (pemToken *) mdToken->etc;*/
++#if 0
+     token = (pemToken *) mdToken->etc;
++#endif
  
      /*
       * only create keys and certs.
-@@ -1114,7 +1116,10 @@ pem_CreateObject
+@@ -1114,7 +1123,11 @@ pem_CreateObject
      }
  
      if (objClass == CKO_CERTIFICATE) {
 -        nobjs = ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring, PR_TRUE /* certs only */);
-+        SECStatus status;
-+        nobjs = ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring,
-+			        PR_TRUE /* certs only */, &status);
-+        /* TODO: How do we map status to *pError */
-         if (nobjs < 1)
-             goto loser;
- 
-@@ -1156,11 +1161,14 @@ pem_CreateObject
-     } else if (objClass == CKO_PRIVATE_KEY) {
-         /* Brute force: find the id of the certificate, if any, in this slot */
-         int i;
-+        SECStatus status;
-         SECItem certDER;
-         CK_SESSION_HANDLE hSession;
-         PRBool added;
- 
--        nobjs = ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring, PR_FALSE /* keys only */);
-+        nobjs = ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring, 
-+			PR_FALSE /* keys only */, &status);
-+        /* TODO: How do we map status to *pError? */
++        /* TODO: Fix discrepancy between our usage of the return value as
++         * as an int and the declaration as a SECStatus. Typecasting as a
++         * temporary workaround.
++         */
++        nobjs = (int) ReadDERFromFile(&derlist, filename, PR_TRUE, &cipher, &ivstring, PR_TRUE /* certs only */);
          if (nobjs < 1)
              goto loser;
  
 diff -up ./nss/lib/ckfw/pem/rsawrapr.c.compile_Werror ./nss/lib/ckfw/pem/rsawrapr.c
 --- ./nss/lib/ckfw/pem/rsawrapr.c.compile_Werror	2014-01-23 06:28:18.000000000 -0800
-+++ ./nss/lib/ckfw/pem/rsawrapr.c	2015-11-12 06:59:07.831377167 -0800
++++ ./nss/lib/ckfw/pem/rsawrapr.c	2015-11-13 12:07:29.220887368 -0800
 @@ -93,6 +93,8 @@ pem_PublicModulusLen(NSSLOWKEYPublicKey
      return 0;
  }
@@ -128,64 +107,40 @@ diff -up ./nss/lib/ckfw/pem/rsawrapr.c.compile_Werror ./nss/lib/ckfw/pem/rsawrap
   * Format one block of data for public/private key encryption using
 diff -up ./nss/lib/ckfw/pem/util.c.compile_Werror ./nss/lib/ckfw/pem/util.c
 --- ./nss/lib/ckfw/pem/util.c.compile_Werror	2014-01-23 06:28:18.000000000 -0800
-+++ ./nss/lib/ckfw/pem/util.c	2015-11-12 06:59:07.831377167 -0800
-@@ -58,7 +58,7 @@
- #include <stdarg.h>
++++ ./nss/lib/ckfw/pem/util.c	2015-11-13 12:22:52.282196306 -0800
+@@ -131,7 +131,8 @@ static SECStatus FileToItem(SECItem * ds
+     return SECFailure;
+ }
  
- #define CHUNK_SIZE  512
--#define PUT_Object(obj,err) \
-+#define PUT_Object(obj,pErr) \
-   { \
-     if (count >= size) { \
-     *derlist = *derlist ? \
-@@ -67,7 +67,7 @@
-                 nss_ZNEWARRAY(NULL, SECItem *, \
-                                (size+CHUNK_SIZE) ) ; \
-       if ((SECItem **)NULL == *derlist) { \
--        err = CKR_HOST_MEMORY; \
-+        *pErr = CKR_HOST_MEMORY; \
-         goto loser; \
-       } \
-       size += CHUNK_SIZE; \
-@@ -133,19 +133,20 @@ static SECStatus FileToItem(SECItem * ds
- 
- int
+-int
++/* FIX: Returns a SECStatus yet callers take result as a count */
++SECStatus
  ReadDERFromFile(SECItem *** derlist, char *filename, PRBool ascii,
--		int *cipher, char **ivstring, PRBool certsonly)
-+		int *cipher, char **ivstring, PRBool certsonly, SECStatus *pError)
+ 		int *cipher, char **ivstring, PRBool certsonly)
  {
-     SECStatus rv;
-     PRFileDesc *inFile;
-     int count = 0, size = 0;
-     SECItem *der = NULL;
--    int error;
-     SECItem filedata;
-     char *c, *iv;
- 
-     inFile = PR_Open(filename, PR_RDONLY, 0);
--    if (!inFile)
-+    if (!inFile) {
-+      *pError = SECFailure;
- 	return -1;
-+    }
- 
-     if (ascii) {
- 	/* First convert ascii to binary */
-@@ -237,7 +238,7 @@ ReadDERFromFile(SECItem *** derlist, cha
+@@ -237,7 +238,12 @@ ReadDERFromFile(SECItem *** derlist, cha
  		    goto loser;
  		}
                  if ((certsonly && !key) || (!certsonly && key)) {
--		    PUT_Object(der, error);
-+		    PUT_Object(der, pError);
++		    error = CKR_OK;
+ 		    PUT_Object(der, error);
++		    if (error != CKR_OK) {
++			free(der);
++			goto loser;
++		    }
                  } else {
                      free(der->data);
                      free(der);
-@@ -255,7 +256,7 @@ ReadDERFromFile(SECItem *** derlist, cha
+@@ -255,7 +261,12 @@ ReadDERFromFile(SECItem *** derlist, cha
  	    }
  
  	    /* NOTE: This code path has never been tested. */
--	    PUT_Object(der, error);
-+	    PUT_Object(der, pError);
++	    error = CKR_OK;
+ 	    PUT_Object(der, error);
++	    if (error != CKR_OK) {
++		free(der);
++		goto loser;
++	    }
  	}
  
  	nss_ZFreeIf(filedata.data);
