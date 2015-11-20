@@ -1,6 +1,6 @@
 %global nspr_version 4.10.10
-%global nss_util_version 3.20.1
-%global nss_softokn_version 3.20.1
+%global nss_util_version 3.21.0
+%global nss_softokn_version 3.21.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -828,6 +828,10 @@ fi
 
 
 %changelog
+* Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
+- Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
+- Bug 1284095 - all https fails with sec_error_no_token
+
 * Sun Nov 15 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-3
 - Add references to bugs filed upstream
 
