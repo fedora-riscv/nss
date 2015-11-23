@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.0
+Version:          3.21.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -828,6 +828,9 @@ fi
 
 
 %changelog
+* Mon Nov 23 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.2-1
+- Experimental
+
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
 - Resolves: Bug 1284095 - all https fails with sec_error_no_token
