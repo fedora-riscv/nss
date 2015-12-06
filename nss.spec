@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.2
+Version:          3.21.4
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1%{?dist}
@@ -828,8 +828,8 @@ fi
 
 
 %changelog
-* Mon Nov 23 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.2-1
-- Experimental
+* Sat Dec 05 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.4-1
+- Update sources to new version from upstream BUG1168917_BRANCH 
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
