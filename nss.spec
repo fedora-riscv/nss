@@ -828,7 +828,7 @@ fi
 
 
 %changelog
-* Sat Dec 05 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.4-1
+* Sat Dec 12 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.4-1
 - Update sources to new version from upstream BUG1168917_BRANCH 
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
