@@ -1,6 +1,6 @@
 %global nspr_version 4.10.10
-%global nss_util_version 3.21.0
-%global nss_softokn_version 3.21.0
+%global nss_util_version 3.24.5
+%global nss_softokn_version 3.24.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.4
+Version:          3.21.5
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1%{?dist}
@@ -828,7 +828,7 @@ fi
 
 
 %changelog
-* Sat Dec 12 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.4-1
+* Sun Dec 13 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.5-1
 - Update sources to new version from upstream BUG1168917_BRANCH 
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
