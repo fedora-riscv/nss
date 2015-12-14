@@ -1,4 +1,4 @@
-%global nspr_version 4.10.10
+/DE%global nspr_version 4.10.10
 %global nss_util_version 3.24.5
 %global nss_softokn_version 3.24.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
@@ -828,7 +828,7 @@ fi
 
 
 %changelog
-* Sun Dec 13 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.5-1
+* Mon Dec 14 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.5-1
 - Update sources to new version from upstream BUG1168917_BRANCH 
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
