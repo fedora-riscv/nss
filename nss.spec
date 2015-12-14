@@ -1,6 +1,6 @@
 %global nspr_version 4.10.10
-%global nss_util_version 3.24.5
-%global nss_softokn_version 3.24.5
+%global nss_util_version 3.21.5
+%global nss_softokn_version 3.21.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
