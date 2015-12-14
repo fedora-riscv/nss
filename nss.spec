@@ -1,4 +1,4 @@
-/DE%global nspr_version 4.10.10
+%global nspr_version 4.10.10
 %global nss_util_version 3.24.5
 %global nss_softokn_version 3.24.5
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
