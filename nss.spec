@@ -187,14 +187,12 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-%patch52 -p1 -b .disableSSL2libssl
-%patch53 -p1 -b .disableSSL2tests
-popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
+%patch52 -p0 -b .disableSSL2libssl
+%patch53 -p1 -b .disableSSL2tests
 
 #########################################################
 # Higher-level libraries and test tools need access to

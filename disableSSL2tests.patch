@@ -1,6 +1,6 @@
-diff -up ./tests/ssl/ssl.sh.disableSSL2tests ./tests/ssl/ssl.sh
---- ./tests/ssl/ssl.sh.disableSSL2tests	2015-12-12 12:03:41.000000000 -0800
-+++ ./tests/ssl/ssl.sh	2015-12-12 12:25:30.310865617 -0800
+diff -up ./nss/tests/ssl/ssl.sh.disableSSL2tests ./nss/tests/ssl/ssl.sh
+--- ./nss/tests/ssl/ssl.sh.disableSSL2tests	2015-12-16 13:32:08.000000000 -0800
++++ ./nss/tests/ssl/ssl.sh	2015-12-16 15:15:48.353748930 -0800
 @@ -62,9 +62,14 @@ ssl_init()
    NSS_SSL_RUN=${NSS_SSL_RUN:-$nss_ssl_run}
  
@@ -15,34 +15,36 @@ diff -up ./tests/ssl/ssl.sh.disableSSL2tests ./tests/ssl/ssl.sh
 +  fi
    SSLAUTH=${QADIR}/ssl/sslauth.txt
 -  SSLSTRESS=${QADIR}/ssl/sslstress.txt
+   SSLPOLICY=${QADIR}/ssl/sslpolicy.txt
    REQUEST_FILE=${QADIR}/ssl/sslreq.dat
  
-   #temparary files
-@@ -120,7 +125,11 @@ is_selfserv_alive()
+@@ -121,7 +126,11 @@ is_selfserv_alive()
    fi
  
    echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
+-  kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
 +  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
-+  echo "No server to kill"
++      echo "No server to kill"
 +  else
-   kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
++      kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
 +  fi
  
    echo "selfserv with PID ${PID} found at `date`"
  }
-@@ -143,7 +152,11 @@ wait_for_selfserv()
+@@ -144,7 +153,11 @@ wait_for_selfserv()
        ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
                -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
        if [ $? -ne 0 ]; then
+-          html_failed "Waiting for Server"
 +          if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
 +              html_passed "Server never started"
 +          else
-           html_failed "Waiting for Server"
++             html_failed "Waiting for Server"
 +          fi
        fi
    fi
    is_selfserv_alive
-@@ -214,15 +227,16 @@ start_selfserv()
+@@ -215,15 +228,16 @@ start_selfserv()
    echo "selfserv starting at `date`"
    echo "selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \\"
    echo "         ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID}\\"
@@ -62,7 +64,7 @@ diff -up ./tests/ssl/ssl.sh.disableSSL2tests ./tests/ssl/ssl.sh
        RET=$?
    fi
  
-@@ -279,6 +293,12 @@ ssl_cov()
+@@ -280,6 +294,12 @@ ssl_cov()
        echo "${testname}" | grep "SSL2" > /dev/null
        SSL2=$?
  
