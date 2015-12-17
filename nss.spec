@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.6
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -191,8 +191,10 @@ low level services.
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
-%patch52 -p0 -b .disableSSL2libssl
+pushd nss
+%patch52 -p1 -b .disableSSL2libssl
 %patch53 -p1 -b .disableSSL2tests
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -826,9 +828,10 @@ fi
 
 
 %changelog
-* Wed Dec 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.5-2
+* Wed Dec 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.6-1.0
 - Update sources to new version from upstream BUG1168917_BRANCH 
 - Includes latest checkin for policy work
+- Update several patches on account of the new sources
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
