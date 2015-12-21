@@ -828,9 +828,9 @@ fi
 
 
 %changelog
-* Wed Dec 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.6-1.0
+* Sun Dec 21 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.6-1.1
 - Update sources to new version from upstream BUG1168917_BRANCH 
-- Includes latest checkin for policy work
+- Includes latest checkins for policy work on the branch
 - Update several patches on account of the new sources
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
