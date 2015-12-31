@@ -5,7 +5,7 @@
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches %{power64} sparc64 x86_64
+%define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -828,6 +828,9 @@ fi
 
 
 %changelog
+* Wed Dec 30 2015 Michal Toman <mtoman@fedoraproject.org> - 3.21.0-5
+- Add 64-bit MIPS to multilib arches
+
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
 - Resolves: Bug 1284095 - all https fails with sec_error_no_token
