@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.21.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -291,10 +291,6 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-# external tests are causing build problems because they access ssl internal types
-# TODO: Investigate as there may be a better solution
-export NSS_DISABLE_GTESTS=1
-
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
@@ -463,7 +459,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -828,6 +824,11 @@ fi
 
 
 %changelog
+* Fri Jan 15 2016 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.2
+- Resolves: Bug 1299040 - Enable ssl_gtests upstream test suite
+- Remove 'export NSS_DISABLE_GTESTS=1' go ssl_gtests are built
+- Use %%define when specifying the nss_tests to run
+
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.1
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
 - Resolves: Bug 1284095 - all https fails with sec_error_no_token
