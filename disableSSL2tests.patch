@@ -1,0 +1,127 @@
+diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
+--- a/tests/ssl/ssl.sh
++++ b/tests/ssl/ssl.sh
+@@ -57,19 +57,24 @@ ssl_init()
+   fi
+ 
+   PORT=${PORT-8443}
+   NSS_SSL_TESTS=${NSS_SSL_TESTS:-normal_normal}
+   nss_ssl_run="stapling cov auth stress"
+   NSS_SSL_RUN=${NSS_SSL_RUN:-$nss_ssl_run}
+ 
+   # Test case files
+-  SSLCOV=${QADIR}/ssl/sslcov.txt
++  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ]; then
++    SSLCOV=${QADIR}/ssl/sslcov.noSSL2orExport.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.noSSL2orExport.txt
++  else
++    SSLCOV=${QADIR}/ssl/sslcov.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.txt
++  fi
+   SSLAUTH=${QADIR}/ssl/sslauth.txt
+-  SSLSTRESS=${QADIR}/ssl/sslstress.txt
+   REQUEST_FILE=${QADIR}/ssl/sslreq.dat
+ 
+   #temparary files
+   SERVEROUTFILE=${TMP}/tests_server.$$
+   SERVERPID=${TMP}/tests_pid.$$
+ 
+   R_SERVERPID=../tests_pid.$$
+ 
+@@ -115,17 +120,21 @@ is_selfserv_alive()
+   if [ "${OS_ARCH}" = "WINNT" ] && \
+      [ "$OS_NAME" = "CYGWIN_NT" -o "$OS_NAME" = "MINGW32_NT" ]; then
+       PID=${SHELL_SERVERPID}
+   else
+       PID=`cat ${SERVERPID}`
+   fi
+ 
+   echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
++  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
++  echo "No server to kill"
++  else
+   kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
++  fi
+ 
+   echo "selfserv with PID ${PID} found at `date`"
+ }
+ 
+ ########################### wait_for_selfserv ##########################
+ # local shell function to wait until selfserver is running and initialized
+ ########################################################################
+ wait_for_selfserv()
+@@ -138,17 +147,21 @@ wait_for_selfserv()
+   if [ $? -ne 0 ]; then
+       sleep 5
+       echo "retrying to connect to selfserv at `date`"
+       echo "tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \\"
+       echo "        -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}"
+       ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
+               -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
+       if [ $? -ne 0 ]; then
++          if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
++              html_passed "Server never started"
++          else
+           html_failed "Waiting for Server"
++          fi
+       fi
+   fi
+   is_selfserv_alive
+ }
+ 
+ ########################### kill_selfserv ##############################
+ # local shell function to kill the selfserver after the tests are done
+ ########################################################################
+@@ -209,25 +222,26 @@ start_selfserv()
+       ECC_OPTIONS=""
+   fi
+   if [ "$1" = "mixed" ]; then
+       ECC_OPTIONS="-e ${HOSTADDR}-ecmixed"
+   fi
+   echo "selfserv starting at `date`"
+   echo "selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \\"
+   echo "         ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID}\\"
+-  echo "         $verbose -H 1 &"
++  echo "         $verbose -H 1 -V ssl3: &"
+   if [ ${fileout} -eq 1 ]; then
+       ${PROFTOOL} ${BINDIR}/selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \
+                ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 \
+-               > ${SERVEROUTFILE} 2>&1 &
++               -V ssl3:> ${SERVEROUTFILE} 2>&1 &
+       RET=$?
+   else
+       ${PROFTOOL} ${BINDIR}/selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \
+-               ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 &
++               ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 \
++               -V ssl3: &
+       RET=$?
+   fi
+ 
+   # The PID $! returned by the MKS or Cygwin shell is not the PID of
+   # the real background process, but rather the PID of a helper
+   # process (sh.exe).  MKS's kill command has a bug: invoking kill
+   # on the helper process does not terminate the real background
+   # process.  Our workaround has been to have selfserv save its PID
+@@ -274,16 +288,22 @@ ssl_cov()
+   exec < ${SSLCOV}
+   while read ectype testmax param testname
+   do
+       echo "${testname}" | grep "EXPORT" > /dev/null 
+       EXP=$?
+       echo "${testname}" | grep "SSL2" > /dev/null
+       SSL2=$?
+ 
++      #  skip export and ssl2 tests when build has disabled SSL2
++      if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 || ${SSL2} -eq 0 ]; then
++         echo "yyy exp/ssl2 test skipped: (NSS_NO_SSL2,EXP,SSL2)=(${NSS_NO_SSL2},${EXP},${SSL2})"
++         continue
++      fi
++
+       if [ "${SSL2}" -eq 0 ] ; then
+           # We cannot use asynchronous cert verification with SSL2
+           SSL2_FLAGS=-O
+           VMIN="ssl2"
+       else
+           # Do not enable SSL2 for non-SSL2-specific tests. SSL2 is disabled by
+           # default in libssl but it is enabled by default in tstclnt; we want
+           # to test the libssl default whenever possible.

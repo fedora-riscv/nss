@@ -8,6 +8,6 @@ TestCA.ca.cert
 TestUser50.cert
 TestUser51.cert
 /nss-pem-20140125.tar.bz2
-/nss-3.16.0.tar.gz
-/nss-3.16.1.tar.gz
-/nss-pem-20140425.tar.bz2
+/PayPalRootCA.cert
+/PayPalICA.cert
+/nss-3.21.0.tar.gz
