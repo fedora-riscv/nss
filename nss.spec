@@ -1,6 +1,6 @@
-%global nspr_version 4.10.10
-%global nss_util_version 3.21.0
-%global nss_softokn_version 3.21.0
+%global nspr_version 4.11.0
+%global nss_util_version 3.22.0
+%global nss_softokn_version 3.22.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.0
+Version:          3.22.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          7%{?dist}
+Release:          0.2%{?dist}.test.1
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -105,6 +105,8 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # The submission will be very different from this patch as
 # cleanup there is already in progress there.
 Patch59: pem-compile-with-Werror.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1246499
+Patch60: vfyserv-defined-but-not-used.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -195,6 +197,9 @@ popd
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
+pushd nss
+%patch60 -p1 -b .defined_not_used
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -235,6 +240,9 @@ cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslstr
 popd
 
 %build
+
+# FIXME comment out once we figure out why the tests file to compile
+# export NSS_DISABLE_GTESTS=1
 
 export NSS_NO_SSL2_NO_EXPORT=1
 
@@ -824,6 +832,9 @@ fi
 
 
 %changelog
+* Sat Feb 06 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-0.2.test.1
+- Rebase to nss 3.22
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.21.0-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
