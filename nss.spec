@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.22.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          0.2%{?dist}.test.1
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -107,6 +107,8 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: pem-compile-with-Werror.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1246499
 Patch60: vfyserv-defined-but-not-used.patch
+# TODO: Util we rebase to nss-3.23 which already has this fixed
+Patch61: fix_warnings_treated_as_errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -199,6 +201,7 @@ popd
 %patch59 -p0 -b .compile_Werror
 pushd nss
 %patch60 -p1 -b .defined_not_used
+%patch61 -p1 -b .fix_warnings
 popd
 
 #########################################################
@@ -311,8 +314,7 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc with more than suite-b
-NSS_ECC_MORE_THAN_SUITE_B=1
-export NSS_ECC_MORE_THAN_SUITE_B
+export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
@@ -832,7 +834,7 @@ fi
 
 
 %changelog
-* Sat Feb 06 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-0.2.test.1
+* Sat Feb 06 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-2
 - Rebase to nss 3.22
 
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.21.0-7
