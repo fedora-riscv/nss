@@ -1,0 +1,18 @@
+diff -up ./cmd/vfyserv/vfyserv.h.defined_not_used ./cmd/vfyserv/vfyserv.h
+--- ./cmd/vfyserv/vfyserv.h.defined_not_used	2016-02-06 18:32:54.143216370 -0800
++++ ./cmd/vfyserv/vfyserv.h	2016-02-06 18:33:24.943636231 -0800
+@@ -135,14 +135,4 @@ void lockedVars_WaitForDone(lockedVars *
+ 
+ int lockedVars_AddToCount(lockedVars *lv, int addend);
+ 
+-/* Buffer stuff. */
+-
+-static const char stopCmd[] = { "GET /stop " };
+-static const char defaultHeader[] = {
+-	"HTTP/1.0 200 OK\r\n"
+-	"Server: SSL sample server\r\n"
+-	"Content-type: text/plain\r\n"
+-	"\r\n"
+-};
+-
+ #endif
