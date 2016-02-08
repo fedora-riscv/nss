@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.22.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -831,6 +831,9 @@ fi
 
 
 %changelog
+* Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-3
+- Update .gitignore as part of updating to nss 3.22
+
 * Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-2
 - Update to NSS 3.22
 
