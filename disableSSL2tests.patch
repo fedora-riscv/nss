@@ -1,12 +1,11 @@
-diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
---- a/tests/ssl/ssl.sh
-+++ b/tests/ssl/ssl.sh
+--- ./tests/ssl/ssl.sh.disableSSL2tests	2016-01-29 02:30:10.000000000 -0800
++++ ./tests/ssl/ssl.sh	2016-02-06 11:50:26.496668124 -0800
 @@ -57,19 +57,24 @@ ssl_init()
    fi
  
    PORT=${PORT-8443}
    NSS_SSL_TESTS=${NSS_SSL_TESTS:-normal_normal}
-   nss_ssl_run="stapling cov auth stress"
+   nss_ssl_run="stapling signed_cert_timestamps cov auth stress"
    NSS_SSL_RUN=${NSS_SSL_RUN:-$nss_ssl_run}
  
    # Test case files
@@ -20,6 +19,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
 +  fi
    SSLAUTH=${QADIR}/ssl/sslauth.txt
 -  SSLSTRESS=${QADIR}/ssl/sslstress.txt
+   SSLPOLICY=${QADIR}/ssl/sslpolicy.txt
    REQUEST_FILE=${QADIR}/ssl/sslreq.dat
  
    #temparary files
@@ -27,8 +27,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
    SERVERPID=${TMP}/tests_pid.$$
  
    R_SERVERPID=../tests_pid.$$
- 
-@@ -115,17 +120,21 @@ is_selfserv_alive()
+@@ -116,17 +121,21 @@ is_selfserv_alive()
    if [ "${OS_ARCH}" = "WINNT" ] && \
       [ "$OS_NAME" = "CYGWIN_NT" -o "$OS_NAME" = "MINGW32_NT" ]; then
        PID=${SHELL_SERVERPID}
@@ -50,7 +49,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
  # local shell function to wait until selfserver is running and initialized
  ########################################################################
  wait_for_selfserv()
-@@ -138,17 +147,21 @@ wait_for_selfserv()
+@@ -139,17 +148,21 @@ wait_for_selfserv()
    if [ $? -ne 0 ]; then
        sleep 5
        echo "retrying to connect to selfserv at `date`"
@@ -72,7 +71,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
  ########################### kill_selfserv ##############################
  # local shell function to kill the selfserver after the tests are done
  ########################################################################
-@@ -209,25 +222,26 @@ start_selfserv()
+@@ -210,25 +223,26 @@ start_selfserv()
        ECC_OPTIONS=""
    fi
    if [ "$1" = "mixed" ]; then
@@ -102,7 +101,7 @@ diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
    # process (sh.exe).  MKS's kill command has a bug: invoking kill
    # on the helper process does not terminate the real background
    # process.  Our workaround has been to have selfserv save its PID
-@@ -274,16 +288,22 @@ ssl_cov()
+@@ -275,16 +289,22 @@ ssl_cov()
    exec < ${SSLCOV}
    while read ectype testmax param testname
    do

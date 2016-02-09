@@ -1,11 +1,11 @@
-%global nspr_version 4.10.10
-%global nss_util_version 3.21.0
-%global nss_softokn_version 3.21.0
+%global nspr_version 4.11.0
+%global nss_util_version 3.22.0
+%global nss_softokn_version 3.22.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches %{power64} sparc64 x86_64
+%define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.0
+Version:          3.22.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -70,7 +70,10 @@ Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=402712
 Patch6:           nss-enable-pem.patch
+# Below reference applies to most pem module related patches
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
 # must statically link pem against the freebl in the buildroot
 # Needed only when freebl on tree has new APIS
@@ -102,6 +105,10 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # The submission will be very different from this patch as
 # cleanup there is already in progress there.
 Patch59: pem-compile-with-Werror.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1246499
+Patch60: vfyserv-defined-but-not-used.patch
+# Local: Upstream nss-3.23 has these fixed
+Patch61: fix_warnings_treated_as_errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -192,6 +199,10 @@ popd
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
+pushd nss
+%patch60 -p1 -b .defined_not_used
+%patch61 -p1 -b .fix_warnings
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -288,10 +299,6 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-# external tests are causing build problems because they access ssl internal types
-# TODO: Investigate as there may be a better solution
-export NSS_DISABLE_GTESTS=1
-
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
@@ -304,8 +311,7 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc with more than suite-b
-NSS_ECC_MORE_THAN_SUITE_B=1
-export NSS_ECC_MORE_THAN_SUITE_B
+export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
@@ -825,6 +831,9 @@ fi
 
 
 %changelog
+* Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-1.0
+- Update to NSS 3.22
+
 * Fri Jan 15 2016 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.2
 - Resolves: Bug 1299040 - Enable ssl_gtests upstream test suite
 - Remove 'export NSS_DISABLE_GTESTS=1' go ssl_gtests are built
