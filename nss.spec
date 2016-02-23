@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.22.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -831,6 +831,9 @@ fi
 
 
 %changelog
+* Tue Feb 23 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1.1
+- Fix ssl2/exp test disabling to run all the required tests
+
 * Mon Feb 22 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1.0
 - Rebase to NSS 3.22.1
 
