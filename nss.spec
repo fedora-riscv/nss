@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.22.1
-%global nss_softokn_version 3.22.1
+%global nss_util_version 3.22.2
+%global nss_softokn_version 3.22.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.22.1
+Version:          3.22.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -831,6 +831,9 @@ fi
 
 
 %changelog
+* Sun Feb 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
+- Rebase to NSS 3.22.2
+
 * Tue Feb 23 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-3
 - Fix ssl2/exp test disabling to run all the required tests
 
