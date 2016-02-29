@@ -831,7 +831,7 @@ fi
 
 
 %changelog
-* Sat Feb 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
+* Mon Feb 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
 - Rebase to NSS 3.22.2
 
 * Tue Feb 23 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1.1
