@@ -36,7 +36,7 @@
    fi
  
    echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
-+  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
++  if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
 +  echo "No server to kill"
 +  else
    kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
@@ -58,7 +58,7 @@
        ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
                -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
        if [ $? -ne 0 ]; then
-+          if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 -o ${SSL2} -eq 0 ]; then
++          if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
 +              html_passed "Server never started"
 +          else
            html_failed "Waiting for Server"
@@ -111,8 +111,8 @@
        SSL2=$?
  
 +      #  skip export and ssl2 tests when build has disabled SSL2
-+      if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [ ${EXP} -eq 0 || ${SSL2} -eq 0 ]; then
-+         echo "yyy exp/ssl2 test skipped: (NSS_NO_SSL2,EXP,SSL2)=(${NSS_NO_SSL2},${EXP},${SSL2})"
++      if [ "${NSS_NO_SSL2_NO_EXPORT}" = "1" ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
++         echo "exp/ssl2 test skipped: (NSS_NO_SSL2,EXP,SSL2)=(${NSS_NO_SSL2},${EXP},${SSL2})"
 +         continue
 +      fi
 +

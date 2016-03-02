@@ -1,6 +1,6 @@
-%global nspr_version 4.11.0
-%global nss_util_version 3.22.0
-%global nss_softokn_version 3.22.0
+%global nspr_version 4.12.0
+%global nss_util_version 3.22.2
+%global nss_softokn_version 3.22.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.22.0
+Version:          3.22.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -831,6 +831,9 @@ fi
 
 
 %changelog
+* Mon Feb 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
+- Rebase to NSS 3.22.2
+
 * Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-1.0
 - Update to NSS 3.22
 
