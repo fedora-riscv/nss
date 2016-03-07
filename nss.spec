@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.22.2
-%global nss_softokn_version 3.22.2
+%global nss_util_version 3.23.0
+%global nss_softokn_version 3.23.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.22.2
+Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -87,7 +87,7 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # This patch uses the gcc-iquote dir option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to place the in-tree directories at the head of the list of list of directories
-# to be searched for for header files. This ensures a build even when system 
+# to be searched for for header files. This ensures a build even when system
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
@@ -105,10 +105,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # The submission will be very different from this patch as
 # cleanup there is already in progress there.
 Patch59: pem-compile-with-Werror.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1246499
-Patch60: vfyserv-defined-but-not-used.patch
-# Local: Upstream nss-3.23 has these fixed
-Patch61: fix_warnings_treated_as_errors.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -173,7 +169,7 @@ Requires:         nss-devel = %{version}-%{release}
 Requires:         nss-softokn-freebl-devel >= %{nss_softokn_version}
 
 %description pkcs11-devel
-Library files for developing PKCS #11 modules using basic NSS 
+Library files for developing PKCS #11 modules using basic NSS
 low level services.
 
 
@@ -199,10 +195,6 @@ popd
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 %patch59 -p0 -b .compile_Werror
-pushd nss
-%patch60 -p1 -b .defined_not_used
-%patch61 -p1 -b .fix_warnings
-popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -337,7 +329,7 @@ popd
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
-# here match the ones nss has for its Requires. 
+# here match the ones nss has for its Requires.
 # Using the current %%{nss_softokn_version} for fedora again
 %{__mkdir_p} ./dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
@@ -392,7 +384,7 @@ done
 for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
   xmlto man ${m}
 done
- 
+
 
 %check
 if [ ${DISABLETEST:-0} -eq 1 ]; then
@@ -486,9 +478,9 @@ fi
 popd
 
 # Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
-# Grep exits with status greater than 1 if an error ocurred. 
-# If there are test failures we expect TEST_FAILURES > 0 and GREP_EXIT_STATUS = 0, 
-# With no test failures we expect TEST_FAILURES = 0 and GREP_EXIT_STATUS = 1, whereas 
+# Grep exits with status greater than 1 if an error ocurred.
+# If there are test failures we expect TEST_FAILURES > 0 and GREP_EXIT_STATUS = 0,
+# With no test failures we expect TEST_FAILURES = 0 and GREP_EXIT_STATUS = 1, whereas
 # GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
@@ -602,11 +594,11 @@ done
 ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
 
 # Copy the man pages for scripts
-for f in nss-config setup-nsssysinit; do 
+for f in nss-config setup-nsssysinit; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the nss tools
-for f in "%{allTools}"; do 
+for f in "%{allTools}"; do
   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 %if %{defined rhel}
@@ -616,11 +608,11 @@ install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_datadir}/doc/nss-tool
 %endif
 
 # Copy the man pages for the configuration files
-for f in pkcs11.txt; do 
+for f in pkcs11.txt; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 # Copy the man pages for the nss databases
-for f in cert8.db cert9.db key3.db key4.db secmod.db; do 
+for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
@@ -831,6 +823,9 @@ fi
 
 
 %changelog
+* Sun Mar 06 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-1.0
+- Rebase to NSS 3.23.0
+
 * Mon Feb 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
 - Rebase to NSS 3.22.2
 
