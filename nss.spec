@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -58,7 +58,7 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source12:         %{name}-pem-20140125.tar.bz2
+Source12:         %{name}-pem-20160308.tar.bz2
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -98,13 +98,6 @@ Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 
-# As of nss-3.21 we compile NSS with -Werror.
-# see https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
-# This requires a cleanup of the PEM module as we have it here.
-# TODO: submit a patch to the interim nss-pem upstream project
-# The submission will be very different from this patch as
-# cleanup there is already in progress there.
-Patch59: pem-compile-with-Werror.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -194,7 +187,6 @@ popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
-%patch59 -p0 -b .compile_Werror
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -823,7 +815,11 @@ fi
 
 
 %changelog
-* Sun Mar 06 2016 emaldona <emaldona@redhat.com> - 3.23.0-1.0
+* Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-3
+- Update pem sources to latest from nss-pem upstream
+- Resolves: Bug 1300652 - [PEM] insufficient input validity checking while loading a private key
+
+* Sun Mar 06 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-1.0
 - Rebase to NSS 3.23
 
 * Sun Feb 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
@@ -927,7 +923,7 @@ fi
 - Backing out from disabling ssl2 until the patches are fixed
 
 * Mon Feb 09 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-2
-- Disable SSL2 support at build time 
+- Disable SSL2 support at build time
 - Fix syntax errors in various shell scripts
 - Resolves: Bug 1189952 - Disable SSL2 and the export cipher suites
 
@@ -1220,7 +1216,7 @@ fi
 * Mon Aug 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-8
 - Rebase pem sources to fedora-hosted upstream to pick up two fixes from rhel-6.3
 - Resolves: rhbz#847460 - Fix invalid read and free on invalid cert load
-- Resolves: rhbz#847462 - PEM module may attempt to free uninitialized pointer 
+- Resolves: rhbz#847462 - PEM module may attempt to free uninitialized pointer
 - Remove unneeded fix gcc 4.7 c++ issue in secmodt.h that actually undoes the upstream fix
 
 * Mon Aug 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-7
@@ -1461,7 +1457,7 @@ fi
 * Thu Sep 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
 - Update to 3.12.8
 - Prevent disabling of nss-sysinit on package upgrade (#636787)
-- Create pkcs11.txt with correct permissions regardless of umask (#636792) 
+- Create pkcs11.txt with correct permissions regardless of umask (#636792)
 - Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
 - Added provides pkcs11-devel-static to comply with packaging guidelines (#609612)
 
@@ -1721,7 +1717,7 @@ fi
 - fix to not clone internal objects in collect_objects().  (501118)
 - fix to not bypass initialization if module arguments are omitted. (501058)
 - fix numerous gcc warnings. (500815)
-- fix to support arbitrarily long password while loading a private key. (500180) 
+- fix to support arbitrarily long password while loading a private key. (500180)
 - fix memory leak in make_key and memory leaks and return values in pem_mdSession_Login (501191)
 * Mon Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
 - add patch for bug 502133 upstream bug 496997
@@ -1849,7 +1845,7 @@ fi
 
 * Fri Mar 02 2007 Kai Engert <kengert@redhat.com> - 3.11.5-2
 - Fix rhbz#230545, failure to enable FIPS mode
-- Fix rhbz#220542, make NSS more tolerant of resets when in the 
+- Fix rhbz#220542, make NSS more tolerant of resets when in the
   middle of prompting for a user password.
 
 * Sat Feb 24 2007 Kai Engert <kengert@redhat.com> - 3.11.5-1
