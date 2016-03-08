@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -58,7 +58,7 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source12:         %{name}-pem-20140125.tar.bz2
+Source12:         %{name}-pem-20160308.tar.bz2
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -98,13 +98,6 @@ Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 
-# As of nss-3.21 we compile NSS with -Werror.
-# see https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
-# This requires a cleanup of the PEM module as we have it here.
-# TODO: submit a patch to the interim nss-pem upstream project
-# The submission will be very different from this patch as
-# cleanup there is already in progress there.
-Patch59: pem-compile-with-Werror.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -194,7 +187,6 @@ popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
-%patch59 -p0 -b .compile_Werror
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -823,7 +815,11 @@ fi
 
 
 %changelog
-* Sat Mar 05 2016 emaldona <emaldona@redhat.com> - 3.23.0-2
+* Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-3
+- Update pem sources to latest from nss-pem upstream
+- Resolves: Bug 1300652 - [PEM] insufficient input validity checking while loading a private key
+
+* Sat Mar 05 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-2
 - Rebase to NSS 3.23
 
 * Sat Feb 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-2
