@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -815,6 +815,9 @@ fi
 
 
 %changelog
+* Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-4
+- Remove unused patch rendered obsolete by pem update
+
 * Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-3
 - Update pem sources to latest from nss-pem upstream
 - Resolves: Bug 1300652 - [PEM] insufficient input validity checking while loading a private key
