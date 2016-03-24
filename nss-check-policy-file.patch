@@ -1,0 +1,188 @@
+diff -up ./nss/lib/nss/config.mk.check_policy_file ./nss/lib/nss/config.mk
+--- ./nss/lib/nss/config.mk.check_policy_file	2016-03-16 14:44:30.254078910 -0700
++++ ./nss/lib/nss/config.mk	2016-03-16 14:44:30.290079522 -0700
+@@ -104,3 +104,7 @@ DEFINES += -DWIN32_NSS3_DLL_COMPAT
+ DLLFLAGS += -EXPORT:mktemp=nss_mktemp,PRIVATE
+ endif
+ endif
++
++ifdef POLICY_FILE
++DEFINES += -DPOLICY_FILE=\"$(POLICY_FILE)\" -DPOLICY_PATH=\"$(POLICY_PATH)\"
++endif
+diff -up ./nss/lib/nss/nssinit.c.check_policy_file ./nss/lib/nss/nssinit.c
+--- ./nss/lib/nss/nssinit.c.check_policy_file	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/nss/nssinit.c	2016-03-16 15:08:54.455301088 -0700
+@@ -335,7 +335,7 @@ nss_FindExternalRoot(const char *dbpath,
+  * set statics (from PKCS11_Configure, for instance), and uses it to kick off
+  * the loading of the various PKCS #11 modules.
+  */
+-static SECStatus
++static SECMODModule *
+ nss_InitModules(const char *configdir, const char *certPrefix, 
+ 		const char *keyPrefix, const char *secmodName, 
+ 		const char *updateDir, const char *updCertPrefix, 
+@@ -345,7 +345,7 @@ nss_InitModules(const char *configdir, c
+ 		PRBool noModDB, PRBool forceOpen, PRBool optimizeSpace,
+ 		PRBool isContextInit)
+ {
+-    SECStatus rv = SECFailure;
++    SECMODModule *module = NULL;
+     char *moduleSpec = NULL;
+     char *flags = NULL;
+     char *lconfigdir = NULL;
+@@ -360,12 +360,12 @@ nss_InitModules(const char *configdir, c
+ 
+     if (NSS_InitializePRErrorTable() != SECSuccess) {
+ 	PORT_SetError(SEC_ERROR_NO_MEMORY);
+-	return rv;
++	return NULL;
+     }
+ 
+     flags = nss_makeFlags(readOnly,noCertDB,noModDB,forceOpen,
+ 					pwRequired, optimizeSpace);
+-    if (flags == NULL) return rv;
++    if (flags == NULL) return NULL;
+ 
+     /*
+      * configdir is double nested, and Windows uses the same character
+@@ -432,14 +432,16 @@ loser:
+     if (lupdateName) PORT_Free(lupdateName);
+ 
+     if (moduleSpec) {
+-	SECMODModule *module = SECMOD_LoadModule(moduleSpec,NULL,PR_TRUE);
++	module = SECMOD_LoadModule(moduleSpec,NULL,PR_TRUE);
+ 	PR_smprintf_free(moduleSpec);
+ 	if (module) {
+-	    if (module->loaded) rv=SECSuccess;
+-	    SECMOD_DestroyModule(module);
++	    if (!module->loaded) {
++	        SECMOD_DestroyModule(module);
++		module = NULL;
++	    }
+ 	}
+     }
+-    return rv;
++    return module;
+ }
+ 
+ /*
+@@ -525,7 +527,7 @@ nss_Init(const char *configdir, const ch
+ 		 PRBool allowAlreadyInitializedModules,
+ 		 PRBool dontFinalizeModules)
+ {
+-    SECStatus rv = SECFailure;
++    SECMODModule *parent = NULL;
+     PKIX_UInt32 actualMinorVersion = 0;
+     PKIX_Error *pkixError = NULL;
+     PRBool isReallyInitted;
+@@ -635,13 +637,13 @@ nss_Init(const char *configdir, const ch
+     /* Skip the module init if we are already initted and we are trying
+      * to init with noCertDB and noModDB */
+     if (!(isReallyInitted && noCertDB && noModDB)) {
+-	rv = nss_InitModules(configdir, certPrefix, keyPrefix, secmodName, 
++	parent = nss_InitModules(configdir, certPrefix, keyPrefix, secmodName, 
+ 		updateDir, updCertPrefix, updKeyPrefix, updateID, 
+ 		updateName, configName, configStrings, passwordRequired,
+ 		readOnly, noCertDB, noModDB, forceOpen, optimizeSpace, 
+ 		(initContextPtr != NULL));
+ 
+-	if (rv != SECSuccess) {
++	if (parent == NULL) {
+ 	    goto loser;
+ 	}
+     }
+@@ -680,7 +682,24 @@ nss_Init(const char *configdir, const ch
+ 		}
+ 	    }
+ 	}
+-
++#ifdef POLICY_FILE
++        if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS ) {
++	    SECMODModule *module = SECMOD_LoadModule(
++		"name=\"Policy File\" "
++		"parameters=\"configdir='sql:" POLICY_PATH "' "
++		"secmod='" POLICY_FILE "' "
++		"flags=readOnly,noCertDB,forceSecmodChoice,forceOpen\" "
++		"NSS=\"flags=internal,moduleDB,skipFirst,moduleDBOnly,critical\"",
++		parent, PR_TRUE); 
++	    if (module) {
++		PRBool isLoaded = module->loaded;
++		SECMOD_DestroyModule(module);
++		if (!isLoaded) {
++		    goto loser;
++		}
++	    }
++	}
++#endif
+ 	pk11sdr_Init();
+ 	cert_CreateSubjectKeyIDHashTable();
+ 
+@@ -721,6 +740,9 @@ nss_Init(const char *configdir, const ch
+     if (initContextPtr && configStrings) {
+ 	PR_smprintf_free(configStrings);
+     }
++    if (parent) {
++	SECMOD_DestroyModule(parent);
++    }
+ 
+     return SECSuccess;
+ 
+@@ -737,6 +759,9 @@ loser:
+     /* We failed to init, allow one to move forward */
+     PZ_NotifyCondVar(nssInitCondition);
+     PZ_Unlock(nssInitLock);
++    if (parent) {
++	SECMOD_DestroyModule(parent);
++    }
+     return SECFailure;
+ }
+ 
+diff -up ./nss/lib/pk11wrap/pk11pars.c.check_policy_file ./nss/lib/pk11wrap/pk11pars.c
+--- ./nss/lib/pk11wrap/pk11pars.c.check_policy_file	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/pk11wrap/pk11pars.c	2016-03-16 14:44:30.291079539 -0700
+@@ -110,6 +110,7 @@ secmod_NewModule(void)
+ 						  *other flags are set */
+ #define SECMOD_FLAG_MODULE_DB_SKIP_FIRST    0x02
+ #define SECMOD_FLAG_MODULE_DB_DEFAULT_MODDB 0x04
++#define SECMOD_FLAG_MODULE_DB_POLICY_ONLY   0x08
+ 
+ 
+ /* private flags for internal (field in SECMODModule). */
+@@ -704,6 +705,9 @@ SECMOD_CreateModuleEx(const char *librar
+ 	if (NSSUTIL_ArgHasFlag("flags","defaultModDB",nssc)) {
+ 	    flags |= SECMOD_FLAG_MODULE_DB_DEFAULT_MODDB;
+ 	}
++	if (NSSUTIL_ArgHasFlag("flags","policyOnly",nssc)) {
++	    flags |= SECMOD_FLAG_MODULE_DB_POLICY_ONLY;
++	}
+ 	/* additional moduleDB flags could be added here in the future */
+ 	mod->isModuleDB = (PRBool) flags;
+     }
+@@ -743,6 +747,14 @@ SECMOD_GetDefaultModDBFlag(SECMODModule
+ }
+ 
+ PRBool
++secmod_PolicyOnly(SECMODModule *mod)
++{
++   char flags = (char) mod->isModuleDB;
++
++   return (flags & SECMOD_FLAG_MODULE_DB_POLICY_ONLY) ? PR_TRUE : PR_FALSE;
++}
++
++PRBool
+ secmod_IsInternalKeySlot(SECMODModule *mod)
+ {
+    char flags = (char) mod->internal;
+@@ -1526,6 +1538,12 @@ SECMOD_LoadModule(char *modulespec,SECMO
+     if (!module) {
+ 	goto loser;
+     }
++
++    /* a policy only stanza doesn't actually get 'loaded'. policy has already
++     * been parsed as a side effect of the CreateModuleEx call */
++    if (secmod_PolicyOnly(module)) {
++	return module;
++    }
+     if (parent) {
+     	module->parent = SECMOD_ReferenceModule(parent);
+ 	if (module->internal && secmod_IsInternalKeySlot(parent)) {

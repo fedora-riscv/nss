@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -97,6 +97,8 @@ Patch54:          tstclnt-ssl2-off-by-default.patch
 Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+# TODO: file a bug usptream
+Patch59: nss-check-policy-file.patch
 
 
 %description
@@ -187,6 +189,7 @@ popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
+%patch59 -p1 -b .check_policy_file
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -300,6 +303,12 @@ export NSS_ECC_MORE_THAN_SUITE_B=1
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
+
+# Set the policy file location
+# if set NSS will always check for the policy file and load it if it exists
+export POLICY_FILE="policy.cfg"
+# location of the policy file
+export POLICY_PATH="/etc/pki/nssdb"
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is which is exported privately,
@@ -815,6 +824,10 @@ fi
 
 
 %changelog
+* Thu Mar 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.2
+- Load policy file if /etc/pki/nssdb/policy.cfg exists
+- Resolves: Bug 1157720 - NSS should enforce the system-wide crypto policy
+
 * Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-4
 - Remove unused patch rendered obsolete by pem update
 
