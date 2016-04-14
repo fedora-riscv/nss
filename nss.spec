@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -824,7 +824,10 @@ fi
 
 
 %changelog
-* Thu Mar 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.2
+* Thu Apr 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-6
+- Fix typo in the last %%changelog entry
+
+* Thu Mar 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-5
 - Load policy file if /etc/pki/nssdb/policy.cfg exists
 - Resolves: Bug 1157720 - NSS should enforce the system-wide crypto policy
 
