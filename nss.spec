@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -189,7 +189,9 @@ popd
 %patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
+pushd nss
 %patch59 -p1 -b .check_policy_file
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -308,7 +310,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # if set NSS will always check for the policy file and load it if it exists
 export POLICY_FILE="policy.cfg"
 # location of the policy file
-export POLICY_PATH="/etc/pki/nssdb"
+export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is which is exported privately,
@@ -824,6 +826,10 @@ fi
 
 
 %changelog
+* Wed Apr 20 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-7
+- Change the POLICY_PATH to "/etc/crypto-policies/back-ends"
+- Regenerate the check policy patch with hg to provide more context
+
 * Thu Apr 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-6
 - Fix typo in the last %%changelog entry
 
