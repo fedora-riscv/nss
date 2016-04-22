@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -242,8 +242,7 @@ FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
 # Enable compiler optimizations and disable debugging code
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 # Uncomment to disable optimizations
 #RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
@@ -308,12 +307,12 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load it if it exists
-export POLICY_FILE="policy.cfg"
+export POLICY_FILE="nss.cfg"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
-# need nss/lib/util/verref.h which is which is exported privately,
+# need nss/lib/util/verref.h which is exported privately,
 # copy the one we saved during prep so it they can find it.
 %{__mkdir_p} ./dist/private/nss
 %{__mv} ./nss/verref.h ./dist/private/nss/verref.h
@@ -403,8 +402,7 @@ export NSS_NO_SSL2_NO_EXPORT=1
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -415,7 +413,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# needed for the fips manging test
+# needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
@@ -657,24 +655,6 @@ else
 fi
 /sbin/ldconfig
 
-%posttrans
-# An earlier version of this package had an incorrect %%postun script (3.14.3-9).
-# (The incorrect %%postun always called "update-alternatives --remove",
-# because it incorrectly assumed that test -f returns false for symbolic links.)
-# The only possible remedy to fix the mistake that "always removes on upgrade"
-# made by the older %%postun script, is to repair it in %%posttrans of the new package.
-# Strategy:
-# %%posttrans is never called when uninstalling.
-# %%posttrans is only called when installing or upgrading a package.
-# Because %%posttrans is the very last action of a package install,
-# %%{_libdir}/libnssckbi.so must exist.
-# If it does not, it's the result of the incorrect removal from a broken %%postun.
-# In this case, we repeat installation of the alternatives link.
-if ! test -e %{_libdir}/libnssckbi.so; then
-  %{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
-    %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
-fi
-
 
 %files
 %defattr(-,root,root)
@@ -826,6 +806,9 @@ fi
 
 
 %changelog
+* Fri Apr 22 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-8
+- Change POLICY_FILE to "nss.cfg"
+
 * Wed Apr 20 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-7
 - Change the POLICY_PATH to "/etc/crypto-policies/back-ends"
 - Regenerate the check policy patch with hg to provide more context
