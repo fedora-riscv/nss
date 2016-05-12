@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.23.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          8%{?dist}
+Release:          9%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -307,7 +307,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load it if it exists
-export POLICY_FILE="nss.cfg"
+export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
@@ -806,6 +806,9 @@ fi
 
 
 %changelog
+* Thu May 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-9
+- Change POLICY_FILE to "nss.config"
+
 * Fri Apr 22 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-8
 - Change POLICY_FILE to "nss.cfg"
 
