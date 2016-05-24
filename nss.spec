@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.23.0
+Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          9%{?dist}
+Release:          2.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,14 +91,13 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-Patch52:          disableSSL2libssl.patch
-Patch53:          disableSSL2tests.patch
-Patch54:          tstclnt-ssl2-off-by-default.patch
-Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # TODO: file a bug usptream
 Patch59: nss-check-policy-file.patch
+Patch60: nss-pem-unitialized-vars.path
+# Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
+Patch61: nss-skip-util-gtest.patch
 
 
 %description
@@ -183,15 +182,13 @@ low level services.
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 pushd nss
-%patch52 -p1 -b .disableSSL2libssl
-%patch53 -p1 -b .disableSSL2tests
 popd
-%patch54 -p0 -b .ssl2_off
-%patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
+%patch60 -p1 -b .unitialized_vars
 popd
+%patch61 -p0 -b .skip_util_gtest
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -223,6 +220,9 @@ done
 %{__rm} -rf ./nss/cmd/bltest
 %{__rm} -rf ./nss/cmd/fipstest
 %{__rm} -rf ./nss/cmd/rsaperf_low
+
+######## Remove portions that need to statically link with libnssutil.a
+%{__rm} -rf ./nss/external_tests/util_gtests
 
 pushd nss/tests/ssl
 # Create versions of sslcov.txt and sslstress.txt that disable tests
@@ -395,9 +395,6 @@ if [ ${DISABLETEST:-0} -eq 1 ]; then
 fi
 
 # Begin -- copied from the build section
-
-# inform the ssl test scripts that SSL2 is disabled
-export NSS_NO_SSL2_NO_EXPORT=1
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -806,6 +803,9 @@ fi
 
 
 %changelog
+* Tue May 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.0
+- Rebase to NSS 3.24.0
+
 * Thu May 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-9
 - Change POLICY_FILE to "nss.config"
 
