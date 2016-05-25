@@ -1,6 +1,6 @@
-diff -up nss/cmd/certcgi/Makefile.iquote nss/cmd/certcgi/Makefile
---- nss/cmd/certcgi/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/certcgi/Makefile	2015-12-16 15:49:56.207064745 -0800
+diff -up ./nss/cmd/certcgi/Makefile.iquote ./nss/cmd/certcgi/Makefile
+--- ./nss/cmd/certcgi/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/certcgi/Makefile	2016-03-05 12:04:06.216474144 -0800
 @@ -36,7 +36,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -11,9 +11,9 @@ diff -up nss/cmd/certcgi/Makefile.iquote nss/cmd/certcgi/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/certutil/Makefile.iquote nss/cmd/certutil/Makefile
---- nss/cmd/certutil/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/certutil/Makefile	2015-12-16 15:49:56.207064745 -0800
+diff -up ./nss/cmd/certutil/Makefile.iquote ./nss/cmd/certutil/Makefile
+--- ./nss/cmd/certutil/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/certutil/Makefile	2016-03-05 12:04:06.216474144 -0800
 @@ -37,7 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -24,9 +24,9 @@ diff -up nss/cmd/certutil/Makefile.iquote nss/cmd/certutil/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/lib/Makefile.iquote nss/cmd/lib/Makefile
---- nss/cmd/lib/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/lib/Makefile	2015-12-16 15:49:56.207064745 -0800
+diff -up ./nss/cmd/lib/Makefile.iquote ./nss/cmd/lib/Makefile
+--- ./nss/cmd/lib/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/lib/Makefile	2016-03-05 12:04:06.216474144 -0800
 @@ -38,7 +38,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -37,10 +37,10 @@ diff -up nss/cmd/lib/Makefile.iquote nss/cmd/lib/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/modutil/Makefile.iquote nss/cmd/modutil/Makefile
---- nss/cmd/modutil/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/modutil/Makefile	2015-12-16 15:49:56.207064745 -0800
-@@ -41,6 +41,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+diff -up ./nss/cmd/modutil/Makefile.iquote ./nss/cmd/modutil/Makefile
+--- ./nss/cmd/modutil/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/modutil/Makefile	2016-03-05 12:04:06.216474144 -0800
+@@ -37,6 +37,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
  
@@ -48,9 +48,9 @@ diff -up nss/cmd/modutil/Makefile.iquote nss/cmd/modutil/Makefile
  
  
  #######################################################################
-diff -up nss/cmd/selfserv/Makefile.iquote nss/cmd/selfserv/Makefile
---- nss/cmd/selfserv/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/selfserv/Makefile	2015-12-16 15:49:56.207064745 -0800
+diff -up ./nss/cmd/selfserv/Makefile.iquote ./nss/cmd/selfserv/Makefile
+--- ./nss/cmd/selfserv/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/selfserv/Makefile	2016-03-05 12:04:06.216474144 -0800
 @@ -35,7 +35,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -61,9 +61,9 @@ diff -up nss/cmd/selfserv/Makefile.iquote nss/cmd/selfserv/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/ssltap/Makefile.iquote nss/cmd/ssltap/Makefile
---- nss/cmd/ssltap/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/ssltap/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/cmd/ssltap/Makefile.iquote ./nss/cmd/ssltap/Makefile
+--- ./nss/cmd/ssltap/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/ssltap/Makefile	2016-03-05 12:04:06.216474144 -0800
 @@ -39,7 +39,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -74,9 +74,9 @@ diff -up nss/cmd/ssltap/Makefile.iquote nss/cmd/ssltap/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/strsclnt/Makefile.iquote nss/cmd/strsclnt/Makefile
---- nss/cmd/strsclnt/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/strsclnt/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/cmd/strsclnt/Makefile.iquote ./nss/cmd/strsclnt/Makefile
+--- ./nss/cmd/strsclnt/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/strsclnt/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -36,7 +36,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -87,9 +87,9 @@ diff -up nss/cmd/strsclnt/Makefile.iquote nss/cmd/strsclnt/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/tstclnt/Makefile.iquote nss/cmd/tstclnt/Makefile
---- nss/cmd/tstclnt/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/tstclnt/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/cmd/tstclnt/Makefile.iquote ./nss/cmd/tstclnt/Makefile
+--- ./nss/cmd/tstclnt/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/tstclnt/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -37,6 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  #######################################################################
  
@@ -99,9 +99,9 @@ diff -up nss/cmd/tstclnt/Makefile.iquote nss/cmd/tstclnt/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/cmd/vfyserv/Makefile.iquote nss/cmd/vfyserv/Makefile
---- nss/cmd/vfyserv/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/cmd/vfyserv/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/cmd/vfyserv/Makefile.iquote ./nss/cmd/vfyserv/Makefile
+--- ./nss/cmd/vfyserv/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/cmd/vfyserv/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -37,6 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  #######################################################################
  
@@ -111,9 +111,9 @@ diff -up nss/cmd/vfyserv/Makefile.iquote nss/cmd/vfyserv/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
---- nss/coreconf/location.mk.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/coreconf/location.mk	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/coreconf/location.mk.iquote ./nss/coreconf/location.mk
+--- ./nss/coreconf/location.mk.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/coreconf/location.mk	2016-03-05 12:04:06.217474124 -0800
 @@ -45,6 +45,10 @@ endif
  
  ifdef NSS_INCLUDE_DIR
@@ -125,9 +125,32 @@ diff -up nss/coreconf/location.mk.iquote nss/coreconf/location.mk
  endif
  
  ifndef NSS_LIB_DIR
-diff -up nss/lib/certhigh/Makefile.iquote nss/lib/certhigh/Makefile
---- nss/lib/certhigh/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/lib/certhigh/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/external_tests/pk11_gtest/Makefile.iquote ./nss/external_tests/pk11_gtest/Makefile
+--- ./nss/external_tests/pk11_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/external_tests/pk11_gtest/Makefile	2016-03-05 12:04:06.217474124 -0800
+@@ -37,6 +37,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
++INCLUDES += -iquote $(DIST)/../public/nss
+ 
+ #######################################################################
+ # (7) Execute "local" rules. (OPTIONAL).                              #
+diff -up ./nss/external_tests/ssl_gtest/Makefile.iquote ./nss/external_tests/ssl_gtest/Makefile
+--- ./nss/external_tests/ssl_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/external_tests/ssl_gtest/Makefile	2016-03-05 12:05:17.208082475 -0800
+@@ -43,6 +43,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+ # (6) Execute "component" rules. (OPTIONAL)                           #
+ #######################################################################
+ 
++INCLUDES += -iquote $(DIST)/../public/nss
++INCLUDES += -iquote $(DIST)/../public/nss
+ 
+ #######################################################################
+ # (7) Execute "local" rules. (OPTIONAL).                              #
+diff -up ./nss/lib/certhigh/Makefile.iquote ./nss/lib/certhigh/Makefile
+--- ./nss/lib/certhigh/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/certhigh/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -137,9 +160,9 @@ diff -up nss/lib/certhigh/Makefile.iquote nss/lib/certhigh/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/cryptohi/Makefile.iquote nss/lib/cryptohi/Makefile
---- nss/lib/cryptohi/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/lib/cryptohi/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/lib/cryptohi/Makefile.iquote ./nss/lib/cryptohi/Makefile
+--- ./nss/lib/cryptohi/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/cryptohi/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -149,9 +172,9 @@ diff -up nss/lib/cryptohi/Makefile.iquote nss/lib/cryptohi/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/nss/Makefile.iquote nss/lib/nss/Makefile
---- nss/lib/nss/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/lib/nss/Makefile	2015-12-16 15:49:56.208064721 -0800
+diff -up ./nss/lib/nss/Makefile.iquote ./nss/lib/nss/Makefile
+--- ./nss/lib/nss/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/nss/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -37,7 +37,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -162,22 +185,21 @@ diff -up nss/lib/nss/Makefile.iquote nss/lib/nss/Makefile
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/pk11wrap/Makefile.iquote nss/lib/pk11wrap/Makefile
---- nss/lib/pk11wrap/Makefile.iquote	2015-12-16 15:51:35.959591267 -0800
-+++ nss/lib/pk11wrap/Makefile	2015-12-16 15:52:25.749356673 -0800
-@@ -38,7 +38,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
+diff -up ./nss/lib/pk11wrap/Makefile.iquote ./nss/lib/pk11wrap/Makefile
+--- ./nss/lib/pk11wrap/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/pk11wrap/Makefile	2016-03-05 12:04:06.217474124 -0800
+@@ -38,7 +38,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
  
 -
 +INCLUDES += -iquote $(DIST)/../public/nss
-+INCLUDES += -iquote $(DIST)/../private/nss
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up nss/lib/ssl/Makefile.iquote nss/lib/ssl/Makefile
---- nss/lib/ssl/Makefile.iquote	2015-12-16 13:32:08.000000000 -0800
-+++ nss/lib/ssl/Makefile	2015-12-16 15:49:56.209064696 -0800
+diff -up ./nss/lib/ssl/Makefile.iquote ./nss/lib/ssl/Makefile
+--- ./nss/lib/ssl/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/lib/ssl/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -49,7 +49,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################

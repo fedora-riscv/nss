@@ -1,11 +1,11 @@
-%global nspr_version 4.10.10
-%global nss_util_version 3.21.6
-%global nss_softokn_version 3.21.6
+%global nspr_version 4.12.0
+%global nss_util_version 3.24.0
+%global nss_softokn_version 3.24.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
-%define multilib_arches %{power64} sparc64 x86_64
+%define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
 %define alt_ckbi  libnssckbi.so.%{_arch}
 %else
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.21.6
+Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          2.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -58,7 +58,7 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source12:         %{name}-pem-20140125.tar.bz2
+Source12:         %{name}-pem-20160308.tar.bz2
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -87,24 +87,18 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # This patch uses the gcc-iquote dir option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to place the in-tree directories at the head of the list of list of directories
-# to be searched for for header files. This ensures a build even when system 
+# to be searched for for header files. This ensures a build even when system
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-Patch52:          disableSSL2libssl.patch
-Patch53:          disableSSL2tests.patch
-Patch54:          tstclnt-ssl2-off-by-default.patch
-Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+# TODO: file a bug usptream
+Patch59: nss-check-policy-file.patch
+Patch60: nss-pem-unitialized-vars.path
+# Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
+Patch61: nss-skip-util-gtest.patch
 
-# As of nss-3.21 we compile NSS with -Werror.
-# see https://bugzilla.mozilla.org/show_bug.cgi?id=1182667
-# This requires a cleanup of the PEM module as we have it here.
-# TODO: submit a patch to the interim nss-pem upstream project
-# The submission will be very different from this patch as
-# cleanup there is already in progress there.
-Patch59: pem-compile-with-Werror.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -169,7 +163,7 @@ Requires:         nss-devel = %{version}-%{release}
 Requires:         nss-softokn-freebl-devel >= %{nss_softokn_version}
 
 %description pkcs11-devel
-Library files for developing PKCS #11 modules using basic NSS 
+Library files for developing PKCS #11 modules using basic NSS
 low level services.
 
 
@@ -187,14 +181,14 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-%patch54 -p0 -b .ssl2_off
-%patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
-%patch58 -p0 -b .1185708_3des
-%patch59 -p0 -b .compile_Werror
 pushd nss
-%patch52 -p1 -b .disableSSL2libssl
-%patch53 -p1 -b .disableSSL2tests
 popd
+%patch58 -p0 -b .1185708_3des
+pushd nss
+%patch59 -p1 -b .check_policy_file
+%patch60 -p1 -b .unitialized_vars
+popd
+%patch61 -p0 -b .skip_util_gtest
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -227,6 +221,9 @@ done
 %{__rm} -rf ./nss/cmd/fipstest
 %{__rm} -rf ./nss/cmd/rsaperf_low
 
+######## Remove portions that need to statically link with libnssutil.a
+%{__rm} -rf ./nss/external_tests/util_gtests
+
 pushd nss/tests/ssl
 # Create versions of sslcov.txt and sslstress.txt that disable tests
 # for SSL2 and EXPORT ciphers.
@@ -245,8 +242,7 @@ FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
 # Enable compiler optimizations and disable debugging code
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 # Uncomment to disable optimizations
 #RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
@@ -291,10 +287,6 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
-# external tests are causing build problems because they access ssl internal types
-# TODO: Investigate as there may be a better solution
-export NSS_DISABLE_GTESTS=1
-
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
@@ -307,15 +299,20 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 2: build the rest of nss
 # nss supports pluggable ecc with more than suite-b
-NSS_ECC_MORE_THAN_SUITE_B=1
-export NSS_ECC_MORE_THAN_SUITE_B
+export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 
+# Set the policy file location
+# if set NSS will always check for the policy file and load it if it exists
+export POLICY_FILE="nss.config"
+# location of the policy file
+export POLICY_PATH="/etc/crypto-policies/back-ends"
+
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
-# need nss/lib/util/verref.h which is which is exported privately,
+# need nss/lib/util/verref.h which is exported privately,
 # copy the one we saved during prep so it they can find it.
 %{__mkdir_p} ./dist/private/nss
 %{__mv} ./nss/verref.h ./dist/private/nss/verref.h
@@ -334,7 +331,7 @@ popd
 
 # Set up our package file
 # The nspr_version and nss_{util|softokn}_version globals used
-# here match the ones nss has for its Requires. 
+# here match the ones nss has for its Requires.
 # Using the current %%{nss_softokn_version} for fedora again
 %{__mkdir_p} ./dist/pkgconfig
 %{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
@@ -389,7 +386,7 @@ done
 for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
   xmlto man ${m}
 done
- 
+
 
 %check
 if [ ${DISABLETEST:-0} -eq 1 ]; then
@@ -399,14 +396,10 @@ fi
 
 # Begin -- copied from the build section
 
-# inform the ssl test scripts that SSL2 is disabled
-export NSS_NO_SSL2_NO_EXPORT=1
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -417,7 +410,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# needed for the fips manging test
+# needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
@@ -463,7 +456,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-nss_tests="libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -483,9 +476,9 @@ fi
 popd
 
 # Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
-# Grep exits with status greater than 1 if an error ocurred. 
-# If there are test failures we expect TEST_FAILURES > 0 and GREP_EXIT_STATUS = 0, 
-# With no test failures we expect TEST_FAILURES = 0 and GREP_EXIT_STATUS = 1, whereas 
+# Grep exits with status greater than 1 if an error ocurred.
+# If there are test failures we expect TEST_FAILURES > 0 and GREP_EXIT_STATUS = 0,
+# With no test failures we expect TEST_FAILURES = 0 and GREP_EXIT_STATUS = 1, whereas
 # GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
@@ -599,11 +592,11 @@ done
 ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
 
 # Copy the man pages for scripts
-for f in nss-config setup-nsssysinit; do 
+for f in nss-config setup-nsssysinit; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the nss tools
-for f in "%{allTools}"; do 
+for f in "%{allTools}"; do
   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 %if %{defined rhel}
@@ -613,11 +606,11 @@ install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_datadir}/doc/nss-tool
 %endif
 
 # Copy the man pages for the configuration files
-for f in pkcs11.txt; do 
+for f in pkcs11.txt; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 # Copy the man pages for the nss databases
-for f in cert8.db cert9.db key3.db key4.db secmod.db; do 
+for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
@@ -658,24 +651,6 @@ else
   fi
 fi
 /sbin/ldconfig
-
-%posttrans
-# An earlier version of this package had an incorrect %%postun script (3.14.3-9).
-# (The incorrect %%postun always called "update-alternatives --remove",
-# because it incorrectly assumed that test -f returns false for symbolic links.)
-# The only possible remedy to fix the mistake that "always removes on upgrade"
-# made by the older %%postun script, is to repair it in %%posttrans of the new package.
-# Strategy:
-# %%posttrans is never called when uninstalling.
-# %%posttrans is only called when installing or upgrading a package.
-# Because %%posttrans is the very last action of a package install,
-# %%{_libdir}/libnssckbi.so must exist.
-# If it does not, it's the result of the incorrect removal from a broken %%postun.
-# In this case, we repeat installation of the alternatives link.
-if ! test -e %{_libdir}/libnssckbi.so; then
-  %{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
-    %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
-fi
 
 
 %files
@@ -828,10 +803,61 @@ fi
 
 
 %changelog
-* Sun Dec 21 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.6-1.1
-- Update sources to new version from upstream BUG1168917_BRANCH 
-- Includes latest checkins for policy work on the branch
-- Update several patches on account of the new sources
+* Tue May 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.0
+- Rebase to NSS 3.24.0
+
+* Thu May 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-9
+- Change POLICY_FILE to "nss.config"
+
+* Fri Apr 22 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-8
+- Change POLICY_FILE to "nss.cfg"
+
+* Wed Apr 20 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-7
+- Change the POLICY_PATH to "/etc/crypto-policies/back-ends"
+- Regenerate the check policy patch with hg to provide more context
+
+* Thu Apr 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-6
+- Fix typo in the last %%changelog entry
+
+* Thu Mar 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-5
+- Load policy file if /etc/pki/nssdb/policy.cfg exists
+- Resolves: Bug 1157720 - NSS should enforce the system-wide crypto policy
+
+* Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-4
+- Remove unused patch rendered obsolete by pem update
+
+* Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-3
+- Update pem sources to latest from nss-pem upstream
+- Resolves: Bug 1300652 - [PEM] insufficient input validity checking while loading a private key
+
+* Sat Mar 05 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-2
+- Rebase to NSS 3.23
+
+* Sat Feb 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-2
+- Rebase to NSS 3.22.2
+
+* Tue Feb 23 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-3
+- Fix ssl2/exp test disabling to run all the required tests
+
+* Sun Feb 21 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1
+- Rebase to NSS 3.22.1
+
+* Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-3
+- Update .gitignore as part of updating to nss 3.22
+
+* Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-2
+- Update to NSS 3.22
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.21.0-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Fri Jan 15 2016 Elio Maldonado <emaldona@redhat.com> - 3.21.0-6
+- Resolves: Bug 1299040 - Enable ssl_gtests upstream test suite
+- Remove 'export NSS_DISABLE_GTESTS=1' go ssl_gtests are built
+- Use %%define when specifying the nss_tests to run
+
+* Wed Dec 30 2015 Michal Toman <mtoman@fedoraproject.org> - 3.21.0-5
+- Add 64-bit MIPS to multilib arches
 
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-4
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
@@ -908,7 +934,7 @@ fi
 - Backing out from disabling ssl2 until the patches are fixed
 
 * Mon Feb 09 2015 Elio Maldonado <emaldona@redhat.com> - 3.17.4-2
-- Disable SSL2 support at build time 
+- Disable SSL2 support at build time
 - Fix syntax errors in various shell scripts
 - Resolves: Bug 1189952 - Disable SSL2 and the export cipher suites
 
@@ -1158,7 +1184,7 @@ fi
 - Fix pk11wrap locking which fixes 'fedpkg new-sources' and 'fedpkg update' hangs
 - Bug 872124 - nss-3.14 breaks fedpkg new-sources
 - Fix should be considered preliminary since the patch may change upon upstream approval
- 
+
 * Thu Nov 01 2012 Elio Maldonado <emaldona@redhat.com> - 3.14-7
 - Add a dummy source file for testing /preventing fedpkg breakage
 - Helps test the fedpkg new-sources and upload commands for breakage by nss updates
@@ -1201,7 +1227,7 @@ fi
 * Mon Aug 27 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-8
 - Rebase pem sources to fedora-hosted upstream to pick up two fixes from rhel-6.3
 - Resolves: rhbz#847460 - Fix invalid read and free on invalid cert load
-- Resolves: rhbz#847462 - PEM module may attempt to free uninitialized pointer 
+- Resolves: rhbz#847462 - PEM module may attempt to free uninitialized pointer
 - Remove unneeded fix gcc 4.7 c++ issue in secmodt.h that actually undoes the upstream fix
 
 * Mon Aug 13 2012 Elio Maldonado <emaldona@redhat.com> - 3.13.5-7
@@ -1442,7 +1468,7 @@ fi
 * Thu Sep 23 2010 Elio Maldonado <emaldona@redhat.com> - 3.12.8-1
 - Update to 3.12.8
 - Prevent disabling of nss-sysinit on package upgrade (#636787)
-- Create pkcs11.txt with correct permissions regardless of umask (#636792) 
+- Create pkcs11.txt with correct permissions regardless of umask (#636792)
 - Setup-nsssysinit.sh reports whether nss-sysinit is turned on or off (#636801)
 - Added provides pkcs11-devel-static to comply with packaging guidelines (#609612)
 
@@ -1702,7 +1728,7 @@ fi
 - fix to not clone internal objects in collect_objects().  (501118)
 - fix to not bypass initialization if module arguments are omitted. (501058)
 - fix numerous gcc warnings. (500815)
-- fix to support arbitrarily long password while loading a private key. (500180) 
+- fix to support arbitrarily long password while loading a private key. (500180)
 - fix memory leak in make_key and memory leaks and return values in pem_mdSession_Login (501191)
 * Mon Jun 08 2009 Elio Maldonado <emaldona@redhat.com> - 3.12.3.99.3-4
 - add patch for bug 502133 upstream bug 496997
@@ -1830,7 +1856,7 @@ fi
 
 * Fri Mar 02 2007 Kai Engert <kengert@redhat.com> - 3.11.5-2
 - Fix rhbz#230545, failure to enable FIPS mode
-- Fix rhbz#220542, make NSS more tolerant of resets when in the 
+- Fix rhbz#220542, make NSS more tolerant of resets when in the
   middle of prompting for a user password.
 
 * Sat Feb 24 2007 Kai Engert <kengert@redhat.com> - 3.11.5-1
