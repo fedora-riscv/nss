@@ -181,8 +181,6 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-popd
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
@@ -307,9 +305,10 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load it if it exists
-export POLICY_FILE="nss.config"
+# TODO: restore the POLICY_FILE and POLICY_PATH exports
+#export POLICY_FILE="nss.config"
 # location of the policy file
-export POLICY_PATH="/etc/crypto-policies/back-ends"
+#export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
@@ -804,7 +803,8 @@ fi
 
 %changelog
 * Tue May 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.0
-- Rebase to NSS 3.24.0
+- Bootstrap build to rebase to NSS 3.24.0
+- Temporarily not setting the policy file location
 
 * Thu May 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-9
 - Change POLICY_FILE to "nss.config"
