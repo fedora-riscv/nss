@@ -179,8 +179,6 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-popd
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 pushd nss
