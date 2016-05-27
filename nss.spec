@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.23.0
-%global nss_softokn_version 3.23.0
+%global nss_util_version 3.24.0
+%global nss_softokn_version 3.24.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.23.0
+Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,12 +91,11 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-Patch52:          disableSSL2libssl.patch
-Patch53:          disableSSL2tests.patch
-Patch54:          tstclnt-ssl2-off-by-default.patch
 Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+Patch60: nss-pem-unitialized-vars.path
+Patch61: nss-skip-util-gtest.patch
 
 
 %description
@@ -181,12 +180,13 @@ low level services.
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 pushd nss
-%patch52 -p1 -b .disableSSL2libssl
-%patch53 -p1 -b .disableSSL2tests
 popd
-%patch54 -p0 -b .ssl2_off
 %patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
+pushd nss
+%patch60 -p1 -b .unitialized_vars
+popd
+%patch61 -p0 -b .skip_util_gtest
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -219,6 +219,9 @@ done
 %{__rm} -rf ./nss/cmd/fipstest
 %{__rm} -rf ./nss/cmd/rsaperf_low
 
+######## Remove portions that need to statically link with libnssutil.a
+%{__rm} -rf ./nss/external_tests/util_gtests
+
 pushd nss/tests/ssl
 # Create versions of sslcov.txt and sslstress.txt that disable tests
 # for SSL2 and EXPORT ciphers.
@@ -237,8 +240,7 @@ FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
 # Enable compiler optimizations and disable debugging code
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 # Uncomment to disable optimizations
 #RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
@@ -302,7 +304,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/lib/dbm
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
-# need nss/lib/util/verref.h which is which is exported privately,
+# need nss/lib/util/verref.h which is exported privately,
 # copy the one we saved during prep so it they can find it.
 %{__mkdir_p} ./dist/private/nss
 %{__mv} ./nss/verref.h ./dist/private/nss/verref.h
@@ -386,14 +388,10 @@ fi
 
 # Begin -- copied from the build section
 
-# inform the ssl test scripts that SSL2 is disabled
-export NSS_NO_SSL2_NO_EXPORT=1
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
-BUILD_OPT=1
-export BUILD_OPT
+export BUILD_OPT=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -404,7 +402,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# needed for the fips manging test
+# needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
@@ -646,24 +644,6 @@ else
 fi
 /sbin/ldconfig
 
-%posttrans
-# An earlier version of this package had an incorrect %%postun script (3.14.3-9).
-# (The incorrect %%postun always called "update-alternatives --remove",
-# because it incorrectly assumed that test -f returns false for symbolic links.)
-# The only possible remedy to fix the mistake that "always removes on upgrade"
-# made by the older %%postun script, is to repair it in %%posttrans of the new package.
-# Strategy:
-# %%posttrans is never called when uninstalling.
-# %%posttrans is only called when installing or upgrading a package.
-# Because %%posttrans is the very last action of a package install,
-# %%{_libdir}/libnssckbi.so must exist.
-# If it does not, it's the result of the incorrect removal from a broken %%postun.
-# In this case, we repeat installation of the alternatives link.
-if ! test -e %{_libdir}/libnssckbi.so; then
-  %{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
-    %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
-fi
-
 
 %files
 %defattr(-,root,root)
@@ -815,6 +795,9 @@ fi
 
 
 %changelog
+* Fri May 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.0
+- Rebase to NSS 3.24.0
+
 * Tue Mar 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-1.2
 - Remove unused patch rendered obsolete by pem update
 - Fix release number in previous changelog entry
