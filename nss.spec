@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -183,8 +183,8 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch60 -p1 -b .unitialized_vars
-popd
 %patch61 -p0 -b .skip_util_gtest
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -446,7 +446,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -793,6 +793,9 @@ fi
 
 
 %changelog
+* Mon May 30 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.1
+- Update nss_tests with some of the new gtests from upstream
+
 * Fri May 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.0
 - Rebase to NSS 3.24.0
 
