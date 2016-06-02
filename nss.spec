@@ -96,7 +96,8 @@ Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch60: nss-pem-unitialized-vars.path
 Patch61: nss-skip-util-gtest.patch
-
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
+Patch62: mozbz1277569backport.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,8 +184,9 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch60 -p1 -b .unitialized_vars
-popd
 %patch61 -p0 -b .skip_util_gtest
+%patch62 -p1 -b .compatibility
+popd
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -446,7 +448,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -793,6 +795,11 @@ fi
 
 
 %changelog
+* Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.2
+- Allow application requests to disable SSL v2 to succeed
+- Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
+- Update nss_tests with some of the new gtests from upstream
+
 * Fri May 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.0
 - Rebase to NSS 3.24.0
 
