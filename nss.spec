@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -795,7 +795,7 @@ fi
 
 
 %changelog
-* Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.2
+* Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.1
 - Allow application requests to disable SSL v2 to succeed
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
 - Update nss_tests with some of the new gtests from upstream
