@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2.1%{?dist}
+Release:          2.2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -96,6 +96,8 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # TODO: file a bug usptream
 Patch59: nss-check-policy-file.patch
 Patch60: nss-pem-unitialized-vars.path
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
+Patch64: mozbz1277569backport.patch
 # Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 # TODO: file a bug usptream
 Patch61: nss-skip-util-gtest.patch
@@ -812,6 +814,10 @@ fi
 
 
 %changelog
+* Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.2
+- Allow application requests to disable SSL v2 to succeed
+- Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
+
 * Sun May 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.1
 - Rebase to NSS 3.24.0 
 - Restore setting the policy file location
