@@ -1,6 +1,6 @@
-diff -up ./nss/external_tests/manifest.mn.skip_util_gtest ./nss/external_tests/manifest.mn
---- ./nss/external_tests/manifest.mn.skip_util_gtest	2016-05-21 21:34:56.156346633 -0700
-+++ ./nss/external_tests/manifest.mn	2016-05-21 21:35:23.408854282 -0700
+diff -up ./external_tests/manifest.mn.skip_util_gtest ./external_tests/manifest.mn
+--- ./external_tests/manifest.mn.skip_util_gtest	2016-05-21 21:34:56.156346633 -0700
++++ ./external_tests/manifest.mn	2016-05-21 21:35:23.408854282 -0700
 @@ -8,7 +8,6 @@ DEPTH      = ..
  DIRS = \
  	google_test \
