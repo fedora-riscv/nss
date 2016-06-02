@@ -97,7 +97,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch60: nss-pem-unitialized-vars.path
 Patch61: nss-skip-util-gtest.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
-Patch62: mzbz1277569backport.patch
+Patch62: mozbz1277569backport.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
