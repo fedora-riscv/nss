@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2.2%{?dist}
+Release:          2.3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -97,14 +97,14 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 Patch60: nss-pem-unitialized-vars.path
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
-Patch64: mozbz1277569backport.patch
+Patch61: mozbz1277569backport.patch
 # Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 # TODO: file a bug usptream
-Patch61: nss-skip-util-gtest.patch
+Patch62: nss-skip-util-gtest.patch
 # TODO: file a bug usptream when enough tests are run
-Patch62: tests-check-policy-file.patch
+Patch63: tests-check-policy-file.patch
 # TODO: file a bug usptream when enough tests are run
-Patch63: tests-data-adjust-for-policy.patch
+Patch64: tests-data-adjust-for-policy.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -191,9 +191,10 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch60 -p1 -b .unitialized_vars
-%patch61 -p0 -b .skip_util_gtest
-%patch62 -p1 -b .check_policy
-%patch63 -p1 -b .expected_result
+%patch61 -p1 -b .compatibility
+%patch62 -p0 -b .skip_util_gtest
+%patch63 -p1 -b .check_policy
+%patch64 -p1 -b .expected_result
 popd
 
 #########################################################
@@ -814,6 +815,11 @@ fi
 
 
 %changelog
+* Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
+- Apply the patch that was last introduced
+- Renumber and reorder some of the patches
+- Resolves: Bug 1342158
+
 * Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.2
 - Allow application requests to disable SSL v2 to succeed
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
