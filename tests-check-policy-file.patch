@@ -1,35 +1,48 @@
-diff -up ./tests/ssl/sslauth.txt.check_policy ./tests/ssl/sslauth.txt
-diff -up ./tests/ssl/ssl.sh.check_policy ./tests/ssl/ssl.sh
 --- ./tests/ssl/ssl.sh.check_policy	2016-05-17 00:58:45.000000000 -0700
-+++ ./tests/ssl/ssl.sh	2016-05-28 15:45:07.645964005 -0700
-@@ -61,10 +61,19 @@ ssl_init()
++++ ./tests/ssl/ssl.sh	2016-06-07 14:12:59.087680385 -0700
+@@ -56,19 +56,31 @@
+       }
+   fi
+ 
+   PORT=${PORT-8443}
+   NSS_SSL_TESTS=${NSS_SSL_TESTS:-normal_normal}
    nss_ssl_run="stapling signed_cert_timestamps cov auth stress"
    NSS_SSL_RUN=${NSS_SSL_RUN:-$nss_ssl_run}
  
 +  NSS_POLICY_FILE=[ -f ${POLICY_PATH}/${POLICY_FILE} ] \
 +    ? "${POLICY_PATH}/${POLICY_FILE}" \
 +    : ""
++  # Means that will use test data that compliant with policy
++  # and will invoke selfserv nd tstclnt with the proper range
++  ADJUST_FOR_POLICY=[ -n "${NSS_POLICY_FILE}" -a -z "${NSS_IGNORE_SYSTEM_POLICY}" ] \
++    ? "1" \
++    : ""
    # Test case files
--  SSLCOV=${QADIR}/ssl/sslcov.txt
--  SSLAUTH=${QADIR}/ssl/sslauth.txt
--  SSLSTRESS=${QADIR}/ssl/sslstress.txt
-+  if [ -n ${NSS_POLICY_FILE} ]; then
-+    SSLAUTH=${QADIR}/ssl/sslauth.byPolicy.txt
-+    SSLCOV=${QADIR}/ssl/sslcov.byPolicy.txt
-+    SSLSTRESS=${QADIR}/ssl/sslstress.byPolicy.txt
++  if [ -n "${ADJUST_FOR_POLICY}" ]; then
++    SSLAUTH=${QADIR}/ssl/sslauth.noPolicy.txt
 +  else
 +    SSLAUTH=${QADIR}/ssl/sslauth.txt
-+    SSLCOV=${QADIR}/ssl/sslcov.txt
-+    SSLSTRESS=${QADIR}/ssl/sslstress.txt
 +  fi
+   SSLCOV=${QADIR}/ssl/sslcov.txt
+-  SSLAUTH=${QADIR}/ssl/sslauth.txt
+   SSLSTRESS=${QADIR}/ssl/sslstress.txt
    SSLPOLICY=${QADIR}/ssl/sslpolicy.txt
    REQUEST_FILE=${QADIR}/ssl/sslreq.dat
  
-@@ -122,7 +131,11 @@ is_selfserv_alive()
+   #temparary files
+   SERVEROUTFILE=${TMP}/tests_server.$$
+   SERVERPID=${TMP}/tests_pid.$$
+ 
+@@ -117,17 +129,21 @@
+   if [ "${OS_ARCH}" = "WINNT" ] && \
+      [ "$OS_NAME" = "CYGWIN_NT" -o "$OS_NAME" = "MINGW32_NT" ]; then
+       PID=${SHELL_SERVERPID}
+   else
+       PID=`cat ${SERVERPID}`
    fi
  
    echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
-+  if [ -n ${NSS_POLICY_FILE}" ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
++  if [ -n "${ADJUST_FOR_POLICY}" ] && [ ${EXP} -eq 0 ]; then
 +  echo "No server to kill"
 +  else
    kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
@@ -37,11 +50,21 @@ diff -up ./tests/ssl/ssl.sh.check_policy ./tests/ssl/ssl.sh
  
    echo "selfserv with PID ${PID} found at `date`"
  }
-@@ -145,7 +158,11 @@ wait_for_selfserv()
+ 
+ ########################### wait_for_selfserv ##########################
+ # local shell function to wait until selfserver is running and initialized
+ ########################################################################
+ wait_for_selfserv()
+@@ -140,17 +156,21 @@
+   if [ $? -ne 0 ]; then
+       sleep 5
+       echo "retrying to connect to selfserv at `date`"
+       echo "tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \\"
+       echo "        -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}"
        ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
                -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
        if [ $? -ne 0 ]; then
-+          if [ -n ${NSS_POLICY_FILE} ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
++          if [ -n "${ADJUST_FOR_POLICY}" ] && [ ${EXP} -eq 0 ]; then
 +              html_passed "Server never started"
 +          else
            html_failed "Waiting for Server"
@@ -49,12 +72,31 @@ diff -up ./tests/ssl/ssl.sh.check_policy ./tests/ssl/ssl.sh
        fi
    fi
    is_selfserv_alive
-@@ -216,15 +233,16 @@ start_selfserv()
+ }
+ 
+ ########################### kill_selfserv ##############################
+ # local shell function to kill the selfserver after the tests are done
+ ########################################################################
+@@ -208,28 +228,35 @@
+      [ -z "$NO_ECC_CERTS" -o "$NO_ECC_CERTS" != "1"  ] ; then
+       ECC_OPTIONS="-e ${HOSTADDR}-ec"
+   else
+       ECC_OPTIONS=""
+   fi
+   if [ "$1" = "mixed" ]; then
+       ECC_OPTIONS="-e ${HOSTADDR}-ecmixed"
+   fi
++
++  if [ -n "${ADJUST_FOR_POLICY}" ]; then
++     VMIN_OPT="-V ssl3:"
++  else
++     VMIN_OPT=""
++  fi
++
    echo "selfserv starting at `date`"
    echo "selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \\"
    echo "         ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID}\\"
 -  echo "         $verbose -H 1 &"
-+  VMIN_OPT=[ -n ${NSS_POLICY_FILE} ] ? "-V ssl3:" : ""
 +  echo "         $verbose -H 1 ${VMIN_OPT} &"
    if [ ${fileout} -eq 1 ]; then
        ${PROFTOOL} ${BINDIR}/selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \
@@ -69,16 +111,8 @@ diff -up ./tests/ssl/ssl.sh.check_policy ./tests/ssl/ssl.sh
        RET=$?
    fi
  
-@@ -275,6 +293,12 @@ ssl_cov()
-       echo "${testname}" | grep "EXPORT" > /dev/null 
-       EXP=$?
- 
-+      #  trace these types of tests when build has policy enabled
-+      if [ -n ${NSS_POLICY_FILE} ] &&
-+         [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ] || ${SSL3} -eq 0 ]]; then
-+            echo "exp/ssl2/ssl3 test should fail: (NSS_NO_SSL2,EXP,SSL2,SSL3)=(${NSS_NO_SSL2},${EXP},${SSL2},${SSL3})"
-+      fi
-+
-       if [ "$ectype" = "ECC" -a -n "$NSS_DISABLE_ECC" ] ; then
-           echo "$SCRIPTNAME: skipping  $testname (ECC only)"
-       elif [ "$SERVER_MODE" = "fips" -o "$CLIENT_MODE" = "fips" ] && [ "$EXP" -eq 0 ] ; then
+   # The PID $! returned by the MKS or Cygwin shell is not the PID of
+   # the real background process, but rather the PID of a helper
+   # process (sh.exe).  MKS's kill command has a bug: invoking kill
+   # on the helper process does not terminate the real background
+   # process.  Our workaround has been to have selfserv save its PID

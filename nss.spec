@@ -4,6 +4,9 @@
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
+# uncomment to make nss ignore the system policy file
+#%global nss_ignore_system_policy 1
+
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
@@ -21,7 +24,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2.3%{?dist}
+Release:          2.4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -67,6 +70,8 @@ Source24:         cert9.db.xml
 Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
+# needs to be updated as we rebase and the system crypto policies evolve
+Source28:         tests-data-adjust-for-policy.patch
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -103,8 +108,8 @@ Patch61: mozbz1277569backport.patch
 Patch62: nss-skip-util-gtest.patch
 # TODO: file a bug usptream when enough tests are run
 Patch63: tests-check-policy-file.patch
-# TODO: file a bug usptream when enough tests are run
-Patch64: tests-data-adjust-for-policy.patch
+# TODO: Under test and could me merged with nss-check-policy-file.patch
+Patch65: nss-conditionally-ignore-system-policy.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -194,7 +199,7 @@ pushd nss
 %patch61 -p1 -b .compatibility
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
-%patch64 -p1 -b .expected_result
+%patch65 -p0 -b .ignore_system_policy
 popd
 
 #########################################################
@@ -230,14 +235,6 @@ done
 
 ######## Remove portions that need to statically link with libnssutil.a
 %{__rm} -rf ./nss/external_tests/util_gtests
-
-pushd nss/tests/ssl
-# Create versions of ssauth.txt, sslcov.txt and sslstress.txt that disable
-# tests for non policy compliant ciphers.
-cat sslauth.txt| sed -r "s/^([^#].*EXPORT|^[^#].*MD5)/#disabled \1/" > sslauth.noPolicy.txt
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
-popd
 
 %build
 
@@ -318,6 +315,11 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
+
+# to keep nss from loading the policy file
+%if %{nss_ignore_system_policy}
+export NSS_IGNORE_SYSTEM_POLICY=1
+%endif
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
@@ -425,7 +427,28 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
+%if %{nss_ignore_system_policy}
+# inform tests we kept nss from loading the policy file
+export NSS_IGNORE_SYSTEM_POLICY=1
+%endif
+
 # End -- copied from the build section
+
+# ****************************************************************
+# Patching the test data here is more upstream friendly and
+# eventually could be incorporated into ssl.sh init does. 
+if [ ${NSS_IGNORE_SYSTEM_POLICY:-0} -eq 1 ]; then
+echo "testing with system crypto policy ignored"
+# no need to patch the test data
+else
+echo "testing with system crypto policy enforced"
+# expected results on some sslauth tests depend on 
+# whether the system crypto policy is being enforced or not.
+pushd nss
+patch -p1 < %{SOURCE28}
+popd
+fi
+# ****************************************************************
 
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
@@ -815,6 +838,9 @@ fi
 
 
 %changelog
+* Tue Jun 07 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
+- Add support for conditionally ignoring the system policy
+
 * Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
 - Apply the patch that was last introduced
 - Renumber and reorder some of the patches
