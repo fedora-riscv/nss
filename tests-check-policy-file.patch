@@ -1,6 +1,6 @@
 --- ./tests/ssl/ssl.sh.check_policy	2016-05-17 00:58:45.000000000 -0700
-+++ ./tests/ssl/ssl.sh	2016-06-07 14:12:59.087680385 -0700
-@@ -56,19 +56,31 @@
++++ ./tests/ssl/ssl.sh	2016-06-07 18:50:58.916987315 -0700
+@@ -56,20 +56,36 @@
        }
    fi
  
@@ -14,18 +14,24 @@
 +    : ""
 +  # Means that will use test data that compliant with policy
 +  # and will invoke selfserv nd tstclnt with the proper range
-+  ADJUST_FOR_POLICY=[ -n "${NSS_POLICY_FILE}" -a -z "${NSS_IGNORE_SYSTEM_POLICY}" ] \
++  ADJUST_FOR_POLICY=[ -n "${NSS_POLICY_FILE}" ] && \
++                    [ -n "${NSS_IGNORE_SYSTEM_POLICY}" ] && \
++                    [ "${NSS_IGNORE_SYSTEM_POLICY}" == "1" ] \
 +    ? "1" \
 +    : ""
    # Test case files
+-  SSLCOV=${QADIR}/ssl/sslcov.txt
+-  SSLAUTH=${QADIR}/ssl/sslauth.txt
+-  SSLSTRESS=${QADIR}/ssl/sslstress.txt
 +  if [ -n "${ADJUST_FOR_POLICY}" ]; then
 +    SSLAUTH=${QADIR}/ssl/sslauth.noPolicy.txt
++    SSLCOV=${QADIR}/ssl/sslcov.noPolicy.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.noPolicy.txt
 +  else
 +    SSLAUTH=${QADIR}/ssl/sslauth.txt
++    SSLCOV=${QADIR}/ssl/sslcov.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.txt
 +  fi
-   SSLCOV=${QADIR}/ssl/sslcov.txt
--  SSLAUTH=${QADIR}/ssl/sslauth.txt
-   SSLSTRESS=${QADIR}/ssl/sslstress.txt
    SSLPOLICY=${QADIR}/ssl/sslpolicy.txt
    REQUEST_FILE=${QADIR}/ssl/sslreq.dat
  
@@ -33,7 +39,8 @@
    SERVEROUTFILE=${TMP}/tests_server.$$
    SERVERPID=${TMP}/tests_pid.$$
  
-@@ -117,17 +129,21 @@
+   R_SERVERPID=../tests_pid.$$
+@@ -117,17 +133,21 @@
    if [ "${OS_ARCH}" = "WINNT" ] && \
       [ "$OS_NAME" = "CYGWIN_NT" -o "$OS_NAME" = "MINGW32_NT" ]; then
        PID=${SHELL_SERVERPID}
@@ -55,7 +62,7 @@
  # local shell function to wait until selfserver is running and initialized
  ########################################################################
  wait_for_selfserv()
-@@ -140,17 +156,21 @@
+@@ -140,17 +160,21 @@
    if [ $? -ne 0 ]; then
        sleep 5
        echo "retrying to connect to selfserv at `date`"
@@ -77,7 +84,7 @@
  ########################### kill_selfserv ##############################
  # local shell function to kill the selfserver after the tests are done
  ########################################################################
-@@ -208,28 +228,35 @@
+@@ -208,28 +232,35 @@
       [ -z "$NO_ECC_CERTS" -o "$NO_ECC_CERTS" != "1"  ] ; then
        ECC_OPTIONS="-e ${HOSTADDR}-ec"
    else
@@ -88,7 +95,7 @@
    fi
 +
 +  if [ -n "${ADJUST_FOR_POLICY}" ]; then
-+     VMIN_OPT="-V ssl3:"
++     VMIN_OPT="-V tls1.0:"
 +  else
 +     VMIN_OPT=""
 +  fi
@@ -116,3 +123,25 @@
    # process (sh.exe).  MKS's kill command has a bug: invoking kill
    # on the helper process does not terminate the real background
    # process.  Our workaround has been to have selfserv save its PID
+@@ -270,16 +301,21 @@
+   VMAX="tls1.1"
+                
+   exec < ${SSLCOV}
+   while read ectype testmax param testname
+   do
+       echo "${testname}" | grep "EXPORT" > /dev/null 
+       EXP=$?
+ 
++      #  trace these types of tests when build has policy enabled
++      if [ -n "${ADJUST_FOR_POLICY}" ] && [ ${EXP} -eq 0 ]; then
++            echo "$testname has legay ciphers"
++      fi
++
+       if [ "$ectype" = "ECC" -a -n "$NSS_DISABLE_ECC" ] ; then
+           echo "$SCRIPTNAME: skipping  $testname (ECC only)"
+       elif [ "$SERVER_MODE" = "fips" -o "$CLIENT_MODE" = "fips" ] && [ "$EXP" -eq 0 ] ; then
+           echo "$SCRIPTNAME: skipping  $testname (non-FIPS only)"
+       elif [ "`echo $ectype | cut -b 1`" != "#" ] ; then
+           echo "$SCRIPTNAME: running $testname ----------------------------"
+           VMAX="ssl3"
+           if [ "$testmax" = "TLS10" ]; then

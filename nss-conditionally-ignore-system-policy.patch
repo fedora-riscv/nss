@@ -1,22 +1,16 @@
---- ./lib/nss/nssinit.c.ignore_system_policy	2016-06-06 07:57:54.924457084 -0700
-+++ ./lib/nss/nssinit.c	2016-06-06 08:01:27.753830455 -0700
-@@ -678,17 +678,18 @@
- 		    dbpath = NULL;
- 		}
- 		if (dbpath) {
- 		    nss_FindExternalRoot(dbpath, secmodName);
- 		}
- 	    }
- 	}
- #ifdef POLICY_FILE
--        if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS ) {
-+        if (!PR_GetEnvSecure("NSS_IGNORE_SYSTEM_POLICY") &&
-+            PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS) {
- 	    SECMODModule *module = SECMOD_LoadModule(
- 		"name=\"Policy File\" "
- 		"parameters=\"configdir='sql:" POLICY_PATH "' "
- 		"secmod='" POLICY_FILE "' "
- 		"flags=readOnly,noCertDB,forceSecmodChoice,forceOpen\" "
- 		"NSS=\"flags=internal,moduleDB,skipFirst,moduleDBOnly,critical\"",
- 		parent, PR_TRUE); 
- 	    if (module) {
+--- ./lib/nss/config.mk.ignore_system_policy	2016-06-08 09:50:41.156814910 -0700
++++ ./lib/nss/config.mk	2016-06-08 09:53:09.874120131 -0700
+@@ -100,11 +100,13 @@
+ ifndef NS_USE_GCC
+ # Export 'mktemp' to be backward compatible with NSS 3.2.x and 3.3.x
+ # but do not put it in the import library.  See bug 142575.
+ DEFINES += -DWIN32_NSS3_DLL_COMPAT
+ DLLFLAGS += -EXPORT:mktemp=nss_mktemp,PRIVATE
+ endif
+ endif
+ 
++ifndef NSS_IGNORE_SYSTEM_POLICY
+ ifdef POLICY_FILE
+ DEFINES += -DPOLICY_FILE=\"$(POLICY_FILE)\" -DPOLICY_PATH=\"$(POLICY_PATH)\"
+ endif
++endif

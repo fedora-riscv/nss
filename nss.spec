@@ -236,6 +236,13 @@ done
 ######## Remove portions that need to statically link with libnssutil.a
 %{__rm} -rf ./nss/external_tests/util_gtests
 
+pushd nss/tests/ssl
+# Create versions of sslcov.txt and sslstress.txt that disable
+# tests for non policy compliant ciphers.
+cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
+cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
+popd
+
 %build
 
 
@@ -318,6 +325,7 @@ export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # to keep nss from loading the policy file
 %if %{nss_ignore_system_policy}
+# when set nss will skip loading policy file.
 export NSS_IGNORE_SYSTEM_POLICY=1
 %endif
 
@@ -427,8 +435,8 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
-%if %{nss_ignore_system_policy}
 # inform tests we kept nss from loading the policy file
+%if %{nss_ignore_system_policy}
 export NSS_IGNORE_SYSTEM_POLICY=1
 %endif
 
@@ -838,7 +846,7 @@ fi
 
 
 %changelog
-* Tue Jun 07 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
+* Wed Jun 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
 - Add support for conditionally ignoring the system policy
 
 * Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
