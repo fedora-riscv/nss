@@ -444,7 +444,7 @@ export NSS_IGNORE_SYSTEM_POLICY=1
 
 # ****************************************************************
 # Patching the test data here is more upstream friendly and
-# eventually could be incorporated into ssl.sh init does. 
+# eventually could be incorporated into what ssl.sh init does. 
 if [ ${NSS_IGNORE_SYSTEM_POLICY:-0} -eq 1 ]; then
 echo "testing with system crypto policy ignored"
 # no need to patch the test data
