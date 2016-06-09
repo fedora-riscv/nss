@@ -236,12 +236,6 @@ done
 ######## Remove portions that need to statically link with libnssutil.a
 %{__rm} -rf ./nss/external_tests/util_gtests
 
-pushd nss/tests/ssl
-# Create versions of sslcov.txt and sslstress.txt that disable
-# tests for non policy compliant ciphers.
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
-popd
 
 %build
 
@@ -456,6 +450,12 @@ pushd nss
 patch -p1 < %{SOURCE28}
 popd
 fi
+pushd nss/tests/ssl
+# Create versions of sslcov.txt and sslstress.txt that disable
+# tests for non policy compliant ciphers.
+cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
+cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
+popd
 # ****************************************************************
 
 # enable the following line to force a test failure
