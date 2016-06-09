@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -98,6 +98,8 @@ Patch60: nss-pem-unitialized-vars.path
 Patch61: nss-skip-util-gtest.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
 Patch62: mozbz1277569backport.patch
+# Local: for stable branch compatibility
+Patch63: nss-allow-keylogfile-in-opt-builds.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -186,6 +188,7 @@ pushd nss
 %patch60 -p1 -b .unitialized_vars
 %patch61 -p0 -b .skip_util_gtest
 %patch62 -p1 -b .compatibility
+%patch63 -p1 -b .allow_keylogfile
 popd
 
 #########################################################
@@ -795,12 +798,16 @@ fi
 
 
 %changelog
+* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.2
+- Restore optimized build support for logging SSL/TLS key material to logfile
+- Resolves: Bug - 1343289 - Update to nss 3.24 removes sslkeylogfile support
+
 * Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.1
 - Allow application requests to disable SSL v2 to succeed
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
 - Update nss_tests with some of the new gtests from upstream
 
-* Fri May 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.0
+* Sat May 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.0
 - Rebase to NSS 3.24.0
 
 * Thu Mar 10 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-1.1
