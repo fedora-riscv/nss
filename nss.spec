@@ -798,7 +798,7 @@ fi
 
 
 %changelog
-* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.1
+* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.3
 - Restore optimized build support for logging SSL/TLS key material to logfile
 - Resolves: Bug - 1343289 - Update to nss 3.24 removes sslkeylogfile support
 
