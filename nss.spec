@@ -109,7 +109,7 @@ Patch62: nss-skip-util-gtest.patch
 # TODO: file a bug usptream when enough tests are run
 Patch63: tests-check-policy-file.patch
 # TODO: Under test and could me merged with nss-check-policy-file.patch
-Patch65: nss-conditionally-ignore-system-policy.patch
+Patch64: nss-conditionally-ignore-system-policy.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -199,7 +199,7 @@ pushd nss
 %patch61 -p1 -b .compatibility
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
-%patch65 -p0 -b .ignore_system_policy
+%patch64 -p0 -b .ignore_system_policy
 popd
 
 #########################################################
@@ -846,7 +846,7 @@ fi
 
 
 %changelog
-* Wed Jun 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
+* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
 - Add support for conditionally ignoring the system policy
 
 * Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
