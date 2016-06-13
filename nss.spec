@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -798,7 +798,7 @@ fi
 
 
 %changelog
-* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.2
+* Mon Jun 1 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.3
 - Restore optimized build support for logging SSL/TLS key material to logfile
 - Resolves: Bug - 1343289 - Update to nss 3.24 removes sslkeylogfile support
 
@@ -820,6 +820,12 @@ fi
 * Mon Feb 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.2-1.0
 - Rebase to NSS 3.22.2
 
+* Tue Feb 23 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1.1
+- Fix ssl2/exp test disabling to run all the required tests
+
+* Mon Feb 22 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.1-1.0
+- Rebase to NSS 3.22.1
+
 * Mon Feb 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.22.0-1.0
 - Update to NSS 3.22
 
@@ -831,6 +837,7 @@ fi
 * Fri Nov 20 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.1
 - Update %%{nss_util_version} and %%{nss_softokn_version} to 3.21.0
 - Resolves: Bug 1284095 - all https fails with sec_error_no_token
+- Add references to bugs filed upstream
 
 * Mon Nov 16 2015 Elio Maldonado <emaldona@redhat.com> - 3.21.0-1.0
 - Update to NSS 3.21
