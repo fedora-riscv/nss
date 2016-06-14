@@ -4,6 +4,9 @@
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
+# uncomment to make nss ignore the system policy file
+#%global nss_ignore_system_policy 1
+
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
@@ -21,7 +24,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2.3%{?dist}
+Release:          2.4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -93,18 +96,22 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# TODO: file a bug usptream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch60: nss-pem-unitialized-vars.path
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
 Patch61: mozbz1277569backport.patch
-# Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 # TODO: file a bug usptream
+# Upstream commit that caused problems with gtests
+# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 Patch62: nss-skip-util-gtest.patch
-# TODO: file a bug usptream when enough tests are run
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch63: tests-check-policy-file.patch
-# TODO: file a bug usptream when enough tests are run
-Patch64: tests-data-adjust-for-policy.patch
+# TODO: Under test and could be merged with nss-check-policy-file.patch
+Patch64: nss-conditionally-ignore-system-policy.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
+Patch65: tests-data-adjust-for-policy.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -194,7 +201,7 @@ pushd nss
 %patch61 -p1 -b .compatibility
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
-%patch64 -p1 -b .expected_result
+%patch64 -p0 -b .ignore_system_policy
 popd
 
 #########################################################
@@ -231,13 +238,6 @@ done
 ######## Remove portions that need to statically link with libnssutil.a
 %{__rm} -rf ./nss/external_tests/util_gtests
 
-pushd nss/tests/ssl
-# Create versions of ssauth.txt, sslcov.txt and sslstress.txt that disable
-# tests for non policy compliant ciphers.
-cat sslauth.txt| sed -r "s/^([^#].*EXPORT|^[^#].*MD5)/#disabled \1/" > sslauth.noPolicy.txt
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
-popd
 
 %build
 
@@ -318,6 +318,17 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
+
+# to keep nss from loading the policy file
+%if %{nss_ignore_system_policy}
+export NSS_IGNORE_SYSTEM_POLICY=1
+%else
+# system policy is enforced
+pushd nss
+# change some sslauth.txt entries to expect failure when enforcing policy
+patch -p1 -b .expected_result < %{PATCH65}
+popd
+%endif
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
@@ -425,6 +436,11 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
+# tests need to know we kept nss from loading the policy file
+%if %{nss_ignore_system_policy}
+export NSS_IGNORE_SYSTEM_POLICY=1
+%endif
+
 # End -- copied from the build section
 
 # enable the following line to force a test failure
@@ -468,7 +484,8 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+# TODO: Add ssl_gtests when we rebase to nss-3.25
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -815,6 +832,9 @@ fi
 
 
 %changelog
+* Mon Jun 13 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
+- Add support for conditionally ignoring the system policy
+
 * Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
 - Apply the patch that was last introduced
 - Renumber and reorder some of the patches
