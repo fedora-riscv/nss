@@ -1,0 +1,84 @@
+diff -up ./tests/ssl/sslauth.txt.check_policy ./tests/ssl/sslauth.txt
+diff -up ./tests/ssl/ssl.sh.check_policy ./tests/ssl/ssl.sh
+--- ./tests/ssl/ssl.sh.check_policy	2016-05-17 00:58:45.000000000 -0700
++++ ./tests/ssl/ssl.sh	2016-05-28 15:45:07.645964005 -0700
+@@ -61,10 +61,19 @@ ssl_init()
+   nss_ssl_run="stapling signed_cert_timestamps cov auth stress"
+   NSS_SSL_RUN=${NSS_SSL_RUN:-$nss_ssl_run}
+ 
++  NSS_POLICY_FILE=[ -f ${POLICY_PATH}/${POLICY_FILE} ] \
++    ? "${POLICY_PATH}/${POLICY_FILE}" \
++    : ""
+   # Test case files
+-  SSLCOV=${QADIR}/ssl/sslcov.txt
+-  SSLAUTH=${QADIR}/ssl/sslauth.txt
+-  SSLSTRESS=${QADIR}/ssl/sslstress.txt
++  if [ -n ${NSS_POLICY_FILE} ]; then
++    SSLAUTH=${QADIR}/ssl/sslauth.byPolicy.txt
++    SSLCOV=${QADIR}/ssl/sslcov.byPolicy.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.byPolicy.txt
++  else
++    SSLAUTH=${QADIR}/ssl/sslauth.txt
++    SSLCOV=${QADIR}/ssl/sslcov.txt
++    SSLSTRESS=${QADIR}/ssl/sslstress.txt
++  fi
+   SSLPOLICY=${QADIR}/ssl/sslpolicy.txt
+   REQUEST_FILE=${QADIR}/ssl/sslreq.dat
+ 
+@@ -122,7 +131,11 @@ is_selfserv_alive()
+   fi
+ 
+   echo "kill -0 ${PID} >/dev/null 2>/dev/null" 
++  if [ -n ${NSS_POLICY_FILE}" ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
++  echo "No server to kill"
++  else
+   kill -0 ${PID} >/dev/null 2>/dev/null || Exit 10 "Fatal - selfserv process not detectable"
++  fi
+ 
+   echo "selfserv with PID ${PID} found at `date`"
+ }
+@@ -145,7 +158,11 @@ wait_for_selfserv()
+       ${BINDIR}/tstclnt -p ${PORT} -h ${HOSTADDR} ${CLIENT_OPTIONS} -q \
+               -d ${P_R_CLIENTDIR} -v < ${REQUEST_FILE}
+       if [ $? -ne 0 ]; then
++          if [ -n ${NSS_POLICY_FILE} ] && [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ]]; then
++              html_passed "Server never started"
++          else
+           html_failed "Waiting for Server"
++          fi
+       fi
+   fi
+   is_selfserv_alive
+@@ -216,15 +233,16 @@ start_selfserv()
+   echo "selfserv starting at `date`"
+   echo "selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \\"
+   echo "         ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID}\\"
+-  echo "         $verbose -H 1 &"
++  VMIN_OPT=[ -n ${NSS_POLICY_FILE} ] ? "-V ssl3:" : ""
++  echo "         $verbose -H 1 ${VMIN_OPT} &"
+   if [ ${fileout} -eq 1 ]; then
+       ${PROFTOOL} ${BINDIR}/selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \
+                ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 \
+-               > ${SERVEROUTFILE} 2>&1 &
++               ${VMIN_OPT}> ${SERVEROUTFILE} 2>&1 &
+       RET=$?
+   else
+       ${PROFTOOL} ${BINDIR}/selfserv -D -p ${PORT} -d ${P_R_SERVERDIR} -n ${HOSTADDR} ${SERVER_OPTIONS} \
+-               ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 &
++               ${ECC_OPTIONS} -S ${HOSTADDR}-dsa -w nss ${sparam} -i ${R_SERVERPID} $verbose -H 1 ${VMIN_OPT} &
+       RET=$?
+   fi
+ 
+@@ -275,6 +293,12 @@ ssl_cov()
+       echo "${testname}" | grep "EXPORT" > /dev/null 
+       EXP=$?
+ 
++      #  trace these types of tests when build has policy enabled
++      if [ -n ${NSS_POLICY_FILE} ] &&
++         [[ ${EXP} -eq 0 || ${SSL2} -eq 0 ] || ${SSL3} -eq 0 ]]; then
++            echo "exp/ssl2/ssl3 test should fail: (NSS_NO_SSL2,EXP,SSL2,SSL3)=(${NSS_NO_SSL2},${EXP},${SSL2},${SSL3})"
++      fi
++
+       if [ "$ectype" = "ECC" -a -n "$NSS_DISABLE_ECC" ] ; then
+           echo "$SCRIPTNAME: skipping  $testname (ECC only)"
+       elif [ "$SERVER_MODE" = "fips" -o "$CLIENT_MODE" = "fips" ] && [ "$EXP" -eq 0 ] ; then

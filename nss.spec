@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.24.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2.0%{?dist}
+Release:          2.3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -96,9 +96,15 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # TODO: file a bug usptream
 Patch59: nss-check-policy-file.patch
 Patch60: nss-pem-unitialized-vars.path
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
+Patch61: mozbz1277569backport.patch
 # Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
-Patch61: nss-skip-util-gtest.patch
-
+# TODO: file a bug usptream
+Patch62: nss-skip-util-gtest.patch
+# TODO: file a bug usptream when enough tests are run
+Patch63: tests-check-policy-file.patch
+# TODO: file a bug usptream when enough tests are run
+Patch64: tests-data-adjust-for-policy.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -181,14 +187,15 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-pushd nss
-popd
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch60 -p1 -b .unitialized_vars
+%patch61 -p1 -b .compatibility
+%patch62 -p0 -b .skip_util_gtest
+%patch63 -p1 -b .check_policy
+%patch64 -p1 -b .expected_result
 popd
-%patch61 -p0 -b .skip_util_gtest
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -225,15 +232,15 @@ done
 %{__rm} -rf ./nss/external_tests/util_gtests
 
 pushd nss/tests/ssl
-# Create versions of sslcov.txt and sslstress.txt that disable tests
-# for SSL2 and EXPORT ciphers.
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslcov.noSSL2orExport.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslstress.noSSL2orExport.txt
+# Create versions of ssauth.txt, sslcov.txt and sslstress.txt that disable
+# tests for non policy compliant ciphers.
+cat sslauth.txt| sed -r "s/^([^#].*EXPORT|^[^#].*MD5)/#disabled \1/" > sslauth.noPolicy.txt
+cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
+cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
 popd
 
 %build
 
-export NSS_NO_SSL2_NO_EXPORT=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -307,6 +314,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load it if it exists
+# TODO: restore the POLICY_FILE and POLICY_PATH exports
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
@@ -395,6 +403,10 @@ if [ ${DISABLETEST:-0} -eq 1 ]; then
 fi
 
 # Begin -- copied from the build section
+
+# inform the ssl test scripts that policy is enabled
+export POLICY_FILE="nss.config"
+export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -803,8 +815,24 @@ fi
 
 
 %changelog
+* Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
+- Apply the patch that was last introduced
+- Renumber and reorder some of the patches
+- Resolves: Bug 1342158
+
+* Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.2
+- Allow application requests to disable SSL v2 to succeed
+- Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
+
+* Sun May 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.1
+- Rebase to NSS 3.24.0 
+- Restore setting the policy file location
+- Make ssl tests scripts aware of policy
+- Ajust tests data expected result for policy
+
 * Tue May 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.0
-- Rebase to NSS 3.24.0
+- Bootstrap build to rebase to NSS 3.24.0
+- Temporarily not setting the policy file location
 
 * Thu May 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.23.0-9
 - Change POLICY_FILE to "nss.config"
