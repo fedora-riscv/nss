@@ -98,17 +98,19 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# TODO: file a bug usptream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
+# Remove it when we rebase to nss-pem upstream that has the fix
 Patch60: nss-pem-unitialized-vars.path
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
 Patch61: mozbz1277569backport.patch
-# Upstream: https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 # TODO: file a bug usptream
+# Upstream commit that caused problems with gtests
+# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 Patch62: nss-skip-util-gtest.patch
-# TODO: file a bug usptream when enough tests are run
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch63: tests-check-policy-file.patch
-# TODO: Under test and could me merged with nss-check-policy-file.patch
+# TODO: Under test and could be merged with nss-check-policy-file.patch
 Patch64: nss-conditionally-ignore-system-policy.patch
 
 %description
@@ -319,7 +321,6 @@ export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # to keep nss from loading the policy file
 %if %{nss_ignore_system_policy}
-# when set nss will skip loading policy file.
 export NSS_IGNORE_SYSTEM_POLICY=1
 %endif
 
@@ -438,24 +439,16 @@ export NSS_IGNORE_SYSTEM_POLICY=1
 
 # ****************************************************************
 # Patching the test data here is more upstream friendly and
-# eventually could be incorporated into what ssl.sh init does. 
-if [ ${NSS_IGNORE_SYSTEM_POLICY:-0} -eq 1 ]; then
-echo "testing with system crypto policy ignored"
+# eventually should be incorporated into what ssl.sh init does. 
+%if %{nss_ignore_system_policy}
 # no need to patch the test data
-else
-echo "testing with system crypto policy enforced"
-# expected results on some sslauth tests depend on 
-# whether the system crypto policy is being enforced or not.
+%else
+# expected results on some sslauth tests depend on whether
+# the system crypto policy is being enforced or not.
 pushd nss
 patch -p1 < %{SOURCE28}
 popd
-fi
-pushd nss/tests/ssl
-# Create versions of sslcov.txt and sslstress.txt that disable
-# tests for non policy compliant ciphers.
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
-popd
+%endif
 # ****************************************************************
 
 # enable the following line to force a test failure
@@ -499,7 +492,8 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains"
+# TODO: Add ssl_gtests when we rebase to nss-3.25
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -846,7 +840,7 @@ fi
 
 
 %changelog
-* Thu Jun 09 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
+* Wed Jun 15 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.4
 - Add support for conditionally ignoring the system policy
 
 * Fri Jun 03 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.3
