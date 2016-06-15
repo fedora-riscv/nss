@@ -11,4 +11,4 @@ TestUser51.cert
 /PayPalRootCA.cert
 /PayPalICA.cert
 /nss-3.24.0.tar.gz
-/tests-data-adjust-for-policy.patch
+/adjust4policy.txt

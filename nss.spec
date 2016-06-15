@@ -71,7 +71,7 @@ Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
 # needs to be updated as we rebase and the system crypto policies evolve
-Source28:         tests-data-adjust-for-policy.patch
+Source28:         adjust4policy.txt
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -492,7 +492,7 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-# TODO: Add ssl_gtests when we rebase to nss-3.25
+# TODO: Add ssl_gtests when we rebase to nss-3.25 or higher
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
