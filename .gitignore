@@ -7,8 +7,7 @@ PayPalEE.cert
 TestCA.ca.cert
 TestUser50.cert
 TestUser51.cert
-/nss-pem-20160308.tar.bz2
 /PayPalRootCA.cert
 /PayPalICA.cert
-/nss-3.24.0.tar.gz
+/nss-3.25.0.tar.gz
 /adjust4policy.txt
