@@ -107,6 +107,7 @@ Patch63: tests-check-policy-file.patch
 Patch64: nss-conditionally-ignore-system-policy.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch65: tests-data-adjust-for-policy.patch
+Patch66: listsuites-do-queries.patch
 # TODO: file a bug upstream
 Patch70: nss-skip-ecperf.patch
 
@@ -195,6 +196,7 @@ pushd nss
 #%patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
 %patch64 -p0 -b .ignore_system_policy
+%patch66 -p1 -b .do_queries
 popd
 # temporary
 %patch70 -p0 -b .skip_ecperf
@@ -829,6 +831,7 @@ fi
 %changelog
 * Fri Jun 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-2
 - Rebase to nss 3.25
+- Add support for conditionally ignoring the system policy (#1157720)
 
 * Thu Jun 16 2016 Kamil Dudka <kdudka@redhat.com> - 3.24.0-3
 - decouple nss-pem from the nss package (#1347336)
