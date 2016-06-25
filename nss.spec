@@ -5,7 +5,7 @@
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # uncomment to make nss ignore the system policy file
-#%global nss_ignore_system_policy 1
+%global nss_ignore_system_policy 1
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
@@ -75,8 +75,6 @@ Source24:         cert9.db.xml
 Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
-# needs to be updated as we rebase and the system crypto policies evolve
-Source28:         adjust4policy.txt
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -100,13 +98,18 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 # TODO: file a bug usptream
+# Upstream commit that caused problems with gtests
+# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 Patch62: nss-skip-util-gtest.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch63: tests-check-policy-file.patch
 # TODO: Under test and could be merged with nss-check-policy-file.patch
 Patch64: nss-conditionally-ignore-system-policy.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
+Patch65: tests-data-adjust-for-policy.patch
 # TODO: file a bug upstream
 Patch70: nss-skip-ecperf.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -192,7 +195,6 @@ pushd nss
 #%patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
 %patch64 -p0 -b .ignore_system_policy
-#%patch65 -p1 -b .expected_result
 popd
 # temporary
 %patch70 -p0 -b .skip_ecperf
@@ -315,6 +317,12 @@ export POLICY_PATH="/etc/crypto-policies/back-ends"
 # to keep nss from loading the policy file
 %if %{nss_ignore_system_policy}
 export NSS_IGNORE_SYSTEM_POLICY=1
+%else
+# system policy is enforced
+pushd nss
+# change some sslauth.txt entries to expect failure when enforcing policy
+patch -p1 -b .expected_result < %{PATCH65}
+popd
 %endif
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
@@ -423,26 +431,12 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
-# inform tests we kept nss from loading the policy file
+# tests need to know we kept nss from loading the policy file
 %if %{nss_ignore_system_policy}
 export NSS_IGNORE_SYSTEM_POLICY=1
 %endif
 
 # End -- copied from the build section
-
-# ****************************************************************
-# Patching the test data here is more upstream friendly and
-# eventually should be incorporated into what ssl.sh init does. 
-%if %{nss_ignore_system_policy}
-# no need to patch the test data
-%else
-# expected results on some sslauth tests depend on whether
-# the system crypto policy is being enforced or not.
-pushd nss
-patch -p1 < %{SOURCE28}
-popd
-%endif
-# ****************************************************************
 
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
@@ -485,9 +479,9 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-# TODO: Add ssl_gtests when we rebase to nss-3.25 or higher
 #  the full list from all.sh is:
 #  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
+# TODO: Add ssl_gtests when we rebase to nss-3.25
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
