@@ -24,7 +24,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -111,7 +111,6 @@ Patch66: listsuites-do-queries.patch
 # TODO: file a bug upstream
 Patch70: nss-skip-ecperf.patch
 
-
 %description
 Network Security Services (NSS) is a set of libraries designed to
 support cross-platform development of security-enabled client and
@@ -193,7 +192,7 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-#%patch62 -p0 -b .skip_util_gtest
+%patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
 %patch64 -p0 -b .ignore_system_policy
 %patch66 -p1 -b .do_queries
@@ -211,9 +210,11 @@ popd
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
-# TODO: similar problem as descrived above
+# similar problem to the one descrived above
 # ./nss/lib/freebl/ec.h, ./nss/lib/freebl/ecl/ecl-curve.h
 # the last one requires that NSS_ECC_MORE_THAN_SUITE_B not be defined
+%{__cp} ./nss/lib/freebl/ec.h ./nss/cmd/ecperf
+%{__cp} ./nss/lib/freebl/ecl/ecl-curve.h ./nss/cmd/ecperf
 
 # Before removing util directory we must save verref.h
 # as it will be needed later during the build phase.
@@ -235,9 +236,6 @@ popd
 
 
 %build
-
-# TODO: remove this when we solve the problems
-export NSS_DISABLE_GTESTS=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -483,7 +481,6 @@ pushd ./nss/tests/
 #  nss_cycles: standard pkix upgradedb sharedb
 #  the full list from all.sh is:
 #  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
-# TODO: Add ssl_gtests when we rebase to nss-3.25
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
@@ -829,6 +826,9 @@ fi
 
 
 %changelog
+* Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
+- Cleanup spec file and patches and add references to bugs filed upstream
+
 * Fri Jun 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-2
 - Rebase to nss 3.25
 - Add support for conditionally ignoring the system policy (#1157720)
