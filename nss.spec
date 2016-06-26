@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -92,15 +92,17 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# TODO: file a bug usptream
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 # TODO: file a bug usptream
+# Upstream commit that caused problems with gtests
+# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
 Patch62: nss-skip-util-gtest.patch
-# TODO: file a bug usptream when enough tests are run
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch63: tests-check-policy-file.patch
-# TODO: file a bug usptream when enough tests are run
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch64: tests-data-adjust-for-policy.patch
-# TODO: file a bug upstream
+# TODO: file a bug upstream similar to the one for rsaperf
 Patch70: nss-skip-ecperf.patch
 
 %description
@@ -185,7 +187,7 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-#%patch62 -p0 -b .skip_util_gtest
+%patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .check_policy
 %patch64 -p1 -b .expected_result
 popd
@@ -202,9 +204,11 @@ popd
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
-# TODO: similar problem as descrived above
+# similar problem to the one descrived above
 # ./nss/lib/freebl/ec.h, ./nss/lib/freebl/ecl/ecl-curve.h
 # the last one requires that NSS_ECC_MORE_THAN_SUITE_B not be defined
+%{__cp} ./nss/lib/freebl/ec.h ./nss/cmd/ecperf
+%{__cp} ./nss/lib/freebl/ecl/ecl-curve.h ./nss/cmd/ecperf
 
 # Before removing util directory we must save verref.h
 # as it will be needed later during the build phase.
@@ -233,9 +237,6 @@ cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > ss
 popd
 
 %build
-
-# TODO: remove this when we solve the problems
-export NSS_DISABLE_GTESTS=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -810,6 +811,9 @@ fi
 
 
 %changelog
+* Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
+- Cleanup spec file and patches and add references to bugs filed upstream
+
 * Fri Jun 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-2
 - Rebase to nss 3.25
 
