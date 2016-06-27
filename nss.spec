@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.24.0
-%global nss_softokn_version 3.24.0
+%global nss_util_version 3.25.0
+%global nss_softokn_version 3.25.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.24.0
+Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,13 +91,12 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 # headers are older. Such is the case when starting an update with API changes or even private export changes.
 # Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
 Patch50:          iquote.patch
-Patch55:          skip_stress_TLS_RC4_128_with_MD5.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch60: nss-pem-unitialized-vars.path
 Patch61: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1277569
-Patch62: mozbz1277569backport.patch
+# TODO: file a bug upstream similar to the one for rsaperf
+Patch70: nss-skip-ecperf.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -180,13 +179,13 @@ low level services.
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
-%patch55 -p1 -b .skip_stress_tls_rc4_128_with_md5
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch60 -p1 -b .unitialized_vars
-%patch61 -p0 -b .skip_util_gtest
-%patch62 -p1 -b .compatibility
+%patch61 -p1 -b .skip_util_gtest
 popd
+# temporary
+%patch70 -p0 -b .skip_ecperf
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -224,14 +223,12 @@ done
 
 pushd nss/tests/ssl
 # Create versions of sslcov.txt and sslstress.txt that disable tests
-# for SSL2 and EXPORT ciphers.
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslcov.noSSL2orExport.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*SSL2)/#disabled \1/" > sslstress.noSSL2orExport.txt
+# for non policy compliant ciphers.
+cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
+cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
 popd
 
 %build
-
-export NSS_NO_SSL2_NO_EXPORT=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -448,7 +445,9 @@ pushd ./nss/tests/
 
 #  don't need to run all the tests when testing packaging
 #  nss_cycles: standard pkix upgradedb sharedb
-%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains pk11_gtests der_gtests"
+#  the full list from all.sh is:
+#  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
+%define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
 #  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
 #  nss_ssl_run: cov auth stress
 #
@@ -795,6 +794,9 @@ fi
 
 
 %changelog
+* Mon Jun 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.0
+- Rebase to nss 3.25
+
 * Thu Jun 02 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-1.2
 - Allow application requests to disable SSL v2 to succeed
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
