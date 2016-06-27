@@ -1,17 +1,15 @@
-diff -up nss/cmd/Makefile.skipthem nss/cmd/Makefile
---- nss/cmd/Makefile.nobltest	2013-05-28 14:43:24.000000000 -0700
-+++ nss/cmd/Makefile	2013-06-15 11:51:11.669655168 -0700
-@@ -14,10 +14,10 @@ ifdef BUILD_LIBPKIX_TESTS
- DIRS += libpkix
- endif
- 
--ifeq ($(NSS_BUILD_WITHOUT_SOFTOKEN),1)
-+ifeq ($(NSS_BLTEST_NOT_AVAILABLE),1)
+diff -up ./nss/cmd/Makefile.skipthem ./nss/cmd/Makefile
+--- ./nss/cmd/Makefile.skipem	2016-06-24 10:10:38.143165159 -0700
++++ ./nss/cmd/Makefile	2016-06-24 10:13:08.566457400 -0700
+@@ -17,7 +17,11 @@ endif
+ ifeq ($(NSS_BUILD_WITHOUT_SOFTOKEN),1)
  BLTEST_SRCDIR =
--FIPSTEST_SRCDIR =
--SHLIBSIGN_SRCDIR =
-+FIPSTEST_SRCDIR =
+ FIPSTEST_SRCDIR =
++ifeq ($(NSS_BLTEST_NOT_AVAILABLE),1)
 +SHLIBSIGN_SRCDIR = shlibsign
++else
+ SHLIBSIGN_SRCDIR =
++endif
  else
  BLTEST_SRCDIR = bltest
  FIPSTEST_SRCDIR = fipstest
