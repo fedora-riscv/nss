@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -179,7 +179,6 @@ low level services.
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
 %patch16 -p0 -b .539183
-# link pem against buildroot's freebl, essential when mixing and matching
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
@@ -811,6 +810,9 @@ fi
 
 
 %changelog
+* Tue Jun 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-4
+- Remove obsolete patch and spurious lines from the spec file (#1347336)
+
 * Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
 - Cleanup spec file and patches and add references to bugs filed upstream
 
