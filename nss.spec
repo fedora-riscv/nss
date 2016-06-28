@@ -94,9 +94,7 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
-# TODO: file a bug usptream
-# Upstream commit that caused problems with gtests
-# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch63: tests-check-policy-file.patch
@@ -308,8 +306,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/lib/dbm
 
 # Set the policy file location
-# if set NSS will always check for the policy file and load it if it exists
-# TODO: restore the POLICY_FILE and POLICY_PATH exports
+# if set NSS will always check for the policy file and load if it exists
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
