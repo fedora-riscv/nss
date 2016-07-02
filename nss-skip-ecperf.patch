@@ -1,6 +1,6 @@
-diff -up ./nss/cmd/manifest.mn.skip_ecperf ./nss/cmd/manifest.mn
---- ./nss/cmd/manifest.mn.noecperf	2016-06-24 08:04:53.891106841 -0700
-+++ ./nss/cmd/manifest.mn	2016-06-24 08:06:57.186887403 -0700
+diff -up ./cmd/manifest.mn.skip_ecperf ./cmd/manifest.mn
+--- ./cmd/manifest.mn.noecperf	2016-06-24 08:04:53.891106841 -0700
++++ ./cmd/manifest.mn	2016-06-24 08:06:57.186887403 -0700
 @@ -42,7 +42,6 @@ NSS_SRCDIRS = \
   dbtest \
   derdump  \
