@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -183,9 +183,8 @@ low level services.
 pushd nss
 %patch60 -p1 -b .unitialized_vars
 %patch61 -p1 -b .skip_util_gtest
+%patch70 -p1 -b .skip_ecperf
 popd
-# temporary
-%patch70 -p0 -b .skip_ecperf
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -794,6 +793,9 @@ fi
 
 
 %changelog
+* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.1
+- Tidy up the spec file
+
 * Mon Jun 27 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.0
 - Rebase to nss 3.25
 
