@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -100,6 +100,7 @@ Patch60: nss-conditionally-ignore-system-policy.patch
 Patch62: nss-skip-util-gtest.patch
 # TODO: file a bug upstream similar to the one for rsaperf
 Patch70: nss-skip-ecperf.patch
+Patch71: listsuites-do-queries.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -185,6 +186,7 @@ pushd nss
 %patch60 -p1 -b .cond_ignore
 %patch62 -p0 -b .skip_util_gtest
 %patch70 -p1 -b .skip_ecperf
+%patch71 -p1 -b .do_queries
 popd
 
 #########################################################
@@ -794,6 +796,9 @@ fi
 
 
 %changelog
+* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+- Add support to listsuites to list ciphers allowed by policy
+
 * Fri Jul 01 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-5
 - Add support for conditionally ignoring the system policy (#1157720)
 - Remove unneeded test scripts patches in order to run more tests
