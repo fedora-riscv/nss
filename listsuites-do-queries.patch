@@ -1,0 +1,111 @@
+--- ./cmd/listsuites/listsuites.c.do_queries	2016-05-17 00:58:45.000000000 -0700
++++ ./cmd/listsuites/listsuites.c	2016-06-23 09:39:10.563925342 -0700
+@@ -7,19 +7,48 @@
+  *
+  * Try: ./listsuites | grep -v : | sort -b +4rn -5 +1 -2 +2 -3 +3 -4 +5r -6
+  */
+ 
+ #include <errno.h>
+ #include <stdio.h>
+ #include "secport.h"
+ #include "ssl.h"
++#include "plgetopt.h"
++#include "secutil.h"
++#include "utilpars.h"
++#include "nspr.h"
++#include "nss.h"
++
++static const char *progName = "listsuites";
++char *ignoreVar;
++
++static char *policy_file_path(char *path)
++{
++    return (PR_Access(path, PR_ACCESS_READ_OK) == PR_SUCCESS) ? path : "";
++}
++
++static char *ignore_system_policy_value(char *var)
++{
++    ignoreVar = PR_GetEnvSecure(var);
++    return ignoreVar != NULL ? ignoreVar : "";
++}
++
++void Usage(const char *progName)
++{
++    fprintf(stderr,
++            "\nList cipher suites or parse a policy file or query\n"
++            "Usage: %s [-i policy_file] file to parse (default is list)\n",
++            progName);
++    exit(1);
++}
++
+ 
+ int
+-main(int argc, char **argv)
++list_suites(void)
+ {
+     const PRUint16 *cipherSuites = SSL_ImplementedCiphers;
+     int i;
+     int errCount = 0;
+ 
+     fputs("This version of libSSL supports these cipher suites:\n\n", stdout);
+ 
+     /* disable all the SSL3 cipher suites */
+@@ -56,8 +85,58 @@
+                 info.effectiveKeyBits, info.macAlgorithmName,
+                 enabled ? "Enabled" : "Disabled",
+                 info.isFIPS ? "FIPS" : "",
+                 info.isExportable ? "Export" : "Domestic",
+                 info.nonStandard ? "nonStandard" : "");
+     }
+     return errCount;
+ }
++
++int
++main(int argc, char **argv)
++{
++    PLOptState *optstate = NULL;
++    PLOptStatus status;
++    SECStatus rv;
++    FILE *inFile;
++    char *ev, *path;
++
++    optstate = PL_CreateOptState(argc, argv, "?hi:p:q:lL");
++    while ((status = PL_GetNextOpt(optstate)) == PL_OPT_OK) {
++        switch (optstate->option) {
++            case '?':
++            case 'h':
++                Usage(progName);
++                break;
++            case 'p':
++                path = (char *)optstate->value;
++                fprintf(stdout, "%s=%s\n", path, policy_file_path(path));
++                break;
++            case 'q':
++                ev = (char *)optstate->value;
++                fprintf(stdout, "%s=%s\n", ev, ignore_system_policy_value(ev));
++                break;
++            case 'i':
++                rv = SECSuccess;
++                inFile = fopen(optstate->value, "r");
++                if (!inFile) {
++                    fprintf(stderr,
++                            "%s: unable to open \"%s\" for reading\n",
++                            progName, optstate->value);
++                            return -1;
++                }
++                rv = SECFailure;/*ParseCryptoPolicy(optstate->value);*/
++                fclose(inFile);
++                return (rv == SECSuccess) ? 0 : 1;
++                break;
++            case 'l':
++            case 'L':
++                return list_suites();
++                break;
++            default:
++                Usage(progName);
++             break;
++        }
++    }
++
++    return 0;
++}

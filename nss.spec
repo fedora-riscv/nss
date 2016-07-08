@@ -4,9 +4,6 @@
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
-# uncomment to make nss ignore the system policy file
-%global nss_ignore_system_policy 1
-
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
@@ -24,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -97,19 +94,13 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
-# TODO: file a bug usptream
-# Upstream commit that caused problems with gtests
-# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
+Patch60: nss-conditionally-ignore-system-policy.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch63: tests-check-policy-file.patch
-# TODO: Under test and could be merged with nss-check-policy-file.patch
-Patch64: nss-conditionally-ignore-system-policy.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch65: tests-data-adjust-for-policy.patch
-# TODO: file a bug upstream
+# TODO: file a bug upstream similar to the one for rsaperf
 Patch70: nss-skip-ecperf.patch
-
+Patch71: listsuites-do-queries.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -192,12 +183,11 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-#%patch62 -p0 -b .skip_util_gtest
-%patch63 -p1 -b .check_policy
-%patch64 -p0 -b .ignore_system_policy
+%patch60 -p1 -b .cond_ignore
+%patch62 -p0 -b .skip_util_gtest
+%patch70 -p1 -b .skip_ecperf
+%patch71 -p1 -b .do_queries
 popd
-# temporary
-%patch70 -p0 -b .skip_ecperf
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -209,9 +199,11 @@ popd
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
-# TODO: similar problem as descrived above
+# similar problem to the one described above
 # ./nss/lib/freebl/ec.h, ./nss/lib/freebl/ecl/ecl-curve.h
 # the last one requires that NSS_ECC_MORE_THAN_SUITE_B not be defined
+%{__cp} ./nss/lib/freebl/ec.h ./nss/cmd/ecperf
+%{__cp} ./nss/lib/freebl/ecl/ecl-curve.h ./nss/cmd/ecperf
 
 # Before removing util directory we must save verref.h
 # as it will be needed later during the build phase.
@@ -233,9 +225,6 @@ popd
 
 
 %build
-
-# TODO: remove this when we solve the problems
-export NSS_DISABLE_GTESTS=1
 
 NSS_NO_PKCS11_BYPASS=1
 export NSS_NO_PKCS11_BYPASS
@@ -308,22 +297,10 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/lib/dbm
 
 # Set the policy file location
-# if set NSS will always check for the policy file and load it if it exists
-# TODO: restore the POLICY_FILE and POLICY_PATH exports
+# if set NSS will always check for the policy file and load if it exists
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
-
-# to keep nss from loading the policy file
-%if %{nss_ignore_system_policy}
-export NSS_IGNORE_SYSTEM_POLICY=1
-%else
-# system policy is enforced
-pushd nss
-# change some sslauth.txt entries to expect failure when enforcing policy
-patch -p1 -b .expected_result < %{PATCH65}
-popd
-%endif
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
@@ -410,10 +387,6 @@ fi
 
 # Begin -- copied from the build section
 
-# inform the ssl test scripts that policy is enabled
-export POLICY_FILE="nss.config"
-export POLICY_PATH="/etc/crypto-policies/back-ends"
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -431,12 +404,9 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
 
-# tests need to know we kept nss from loading the policy file
-%if %{nss_ignore_system_policy}
-export NSS_IGNORE_SYSTEM_POLICY=1
-%endif
-
 # End -- copied from the build section
+
+export NSS_IGNORE_SYSTEM_POLICY=1
 
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
@@ -481,15 +451,14 @@ pushd ./nss/tests/
 #  nss_cycles: standard pkix upgradedb sharedb
 #  the full list from all.sh is:
 #  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
-# TODO: Add ssl_gtests when we rebase to nss-3.25
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
-#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
-#  nss_ssl_run: cov auth stress
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr policy
+#  nss_ssl_run: cov auth stapling stress
 #
 # Uncomment these lines if you need to temporarily
 # disable some test suites for faster test builds
-# global nss_ssl_tests "normal_fips"
-# global nss_ssl_run "cov auth"
+# % define nss_ssl_tests "normal_fips"
+# % define nss_ssl_run "cov"
 
 SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
 
@@ -827,6 +796,17 @@ fi
 
 
 %changelog
+* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+- Cherry-pick merge from master branch
+- Add support for conditionally ignoring the system policy (#1157720)
+- Remove unneeded test scripts patches in order to run more tests
+- Remove unneeded test data modifications from the spec file
+- Remove obsolete patch and spurious lines from the spec file (#1347336)
+- Add support to listsuites to list ciphers allowed by policy
+
+* Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
+- Cleanup spec file and patches and add references to bugs filed upstream
+
 * Fri Jun 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-2
 - Rebase to nss 3.25
 
