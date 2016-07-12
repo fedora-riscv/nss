@@ -183,7 +183,6 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-%patch60 -p1 -b .cond_ignore
 %patch62 -p0 -b .skip_util_gtest
 %patch70 -p1 -b .skip_ecperf
 %patch71 -p1 -b .do_queries
@@ -233,7 +232,7 @@ FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
 # Enable compiler optimizations and disable debugging code
-export BUILD_OPT=1
+#export BUILD_OPT=1
 
 # Uncomment to disable optimizations
 #RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
@@ -390,7 +389,7 @@ fi
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
-export BUILD_OPT=1
+#export BUILD_OPT=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -796,13 +795,14 @@ fi
 
 
 %changelog
-* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+* Tue Jul 12 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
 - Cherry-pick merge from master branch
 - Add support for conditionally ignoring the system policy (#1157720)
 - Remove unneeded test scripts patches in order to run more tests
 - Remove unneeded test data modifications from the spec file
 - Remove obsolete patch and spurious lines from the spec file (#1347336)
 - Add support to listsuites to list ciphers allowed by policy
+- Incorporate some upstream review suggestions
 
 * Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
 - Cleanup spec file and patches and add references to bugs filed upstream
