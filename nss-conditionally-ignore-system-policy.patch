@@ -1,6 +1,32 @@
+<<<<<<< HEAD
 --- ./lib/nss/nssinit.c.ignore_system_policy	2016-06-06 07:57:54.924457084 -0700
 +++ ./lib/nss/nssinit.c	2016-06-06 08:01:27.753830455 -0700
 @@ -678,17 +678,18 @@
+=======
+--- ./lib/nss/nssinit.c.cond_ignore	2016-07-01 16:09:21.187499579 -0700
++++ ./lib/nss/nssinit.c	2016-07-01 16:19:16.095862425 -0700
+@@ -529,16 +529,19 @@
+ {
+     SECMODModule *parent = NULL;
+     PKIX_UInt32 actualMinorVersion = 0;
+     PKIX_Error *pkixError = NULL;
+     PRBool isReallyInitted;
+     char *configStrings = NULL;
+     char *configName = NULL;
+     PRBool passwordRequired = PR_FALSE;
++#ifdef POLICY_FILE
++    char *ignoreVar;
++#endif
+ 
+     /* if we are trying to init with a traditional NSS_Init call, maintain
+      * the traditional idempotent behavior. */
+     if (!initContextPtr && nssIsInitted) {
+ 	return SECSuccess;
+     }
+   
+     /* make sure our lock and condition variable are initialized one and only
+@@ -678,32 +681,38 @@
+>>>>>>> origin/private-rebase-work-fedora-rawhide
  		    dbpath = NULL;
  		}
  		if (dbpath) {
@@ -10,13 +36,44 @@
  	}
  #ifdef POLICY_FILE
 -        if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS ) {
+<<<<<<< HEAD
 +        if (!PR_GetEnvSecure("NSS_IGNORE_SYSTEM_POLICY") &&
 +            PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS) {
+=======
++	/* Load the system crypo policy file if it exists,
++	 * unless the NSS_IGNORE_SYSTEM_POLICY environment
++	 * variable has been set to 1. */
++	ignoreVar = PR_GetEnvSecure("NSS_IGNORE_SYSTEM_POLICY");
++	if (ignoreVar == NULL || strncmp(ignoreVar, "1", strlen("1")) != 0) {
++	    if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS ) {
+>>>>>>> origin/private-rebase-work-fedora-rawhide
  	    SECMODModule *module = SECMOD_LoadModule(
  		"name=\"Policy File\" "
  		"parameters=\"configdir='sql:" POLICY_PATH "' "
  		"secmod='" POLICY_FILE "' "
  		"flags=readOnly,noCertDB,forceSecmodChoice,forceOpen\" "
  		"NSS=\"flags=internal,moduleDB,skipFirst,moduleDBOnly,critical\"",
+<<<<<<< HEAD
  		parent, PR_TRUE); 
  	    if (module) {
+=======
+-		parent, PR_TRUE); 
++		parent, PR_TRUE);
+ 	    if (module) {
+ 		PRBool isLoaded = module->loaded;
+ 		SECMOD_DestroyModule(module);
+ 		if (!isLoaded) {
+ 		    goto loser;
+ 		}
+ 	    }
+ 	}
++    }
+ #endif
+ 	pk11sdr_Init();
+ 	cert_CreateSubjectKeyIDHashTable();
+ 
+ 	pkixError = PKIX_Initialize
+ 	    (PKIX_FALSE, PKIX_MAJOR_VERSION, PKIX_MINOR_VERSION,
+ 	    PKIX_MINOR_VERSION, &actualMinorVersion, &plContext);
+ 
+>>>>>>> origin/private-rebase-work-fedora-rawhide

@@ -24,7 +24,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -97,6 +97,7 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
+<<<<<<< HEAD
 # TODO: file a bug usptream
 # Upstream commit that caused problems with gtests
 # https://git.fedorahosted.org/cgit/nss-pem.git/commit/
@@ -109,7 +110,15 @@ Patch64: nss-conditionally-ignore-system-policy.patch
 Patch65: tests-data-adjust-for-policy.patch
 Patch66: listsuites-do-queries.patch
 # TODO: file a bug upstream
+=======
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
+Patch60: nss-conditionally-ignore-system-policy.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
+Patch62: nss-skip-util-gtest.patch
+# TODO: file a bug upstream similar to the one for rsaperf
+>>>>>>> origin/private-rebase-work-fedora-rawhide
 Patch70: nss-skip-ecperf.patch
+Patch71: listsuites-do-queries.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -192,13 +201,17 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
+%patch60 -p1 -b .cond_ignore
 %patch62 -p0 -b .skip_util_gtest
+<<<<<<< HEAD
 %patch63 -p1 -b .check_policy
 %patch64 -p0 -b .ignore_system_policy
 %patch66 -p1 -b .do_queries
+=======
+%patch70 -p1 -b .skip_ecperf
+%patch71 -p1 -b .do_queries
+>>>>>>> origin/private-rebase-work-fedora-rawhide
 popd
-# temporary
-%patch70 -p0 -b .skip_ecperf
 
 #########################################################
 # Higher-level libraries and test tools need access to
@@ -308,8 +321,7 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/lib/dbm
 
 # Set the policy file location
-# if set NSS will always check for the policy file and load it if it exists
-# TODO: restore the POLICY_FILE and POLICY_PATH exports
+# if set NSS will always check for the policy file and load if it exists
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
@@ -410,10 +422,6 @@ fi
 
 # Begin -- copied from the build section
 
-# inform the ssl test scripts that policy is enabled
-export POLICY_FILE="nss.config"
-export POLICY_PATH="/etc/crypto-policies/back-ends"
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -437,6 +445,8 @@ export NSS_IGNORE_SYSTEM_POLICY=1
 %endif
 
 # End -- copied from the build section
+
+export NSS_IGNORE_SYSTEM_POLICY=1
 
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
@@ -482,13 +492,13 @@ pushd ./nss/tests/
 #  the full list from all.sh is:
 #  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
-#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
-#  nss_ssl_run: cov auth stress
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr policy
+#  nss_ssl_run: cov auth stapling stress
 #
 # Uncomment these lines if you need to temporarily
 # disable some test suites for faster test builds
-# global nss_ssl_tests "normal_fips"
-# global nss_ssl_run "cov auth"
+# % define nss_ssl_tests "normal_fips"
+# % define nss_ssl_run "cov"
 
 SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
 
@@ -826,6 +836,17 @@ fi
 
 
 %changelog
+* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+- Add support to listsuites to list ciphers allowed by policy
+
+* Fri Jul 01 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-5
+- Add support for conditionally ignoring the system policy (#1157720)
+- Remove unneeded test scripts patches in order to run more tests
+- Remove unneeded test data modifications from the spec file
+
+* Tue Jun 28 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-4
+- Remove obsolete patch and spurious lines from the spec file (#1347336)
+
 * Sun Jun 26 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-3
 - Cleanup spec file and patches and add references to bugs filed upstream
 
