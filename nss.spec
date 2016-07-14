@@ -794,7 +794,7 @@ fi
 
 
 %changelog
-* Wed Jul 13 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+* Thu Jul 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
 - Incorporate some changes requested in upstream review and commited upstream (#1157720)
 
 * Fri Jul 01 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-5
@@ -824,7 +824,7 @@ fi
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
 
 * Sun May 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.1
-- Rebase to NSS 3.24.0 
+- Rebase to NSS 3.24.0
 - Restore setting the policy file location
 - Make ssl tests scripts aware of policy
 - Ajust tests data expected result for policy
