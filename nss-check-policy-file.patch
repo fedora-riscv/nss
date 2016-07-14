@@ -1,6 +1,7 @@
---- ./lib/nss/config.mk.check_policy_file	2016-07-12 09:11:01.198867052 -0700
-+++ ./lib/nss/config.mk	2016-07-12 09:15:58.739946540 -0700
-@@ -99,8 +99,15 @@
+diff --git a/lib/nss/config.mk b/lib/nss/config.mk
+--- a/lib/nss/config.mk
++++ b/lib/nss/config.mk
+@@ -95,8 +95,15 @@ SHARED_LIBRARY_DIRS = \
  ifeq (,$(filter-out WINNT WIN95,$(OS_TARGET)))
  ifndef NS_USE_GCC
  # Export 'mktemp' to be backward compatible with NSS 3.2.x and 3.3.x
@@ -16,9 +17,10 @@
 +endif
 +DEFINES += -DPOLICY_FILE=\"$(POLICY_FILE)\" -DPOLICY_PATH=\"$(POLICY_PATH)\"
 +endif
---- ./lib/nss/nssinit.c.check_policy_file	2016-06-20 10:11:28.000000000 -0700
-+++ ./lib/nss/nssinit.c	2016-07-12 09:18:14.821671331 -0700
-@@ -330,47 +330,47 @@
+diff --git a/lib/nss/nssinit.c b/lib/nss/nssinit.c
+--- a/lib/nss/nssinit.c
++++ b/lib/nss/nssinit.c
+@@ -330,47 +330,47 @@ nss_FindExternalRoot(const char *dbpath,
  
  /*
   * see nss_Init for definitions of the various options.
@@ -70,7 +72,7 @@
      lconfigdir = NSSUTIL_DoubleEscape(configdir, '\'', '\"');
      if (lconfigdir == NULL) {
  	goto loser;
-@@ -427,24 +427,24 @@
+@@ -427,24 +427,26 @@ loser:
      if (lsecmodName) PORT_Free(lsecmodName);
      if (lupdateDir) PORT_Free(lupdateDir);
      if (lupdCertPrefix) PORT_Free(lupdCertPrefix);
@@ -80,13 +82,15 @@
  
      if (moduleSpec) {
 -	SECMODModule *module = SECMOD_LoadModule(moduleSpec,NULL,PR_TRUE);
-+	module = SECMOD_LoadModule(moduleSpec, NULL, PR_TRUE);
++	module = SECMOD_LoadModule(moduleSpec,NULL,PR_TRUE);
  	PR_smprintf_free(moduleSpec);
--	if (module) {
+ 	if (module) {
 -	    if (module->loaded) rv=SECSuccess;
-+	if (module && !module->loaded) {
- 	    SECMOD_DestroyModule(module);
-+	    return NULL;
+-	    SECMOD_DestroyModule(module);
++	    if (!module->loaded) {
++	        SECMOD_DestroyModule(module);
++		module = NULL;
++	    }
  	}
      }
 -    return rv;
@@ -99,23 +103,10 @@
   * configdir - base directory where all the cert, key, and module datbases live.
   * certPrefix - prefix added to the beginning of the cert database example: "
   * 			"https-server1-"
-@@ -509,41 +509,44 @@
- 	return PR_FAILURE;
-     }
-     return PR_SUCCESS;
- }
- 
- 
- static SECStatus
- nss_Init(const char *configdir, const char *certPrefix, const char *keyPrefix,
--		 const char *secmodName, const char *updateDir, 
-+		 const char *secmodName, const char *updateDir,
- 		 const char *updCertPrefix, const char *updKeyPrefix,
- 		 const char *updateID, const char *updateName,
+@@ -520,17 +522,17 @@ nss_Init(const char *configdir, const ch
  		 NSSInitContext ** initContextPtr,
  		 NSSInitParameters *initParams,
--		 PRBool readOnly, PRBool noCertDB, 
-+		 PRBool readOnly, PRBool noCertDB,
+ 		 PRBool readOnly, PRBool noCertDB, 
  		 PRBool noModDB, PRBool forceOpen, PRBool noRootInit,
  		 PRBool optimizeSpace, PRBool noSingleThreadedModules,
  		 PRBool allowAlreadyInitializedModules,
@@ -129,26 +120,9 @@
      char *configStrings = NULL;
      char *configName = NULL;
      PRBool passwordRequired = PR_FALSE;
-+#ifdef POLICY_FILE
-+    char *ignoreVar;
-+#endif
  
      /* if we are trying to init with a traditional NSS_Init call, maintain
-      * the traditional idempotent behavior. */
-     if (!initContextPtr && nssIsInitted) {
- 	return SECSuccess;
-     }
--  
-+
-     /* make sure our lock and condition variable are initialized one and only
-      * one time */ 
-     if (PR_CallOnce(&nssInitOnce, nss_doLockInit) != PR_SUCCESS) {
- 	return SECFailure;
-     }
- 
-     /*
-      * if we haven't done basic initialization, single thread the 
-@@ -630,23 +633,23 @@
+@@ -630,23 +632,23 @@ nss_Init(const char *configdir, const ch
  	configStrings = pk11_config_strings;
  	configName = pk11_config_name;
  	passwordRequired = pk11_password_required;
@@ -158,12 +132,10 @@
       * to init with noCertDB and noModDB */
      if (!(isReallyInitted && noCertDB && noModDB)) {
 -	rv = nss_InitModules(configdir, certPrefix, keyPrefix, secmodName, 
--		updateDir, updCertPrefix, updKeyPrefix, updateID, 
 +	parent = nss_InitModules(configdir, certPrefix, keyPrefix, secmodName, 
-+		updateDir, updCertPrefix, updKeyPrefix, updateID,
+ 		updateDir, updCertPrefix, updKeyPrefix, updateID, 
  		updateName, configName, configStrings, passwordRequired,
--		readOnly, noCertDB, noModDB, forceOpen, optimizeSpace, 
-+		readOnly, noCertDB, noModDB, forceOpen, optimizeSpace,
+ 		readOnly, noCertDB, noModDB, forceOpen, optimizeSpace, 
  		(initContextPtr != NULL));
  
 -	if (rv != SECSuccess) {
@@ -176,7 +148,7 @@
      /* finish up initialization */
      if (!isReallyInitted) {
  	if (SECOID_Init() != SECSuccess) {
-@@ -675,17 +678,40 @@
+@@ -675,17 +677,34 @@ nss_Init(const char *configdir, const ch
  		     * path. Skip it */
  		    dbpath = NULL;
  		}
@@ -187,19 +159,14 @@
  	}
 -
 +#ifdef POLICY_FILE
-+	/* Load the system crypto policy file if it exists,
-+	 * unless the NSS_IGNORE_SYSTEM_POLICY environment
-+	 * variable has been set to 1. */
-+	ignoreVar = PR_GetEnvSecure("NSS_IGNORE_SYSTEM_POLICY");
-+	if (ignoreVar == NULL || strncmp(ignoreVar, "1", sizeof("1")) != 0) {
-+	    if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS) {
++        if (PR_Access(POLICY_PATH "/" POLICY_FILE, PR_ACCESS_READ_OK) == PR_SUCCESS ) {
 +	    SECMODModule *module = SECMOD_LoadModule(
 +		"name=\"Policy File\" "
 +		"parameters=\"configdir='sql:" POLICY_PATH "' "
 +		"secmod='" POLICY_FILE "' "
 +		"flags=readOnly,noCertDB,forceSecmodChoice,forceOpen\" "
 +		"NSS=\"flags=internal,moduleDB,skipFirst,moduleDBOnly,critical\"",
-+		parent, PR_TRUE);
++		parent, PR_TRUE); 
 +	    if (module) {
 +		PRBool isLoaded = module->loaded;
 +		SECMOD_DestroyModule(module);
@@ -208,7 +175,6 @@
 +		}
 +	    }
 +	}
-+    }
 +#endif
  	pk11sdr_Init();
  	cert_CreateSubjectKeyIDHashTable();
@@ -218,7 +184,7 @@
  	    PKIX_MINOR_VERSION, &actualMinorVersion, &plContext);
  
  	if (pkixError != NULL) {
-@@ -716,32 +742,38 @@
+@@ -716,32 +735,38 @@ nss_Init(const char *configdir, const ch
      nssIsInInit--;
      /* now that we are inited, all waiters can move forward */
      PZ_NotifyAllCondVar(nssInitCondition);
