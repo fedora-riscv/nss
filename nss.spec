@@ -4,9 +4,6 @@
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
-# uncomment to make nss ignore the system policy file
-%global nss_ignore_system_policy 1
-
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
 %ifarch %{multilib_arches}
@@ -97,26 +94,11 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
-<<<<<<< HEAD
-# TODO: file a bug usptream
-# Upstream commit that caused problems with gtests
-# https://git.fedorahosted.org/cgit/nss-pem.git/commit/
-Patch62: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch63: tests-check-policy-file.patch
-# TODO: Under test and could be merged with nss-check-policy-file.patch
-Patch64: nss-conditionally-ignore-system-policy.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch65: tests-data-adjust-for-policy.patch
-Patch66: listsuites-do-queries.patch
-# TODO: file a bug upstream
-=======
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch60: nss-conditionally-ignore-system-policy.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 # TODO: file a bug upstream similar to the one for rsaperf
->>>>>>> origin/private-rebase-work-fedora-rawhide
 Patch70: nss-skip-ecperf.patch
 Patch71: listsuites-do-queries.patch
 
@@ -203,14 +185,8 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch60 -p1 -b .cond_ignore
 %patch62 -p0 -b .skip_util_gtest
-<<<<<<< HEAD
-%patch63 -p1 -b .check_policy
-%patch64 -p0 -b .ignore_system_policy
-%patch66 -p1 -b .do_queries
-=======
 %patch70 -p1 -b .skip_ecperf
 %patch71 -p1 -b .do_queries
->>>>>>> origin/private-rebase-work-fedora-rawhide
 popd
 
 #########################################################
@@ -326,17 +302,6 @@ export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-# to keep nss from loading the policy file
-%if %{nss_ignore_system_policy}
-export NSS_IGNORE_SYSTEM_POLICY=1
-%else
-# system policy is enforced
-pushd nss
-# change some sslauth.txt entries to expect failure when enforcing policy
-patch -p1 -b .expected_result < %{PATCH65}
-popd
-%endif
-
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
 # copy the one we saved during prep so it they can find it.
@@ -438,11 +403,6 @@ export NSS_BLTEST_NOT_AVAILABLE=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
-
-# tests need to know we kept nss from loading the policy file
-%if %{nss_ignore_system_policy}
-export NSS_IGNORE_SYSTEM_POLICY=1
-%endif
 
 # End -- copied from the build section
 
@@ -836,8 +796,8 @@ fi
 
 
 %changelog
-* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
-- Add support to listsuites to list ciphers allowed by policy
+* Thu Jul 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
+- Incorporate some changes requested in upstream review and commited upstream (#1157720)
 
 * Fri Jul 01 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-5
 - Add support for conditionally ignoring the system policy (#1157720)
@@ -852,7 +812,6 @@ fi
 
 * Fri Jun 24 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-2
 - Rebase to nss 3.25
-- Add support for conditionally ignoring the system policy (#1157720)
 
 * Thu Jun 16 2016 Kamil Dudka <kdudka@redhat.com> - 3.24.0-3
 - decouple nss-pem from the nss package (#1347336)
@@ -867,7 +826,7 @@ fi
 - Resolves: Bug 1342158 - nss-3.24 does no longer support ssl V2, installation of IPA fails because nss init fails
 
 * Sun May 29 2016 Elio Maldonado <emaldona@redhat.com> - 3.24.0-2.1
-- Rebase to NSS 3.24.0 
+- Rebase to NSS 3.24.0
 - Restore setting the policy file location
 - Make ssl tests scripts aware of policy
 - Ajust tests data expected result for policy

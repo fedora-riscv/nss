@@ -1,7 +1,7 @@
 diff --git a/lib/nss/config.mk b/lib/nss/config.mk
 --- a/lib/nss/config.mk
 +++ b/lib/nss/config.mk
-@@ -95,8 +95,12 @@ SHARED_LIBRARY_DIRS = \
+@@ -95,8 +95,15 @@ SHARED_LIBRARY_DIRS = \
  ifeq (,$(filter-out WINNT WIN95,$(OS_TARGET)))
  ifndef NS_USE_GCC
  # Export 'mktemp' to be backward compatible with NSS 3.2.x and 3.3.x
@@ -12,6 +12,9 @@ diff --git a/lib/nss/config.mk b/lib/nss/config.mk
  endif
 +
 +ifdef POLICY_FILE
++ifndef POLICY_PATH
++$(error You must define POLICY_PATH if you set POLICY_FILE)
++endif
 +DEFINES += -DPOLICY_FILE=\"$(POLICY_FILE)\" -DPOLICY_PATH=\"$(POLICY_PATH)\"
 +endif
 diff --git a/lib/nss/nssinit.c b/lib/nss/nssinit.c
