@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -793,6 +793,9 @@ fi
 
 
 %changelog
+* Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.1
+- Tidy up the spec file
+
 * Mon Jul 04 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.0
 - Rebase to nss 3.25
 
