@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.25.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -45,6 +45,12 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
 
+# nss-pem used to be bundled with the nss package on Fedora -- make sure that
+# programs relying on that continue to work until they are fixed to require
+# nss-pem instead.  Once all of them are fixed, the following line can be
+# removed.  See https://bugzilla.redhat.com/1346806 for details.
+Requires:         nss-pem
+
 %{!?nss_ckbi_suffix:%define full_nss_version %{version}}
 %{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
 
@@ -58,7 +64,6 @@ Source6:          blank-cert9.db
 Source7:          blank-key4.db
 Source8:          system-pkcs11.txt
 Source9:          setup-nsssysinit.sh
-Source12:         %{name}-pem-20160308.tar.bz2
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -70,14 +75,8 @@ Source27:         secmod.db.xml
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=402712
-Patch6:           nss-enable-pem.patch
-# Below reference applies to most pem module related patches
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
-# must statically link pem against the freebl in the buildroot
-# Needed only when freebl on tree has new APIS
-Patch25:          nsspem-use-system-freebl.patch
 # TODO: Remove this patch when the ocsp test are fixed
 Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
@@ -93,7 +92,6 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-Patch60: nss-pem-unitialized-vars.path
 Patch61: nss-skip-util-gtest.patch
 # TODO: file a bug upstream similar to the one for rsaperf
 Patch70: nss-skip-ecperf.patch
@@ -167,21 +165,16 @@ low level services.
 
 %prep
 %setup -q
-%setup -q -T -D -n %{name}-%{version} -a 12
 
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
-%patch6 -p0 -b .libpem
 %patch16 -p0 -b .539183
-# link pem against buildroot's freebl, essential when mixing and matching
-%patch25 -p0 -b .systemfreebl
 %patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 %patch58 -p0 -b .1185708_3des
 pushd nss
-%patch60 -p1 -b .unitialized_vars
 %patch61 -p1 -b .skip_util_gtest
 %patch70 -p1 -b .skip_ecperf
 popd
@@ -191,11 +184,6 @@ popd
 # module-private headers from util, freebl, and softoken
 # until fixed upstream we must copy some headers locally
 #########################################################
-
-pemNeedsFromSoftoken="lowkeyi lowkeyti softoken softoknt"
-for file in ${pemNeedsFromSoftoken}; do
-    %{__cp} ./nss/lib/softoken/${file}.h ./nss/lib/ckfw/pem/
-done
 
 # Copying these header until the upstream bug is accepted
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
@@ -526,7 +514,7 @@ touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
 %{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
 
 # Copy the binary libraries we want
-for file in libnss3.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
   %{__install} -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
@@ -652,7 +640,6 @@ fi
 %{_libdir}/libsmime3.so
 %ghost %{_libdir}/libnssckbi.so
 %{_libdir}/nss/libnssckbi.so
-%{_libdir}/libnsspem.so
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
@@ -748,7 +735,6 @@ fi
 %{_includedir}/nss3/keythi.h
 %{_includedir}/nss3/nss.h
 %{_includedir}/nss3/nssckbi.h
-%{_includedir}/nss3/nsspem.h
 %{_includedir}/nss3/ocsp.h
 %{_includedir}/nss3/ocspt.h
 %{_includedir}/nss3/p12.h
@@ -793,6 +779,9 @@ fi
 
 
 %changelog
+* Wed Jul 20 2016 Kamil Dudka <kdudka@redhat.com> - 3.25.0-1.2
+- decouple nss-pem from the nss package (#1347336)
+
 * Fri Jul 08 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-1.1
 - Tidy up the spec file
 
