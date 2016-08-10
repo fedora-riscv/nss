@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.25.0
-%global nss_softokn_version 3.25.0
+%global nss_util_version 3.26.0
+%global nss_softokn_version 3.26.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.25.0
+Version:          3.26.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          6%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -51,8 +51,11 @@ BuildRequires:    perl
 # removed.  See https://bugzilla.redhat.com/1346806 for details.
 Requires:         nss-pem
 
-%{!?nss_ckbi_suffix:%define full_nss_version %{version}}
-%{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
+%if %{defined nss_ckbi_suffix}
+%define full_nss_version %{version}%{nss_ckbi_suffix}
+%else
+%define full_nss_version %{version}
+%endif
 
 Source0:          %{name}-%{full_nss_version}.tar.gz
 Source1:          nss.pc.in
@@ -94,11 +97,9 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch60: nss-conditionally-ignore-system-policy.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-# TODO: file a bug upstream similar to the one for rsaperf
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1293944
 Patch70: nss-skip-ecperf.patch
 
 %description
@@ -182,7 +183,6 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-%patch60 -p1 -b .cond_ignore
 %patch62 -p0 -b .skip_util_gtest
 %patch70 -p1 -b .skip_ecperf
 popd
@@ -197,11 +197,6 @@ popd
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
-# similar problem to the one descrived above
-# ./nss/lib/freebl/ec.h, ./nss/lib/freebl/ecl/ecl-curve.h
-# the last one requires that NSS_ECC_MORE_THAN_SUITE_B not be defined
-%{__cp} ./nss/lib/freebl/ec.h ./nss/cmd/ecperf
-%{__cp} ./nss/lib/freebl/ecl/ecl-curve.h ./nss/cmd/ecperf
 
 # Before removing util directory we must save verref.h
 # as it will be needed later during the build phase.
@@ -794,6 +789,13 @@ fi
 
 
 %changelog
+* Mon Aug  8 2016 Daiki Ueno <dueno@redhat.com> - 3.26.0-2
+- Rebase to NSS 3.26.0
+- Update check policy file patch to better match what was upstreamed
+- Remove conditionally ignore system policy patch as it has been upstreamed
+- Skip ectest as well as ecperf, which are built as part of nss-softokn
+- Fix rpmlint error regarding %%define usage
+
 * Thu Jul 14 2016 Elio Maldonado <emaldona@redhat.com> - 3.25.0-6
 - Incorporate some changes requested in upstream review and commited upstream (#1157720)
 

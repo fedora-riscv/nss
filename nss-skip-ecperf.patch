@@ -1,11 +1,12 @@
 diff -up ./cmd/manifest.mn.skip_ecperf ./cmd/manifest.mn
---- ./cmd/manifest.mn.noecperf	2016-06-24 08:04:53.891106841 -0700
-+++ ./cmd/manifest.mn	2016-06-24 08:06:57.186887403 -0700
-@@ -42,7 +42,6 @@ NSS_SRCDIRS = \
+--- ./cmd/manifest.mn.skip_ecperf	2016-08-05 17:43:39.000000000 +0200
++++ ./cmd/manifest.mn	2016-08-10 13:11:02.416273517 +0200
+@@ -42,8 +42,6 @@ NSS_SRCDIRS = \
   dbtest \
   derdump  \
   digest  \
 - ecperf \
+- ectest \
   httpserv  \
   listsuites \
   makepqg  \
