@@ -1,6 +1,6 @@
 %global nspr_version 4.12.0
-%global nss_util_version 3.25.0
-%global nss_softokn_version 3.25.0
+%global nss_util_version 3.26.0
+%global nss_softokn_version 3.26.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.25.0
+Version:          3.26.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -51,8 +51,11 @@ BuildRequires:    perl
 # removed.  See https://bugzilla.redhat.com/1346806 for details.
 Requires:         nss-pem
 
-%{!?nss_ckbi_suffix:%define full_nss_version %{version}}
-%{?nss_ckbi_suffix:%define full_nss_version %{version}%{nss_ckbi_suffix}}
+%if %{defined nss_ckbi_suffix}
+%define full_nss_version %{version}%{nss_ckbi_suffix}
+%else
+%define full_nss_version %{version}
+%endif
 
 Source0:          %{name}-%{full_nss_version}.tar.gz
 Source1:          nss.pc.in
@@ -92,8 +95,11 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-Patch61: nss-skip-util-gtest.patch
-# TODO: file a bug upstream similar to the one for rsaperf
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
+Patch59: nss-check-policy-file.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
+Patch62: nss-skip-util-gtest.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1293944
 Patch70: nss-skip-ecperf.patch
 
 %description
@@ -165,6 +171,7 @@ low level services.
 
 %prep
 %setup -q
+%setup -q -T -D -n %{name}-%{version}
 
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
@@ -175,7 +182,8 @@ low level services.
 %patch50 -p0 -b .iquote
 %patch58 -p0 -b .1185708_3des
 pushd nss
-%patch61 -p1 -b .skip_util_gtest
+%patch59 -p1 -b .check_policy_file
+%patch62 -p0 -b .skip_util_gtest
 %patch70 -p1 -b .skip_ecperf
 popd
 
@@ -185,7 +193,7 @@ popd
 # until fixed upstream we must copy some headers locally
 #########################################################
 
-# Copying these header until the upstream bug is accepted
+# Copying these headers until the upstream bug is accepted
 # Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
 %{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
 %{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
@@ -208,12 +216,6 @@ popd
 ######## Remove portions that need to statically link with libnssutil.a
 %{__rm} -rf ./nss/external_tests/util_gtests
 
-pushd nss/tests/ssl
-# Create versions of sslcov.txt and sslstress.txt that disable tests
-# for non policy compliant ciphers.
-cat sslcov.txt| sed -r "s/^([^#].*EXPORT|^[^#].*_WITH_DES_*)/#disabled \1/" > sslcov.noPolicy.txt
-cat sslstress.txt| sed -r "s/^([^#].*EXPORT|^[^#].*with MD5)/#disabled \1/" > sslstress.noPolicy.txt
-popd
 
 %build
 
@@ -286,6 +288,12 @@ export NSS_ECC_MORE_THAN_SUITE_B=1
 export NSS_BLTEST_NOT_AVAILABLE=1
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
+
+# Set the policy file location
+# if set NSS will always check for the policy file and load if it exists
+export POLICY_FILE="nss.config"
+# location of the policy file
+export POLICY_PATH="/etc/crypto-policies/back-ends"
 
 # nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
 # need nss/lib/util/verref.h which is exported privately,
@@ -391,6 +399,8 @@ export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
 
+export NSS_IGNORE_SYSTEM_POLICY=1
+
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
 
@@ -435,13 +445,13 @@ pushd ./nss/tests/
 #  the full list from all.sh is:
 #  "cipher lowhash libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
 %define nss_tests "libpkix cert dbtests tools fips sdr crmf smime ssl ocsp merge pkits chains ec gtests ssl_gtests"
-#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr
-#  nss_ssl_run: cov auth stress
+#  nss_ssl_tests: crl bypass_normal normal_bypass normal_fips fips_normal iopr policy
+#  nss_ssl_run: cov auth stapling stress
 #
 # Uncomment these lines if you need to temporarily
 # disable some test suites for faster test builds
-# global nss_ssl_tests "normal_fips"
-# global nss_ssl_run "cov auth"
+# % define nss_ssl_tests "normal_fips"
+# % define nss_ssl_run "cov"
 
 SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
 
@@ -779,6 +789,13 @@ fi
 
 
 %changelog
+* Mon Aug  8 2016 Daiki Ueno <dueno@redhat.com> - 3.26.0-1.0
+- Rebase to NSS 3.26.0
+- Update check policy file patch to better match what was upstreamed
+- Remove conditionally ignore system policy patch as it has been upstreamed
+- Skip ectest as well as ecperf, which are built as part of nss-softokn
+- Fix rpmlint error regarding %%define usage
+
 * Wed Jul 20 2016 Kamil Dudka <kdudka@redhat.com> - 3.25.0-1.2
 - decouple nss-pem from the nss package (#1347336)
 
