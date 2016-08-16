@@ -1,0 +1,89 @@
+diff --git a/lib/pk11wrap/pk11pars.c b/lib/pk11wrap/pk11pars.c
+--- a/lib/pk11wrap/pk11pars.c
++++ b/lib/pk11wrap/pk11pars.c
+@@ -105,16 +105,17 @@ secmod_NewModule(void)
+  *   This  allows system NSS to delegate those changes to the user's module DB, 
+  *   preserving the user's ability to load new PKCS #11 modules (which only 
+  *   affect him), from existing applications like Firefox.
+  */
+ #define SECMOD_FLAG_MODULE_DB_IS_MODULE_DB  0x01 /* must be set if any of the 
+ 						  *other flags are set */
+ #define SECMOD_FLAG_MODULE_DB_SKIP_FIRST    0x02
+ #define SECMOD_FLAG_MODULE_DB_DEFAULT_MODDB 0x04
++#define SECMOD_FLAG_MODULE_DB_POLICY_ONLY   0x08
+ 
+ 
+ /* private flags for internal (field in SECMODModule). */
+ /* The meaing of these flags is as follows:
+  *
+  * SECMOD_FLAG_INTERNAL_IS_INTERNAL - This is a marks the the module is
+  *   the internal module (that is, softoken). This bit is the same as the 
+  *   already existing meaning of internal = PR_TRUE. None of the other 
+@@ -699,16 +700,19 @@ SECMOD_CreateModuleEx(const char *librar
+     if (mod->isModuleDB) {
+ 	char flags = SECMOD_FLAG_MODULE_DB_IS_MODULE_DB;
+ 	if (NSSUTIL_ArgHasFlag("flags","skipFirst",nssc)) {
+ 	    flags |= SECMOD_FLAG_MODULE_DB_SKIP_FIRST;
+ 	}
+ 	if (NSSUTIL_ArgHasFlag("flags","defaultModDB",nssc)) {
+ 	    flags |= SECMOD_FLAG_MODULE_DB_DEFAULT_MODDB;
+ 	}
++	if (NSSUTIL_ArgHasFlag("flags", "policyOnly", nssc)) {
++	    flags |= SECMOD_FLAG_MODULE_DB_POLICY_ONLY;
++	}
+ 	/* additional moduleDB flags could be added here in the future */
+ 	mod->isModuleDB = (PRBool) flags;
+     }
+ 
+     if (mod->internal) {
+ 	char flags = SECMOD_FLAG_INTERNAL_IS_INTERNAL;
+ 
+ 	if (NSSUTIL_ArgHasFlag("flags", "internalKeySlot", nssc)) {
+@@ -738,16 +742,24 @@ PRBool
+ SECMOD_GetDefaultModDBFlag(SECMODModule *mod)
+ {
+    char flags = (char) mod->isModuleDB;
+ 
+    return (flags & SECMOD_FLAG_MODULE_DB_DEFAULT_MODDB) ? PR_TRUE : PR_FALSE;
+ }
+ 
+ PRBool
++secmod_PolicyOnly(SECMODModule *mod)
++{
++   char flags = (char) mod->isModuleDB;
++
++   return (flags & SECMOD_FLAG_MODULE_DB_POLICY_ONLY) ? PR_TRUE : PR_FALSE;
++}
++
++PRBool
+ secmod_IsInternalKeySlot(SECMODModule *mod)
+ {
+    char flags = (char) mod->internal;
+ 
+    return (flags & SECMOD_FLAG_INTERNAL_KEY_SLOT) ? PR_TRUE : PR_FALSE;
+ }
+ 
+ void
+@@ -1521,16 +1533,22 @@ SECMOD_LoadModule(char *modulespec,SECMO
+     if (library) PORT_Free(library);
+     if (moduleName) PORT_Free(moduleName);
+     if (parameters) PORT_Free(parameters);
+     if (nss) PORT_Free(nss);
+     if (config) PORT_Free(config);
+     if (!module) {
+ 	goto loser;
+     }
++
++    /* a policy only stanza doesn't actually get 'loaded'. policy has already
++     * been parsed as a side effect of the CreateModuleEx call */
++    if (secmod_PolicyOnly(module)) {
++	return module;
++    }
+     if (parent) {
+     	module->parent = SECMOD_ReferenceModule(parent);
+ 	if (module->internal && secmod_IsInternalKeySlot(parent)) {
+ 	    module->internal = parent->internal;
+ 	}
+     }
+ 
+     /* load it */
