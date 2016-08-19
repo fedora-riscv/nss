@@ -399,6 +399,8 @@ export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
 
+# This is necessary because the test suite tests algorithms that are
+# disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
 
 # enable the following line to force a test failure
