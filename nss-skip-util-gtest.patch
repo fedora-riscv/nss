@@ -1,11 +1,12 @@
-diff -up ./external_tests/manifest.mn.skip_util_pk11_ssl_gtest ./external_tests/manifest.mn
---- ./external_tests/manifest.mn.skip_util_pk11_ssl_gtest	2016-06-20 10:11:28.000000000 -0700
-+++ ./external_tests/manifest.mn	2016-06-26 10:09:55.429858648 -0700
-@@ -9,7 +9,4 @@ DIRS = \
+diff -up ./external_tests/manifest.mn.skip_util_gtest ./external_tests/manifest.mn
+--- ./external_tests/manifest.mn.skip_util_gtest	2016-09-29 12:05:28.858019733 +0200
++++ ./external_tests/manifest.mn	2016-09-29 12:06:17.298681765 +0200
+@@ -9,8 +9,5 @@ DIRS = \
  	google_test \
  	common \
  	der_gtest \
 -	util_gtest \
 -	pk11_gtest \
 -	ssl_gtest \
+         nss_bogo_shim \
  	$(NULL)

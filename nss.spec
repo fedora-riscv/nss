@@ -1,6 +1,6 @@
-%global nspr_version 4.12.0
-%global nss_util_version 3.26.0
-%global nss_softokn_version 3.26.0
+%global nspr_version 4.13.0
+%global nss_util_version 3.27.0
+%global nss_softokn_version 3.27.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.26.0
+Version:          3.27.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -99,8 +99,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1293944
-Patch70: nss-skip-ecperf.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -184,7 +182,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
-%patch70 -p1 -b .skip_ecperf
 popd
 
 #########################################################
@@ -791,6 +788,10 @@ fi
 
 
 %changelog
+* Thu Sep 29 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.0
+- Rebase to NSS 3.27.0
+- Remove upstreamed ectest patch
+
 * Mon Aug  8 2016 Daiki Ueno <dueno@redhat.com> - 3.26.0-1.0
 - Rebase to NSS 3.26.0
 - Update check policy file patch to better match what was upstreamed
