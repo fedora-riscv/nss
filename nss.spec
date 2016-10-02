@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.27.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -283,6 +283,18 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
+
+# NSS 3.27 enabled TLS 1.3 by default, disable it for now.
+#
+# The rationale is, while the maximum TLS version enabled by default
+# is TLS 1.2, some applications query the maximum TLS version and
+# enable it.  That prevents those applications from connecting to
+# servers which are not tolerant ot TLS versions.
+#
+# Note that this is a temporary solution and should be removed when
+# packaging the next upstream release.
+export NSS_DISABLE_TLS_1_3=1
+
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 
@@ -390,6 +402,8 @@ export USE_64
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
+
+export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -788,6 +802,10 @@ fi
 
 
 %changelog
+* Sun Oct  2 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.1
+- Disable TLS 1.3 for now, to avoid reported regression with TLS to
+  version intolerant servers
+
 * Thu Sep 29 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.0
 - Rebase to NSS 3.27.0
 - Remove upstreamed ectest patch
