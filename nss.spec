@@ -1,6 +1,6 @@
-%global nspr_version 4.12.0
-%global nss_util_version 3.26.0
-%global nss_softokn_version 3.26.0
+%global nspr_version 4.13.0
+%global nss_util_version 3.27.0
+%global nss_softokn_version 3.27.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.26.0
+Version:          3.27.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -99,8 +99,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1293944
-Patch70: nss-skip-ecperf.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -184,7 +182,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
-%patch70 -p1 -b .skip_ecperf
 popd
 
 #########################################################
@@ -286,6 +283,18 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
+
+# NSS 3.27 enabled TLS 1.3 by default, disable it for now.
+#
+# The rationale is, while the maximum TLS version enabled by default
+# is TLS 1.2, some applications query the maximum TLS version and
+# enable it.  That prevents those applications from connecting to
+# servers which are not tolerant ot TLS versions.
+#
+# Note that this is a temporary solution and should be removed when
+# packaging the next upstream release.
+export NSS_DISABLE_TLS_1_3=1
+
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 
@@ -393,6 +402,8 @@ export USE_64
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
+
+export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -791,6 +802,14 @@ fi
 
 
 %changelog
+* Sun Oct  2 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.1
+- Disable TLS 1.3 for now, to avoid reported regression with TLS to
+  version intolerant servers
+
+* Thu Sep 29 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.0
+- Rebase to NSS 3.27.0
+- Remove upstreamed ectest patch
+
 * Mon Aug  8 2016 Daiki Ueno <dueno@redhat.com> - 3.26.0-1.0
 - Rebase to NSS 3.26.0
 - Update check policy file patch to better match what was upstreamed
