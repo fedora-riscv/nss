@@ -1,0 +1,136 @@
+diff --git a/lib/ssl/ssl3con.c b/lib/ssl/ssl3con.c
+--- a/lib/ssl/ssl3con.c
++++ b/lib/ssl/ssl3con.c
+@@ -209,19 +209,25 @@ static ssl3CipherSuiteCfg cipherSuites[s
+  * order of signature types is based on the same rules for ordering we use for
+  * cipher suites just for consistency.
+  */
+ static const SignatureScheme defaultSignatureSchemes[] = {
+     ssl_sig_ecdsa_secp256r1_sha256,
+     ssl_sig_ecdsa_secp384r1_sha384,
+     ssl_sig_ecdsa_secp521r1_sha512,
+     ssl_sig_ecdsa_sha1,
++#if 0
++    /* Disable, while we are waiting for an upstream fix to
++     * https://bugzilla.mozilla.org/show_bug.cgi?id=1311950
++     * (NSS does not check if token supports RSA-PSS before using it to sign)
++     **/
+     ssl_sig_rsa_pss_sha256,
+     ssl_sig_rsa_pss_sha384,
+     ssl_sig_rsa_pss_sha512,
++#endif
+     ssl_sig_rsa_pkcs1_sha256,
+     ssl_sig_rsa_pkcs1_sha384,
+     ssl_sig_rsa_pkcs1_sha512,
+     ssl_sig_rsa_pkcs1_sha1,
+     ssl_sig_dsa_sha256,
+     ssl_sig_dsa_sha384,
+     ssl_sig_dsa_sha512,
+     ssl_sig_dsa_sha1
+@@ -5193,19 +5199,26 @@ ssl_CheckSignatureSchemeConsistency(
+ PRBool
+ ssl_IsSupportedSignatureScheme(SignatureScheme scheme)
+ {
+     switch (scheme) {
+         case ssl_sig_rsa_pkcs1_sha1:
+         case ssl_sig_rsa_pkcs1_sha256:
+         case ssl_sig_rsa_pkcs1_sha384:
+         case ssl_sig_rsa_pkcs1_sha512:
++            return PR_TRUE;
++    /* Disable, while we are waiting for an upstream fix to
++     * https://bugzilla.mozilla.org/show_bug.cgi?id=1311950
++     * (NSS does not check if token supports RSA-PSS before using it to sign)
++     **/
+         case ssl_sig_rsa_pss_sha256:
+         case ssl_sig_rsa_pss_sha384:
+         case ssl_sig_rsa_pss_sha512:
++            return PR_FALSE;
++
+         case ssl_sig_ecdsa_secp256r1_sha256:
+         case ssl_sig_ecdsa_secp384r1_sha384:
+         case ssl_sig_ecdsa_secp521r1_sha512:
+         case ssl_sig_dsa_sha1:
+         case ssl_sig_dsa_sha256:
+         case ssl_sig_dsa_sha384:
+         case ssl_sig_dsa_sha512:
+         case ssl_sig_ecdsa_sha1:
+@@ -7094,16 +7107,24 @@ ssl_PickSignatureScheme(sslSocket *ss, S
+         SignatureScheme preferred = ss->ssl3.signatureSchemes[i];
+         PRUint32 policy;
+ 
+         if (!ssl_SignatureSchemeValidForKey(isTLS13, keyType, group,
+                                             preferred)) {
+             continue;
+         }
+ 
++        if (ssl_IsRsaPssSignatureScheme(preferred)) {
++            /* Disable, while we are waiting for an upstream fix to
++             * https://bugzilla.mozilla.org/show_bug.cgi?id=1311950
++             * (NSS does not check if token supports RSA-PSS before using it to sign)
++             **/
++            continue;
++        }
++
+         hashType = ssl_SignatureSchemeToHashType(preferred);
+         hashOID = ssl3_HashTypeToOID(hashType);
+         if (requireSha1 && hashOID != SEC_OID_SHA1) {
+             continue;
+         }
+         if ((NSS_GetAlgorithmPolicy(hashOID, &policy) == SECSuccess) &&
+             !(policy & NSS_USE_ALG_IN_SSL_KX)) {
+             /* we ignore hashes we don't support */
+diff --git a/lib/ssl/sslcert.c b/lib/ssl/sslcert.c
+--- a/lib/ssl/sslcert.c
++++ b/lib/ssl/sslcert.c
+@@ -403,39 +403,51 @@ ssl_ConfigRsaPkcs1CertByUsage(sslSocket 
+                               SSLExtraServerCertData *data)
+ {
+     SECStatus rv = SECFailure;
+ 
+     PRBool ku_sig = (PRBool)(cert->keyUsage & KU_DIGITAL_SIGNATURE);
+     PRBool ku_enc = (PRBool)(cert->keyUsage & KU_KEY_ENCIPHERMENT);
+ 
+     if ((data->authType == ssl_auth_rsa_sign && ku_sig) ||
++#if 0
++    /* Disable, while we are waiting for an upstream fix to
++     * https://bugzilla.mozilla.org/show_bug.cgi?id=1311950
++     * (NSS does not check if token supports RSA-PSS before using it to sign)
++     **/
+         (data->authType == ssl_auth_rsa_pss && ku_sig) ||
++#endif
+         (data->authType == ssl_auth_rsa_decrypt && ku_enc)) {
+         return ssl_ConfigCert(ss, cert, keyPair, data);
+     }
+ 
+     if (data->authType != ssl_auth_null || !(ku_sig || ku_enc)) {
+         PORT_SetError(SEC_ERROR_INVALID_ARGS);
+         return SECFailure;
+     }
+ 
+     if (ku_sig) {
+         data->authType = ssl_auth_rsa_sign;
+         rv = ssl_ConfigCert(ss, cert, keyPair, data);
+         if (rv != SECSuccess) {
+             return rv;
+         }
+ 
++#if 0
++    /* Disable, while we are waiting for an upstream fix to
++     * https://bugzilla.mozilla.org/show_bug.cgi?id=1311950
++     * (NSS does not check if token supports RSA-PSS before using it to sign)
++     **/
+         /* This certificate is RSA, assume that it's also PSS. */
+         data->authType = ssl_auth_rsa_pss;
+         rv = ssl_ConfigCert(ss, cert, keyPair, data);
+         if (rv != SECSuccess) {
+             return rv;
+         }
++#endif
+     }
+ 
+     if (ku_enc) {
+         /* If ku_sig=true we configure signature and encryption slots with the
+          * same cert. This is bad form, but there are enough dual-usage RSA
+          * certs that we can't really break by limiting this to one type. */
+         data->authType = ssl_auth_rsa_decrypt;
+         rv = ssl_ConfigCert(ss, cert, keyPair, data);
