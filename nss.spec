@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.27.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -99,6 +99,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
+Patch70: disable-pss.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -182,6 +183,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
+%patch70 -p1 -b .disable_pss
 popd
 
 #########################################################
@@ -802,6 +804,9 @@ fi
 
 
 %changelog
+* Wed Nov 02 2016 Kai Engert <kaie@redhat.com> - 3.27.0-4
+- Disable the use of RSA-PSS with SSL/TLS. #1383809
+
 * Sun Oct  2 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-3
 - Disable TLS 1.3 for now, to avoid reported regression with TLS to
   version intolerant servers
