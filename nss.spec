@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.27.0
+Version:          3.27.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -804,6 +804,9 @@ fi
 
 
 %changelog
+* Wed Nov 30 2016 Daiki Ueno <dueno@redhat.com> - 3.27.2-2
+- Rebase to NSS 3.27.2
+
 * Tue Nov 15 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-5
 - Revert the previous fix for RSA-PSS and use the upstream fix instead
 
