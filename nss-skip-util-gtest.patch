@@ -1,6 +1,6 @@
-diff -up ./external_tests/manifest.mn.skip_util_gtest ./external_tests/manifest.mn
---- ./external_tests/manifest.mn.skip_util_gtest	2016-09-29 12:05:28.858019733 +0200
-+++ ./external_tests/manifest.mn	2016-09-29 12:06:17.298681765 +0200
+diff -up ./gtests/manifest.mn.skip_util_gtest ./gtests/manifest.mn
+--- ./gtests/manifest.mn.skip_util_gtest	2016-09-29 12:05:28.858019733 +0200
++++ ./gtests/manifest.mn	2016-09-29 12:06:17.298681765 +0200
 @@ -9,8 +9,5 @@ DIRS = \
  	google_test \
  	common \
