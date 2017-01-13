@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.27.0
-%global nss_softokn_version 3.27.0
+%global nss_util_version 3.28.1
+%global nss_softokn_version 3.28.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.28.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -793,6 +793,10 @@ fi
 
 
 %changelog
+* Fri Jan 13 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.1
+- Fix incorrect version specification in %%nss_{util,softokn}_version,
+  pointed by Elio Maldonado
+
 * Thu Jan 12 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.0
 - Rebase to NSS 3.28.1
 - Remove upstreamed patch for disabling RSA-PSS
