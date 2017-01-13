@@ -125,9 +125,9 @@ diff -up ./nss/coreconf/location.mk.iquote ./nss/coreconf/location.mk
  endif
  
  ifndef NSS_LIB_DIR
-diff -up ./nss/external_tests/pk11_gtest/Makefile.iquote ./nss/external_tests/pk11_gtest/Makefile
---- ./nss/external_tests/pk11_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
-+++ ./nss/external_tests/pk11_gtest/Makefile	2016-03-05 12:04:06.217474124 -0800
+diff -up ./nss/gtests/pk11_gtest/Makefile.iquote ./nss/gtests/pk11_gtest/Makefile
+--- ./nss/gtests/pk11_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/gtests/pk11_gtest/Makefile	2016-03-05 12:04:06.217474124 -0800
 @@ -37,6 +37,7 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################
@@ -136,9 +136,9 @@ diff -up ./nss/external_tests/pk11_gtest/Makefile.iquote ./nss/external_tests/pk
  
  #######################################################################
  # (7) Execute "local" rules. (OPTIONAL).                              #
-diff -up ./nss/external_tests/ssl_gtest/Makefile.iquote ./nss/external_tests/ssl_gtest/Makefile
---- ./nss/external_tests/ssl_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
-+++ ./nss/external_tests/ssl_gtest/Makefile	2016-03-05 12:05:17.208082475 -0800
+diff -up ./nss/gtests/ssl_gtest/Makefile.iquote ./nss/gtests/ssl_gtest/Makefile
+--- ./nss/gtests/ssl_gtest/Makefile.iquote	2016-02-26 12:51:11.000000000 -0800
++++ ./nss/gtests/ssl_gtest/Makefile	2016-03-05 12:05:17.208082475 -0800
 @@ -43,6 +43,8 @@ include $(CORE_DEPTH)/coreconf/rules.mk
  # (6) Execute "component" rules. (OPTIONAL)                           #
  #######################################################################

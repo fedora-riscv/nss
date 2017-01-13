@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.27.0
-%global nss_softokn_version 3.27.0
+%global nss_util_version 3.28.1
+%global nss_softokn_version 3.28.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.27.0
+Version:          3.28.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.3%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -99,7 +99,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-Patch70: nss-check-pss.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -183,7 +182,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
-%patch70 -p1 -b .check_pss
 popd
 
 #########################################################
@@ -286,16 +284,7 @@ export NSS_ECC_MORE_THAN_SUITE_B=1
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# NSS 3.27 enabled TLS 1.3 by default, disable it for now.
-#
-# The rationale is, while the maximum TLS version enabled by default
-# is TLS 1.2, some applications query the maximum TLS version and
-# enable it.  That prevents those applications from connecting to
-# servers which are not tolerant ot TLS versions.
-#
-# Note that this is a temporary solution and should be removed when
-# packaging the next upstream release.
-export NSS_DISABLE_TLS_1_3=1
+export NSS_ENABLE_TLS_1_3=1
 
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
@@ -405,7 +394,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-export NSS_DISABLE_TLS_1_3=1
+export NSS_ENABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -804,6 +793,15 @@ fi
 
 
 %changelog
+* Fri Jan 13 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.1
+- Fix incorrect version specification in %%nss_{util,softokn}_version,
+  pointed by Elio Maldonado
+
+* Thu Jan 12 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.0
+- Rebase to NSS 3.28.1
+- Remove upstreamed patch for disabling RSA-PSS
+- Re-enable TLS 1.3
+
 * Tue Nov 15 2016 Daiki Ueno <dueno@redhat.com> - 3.27.0-1.3
 - Revert the previous fix for RSA-PSS and use the upstream fix instead
 
