@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.28.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -50,6 +50,11 @@ BuildRequires:    perl
 # nss-pem instead.  Once all of them are fixed, the following line can be
 # removed.  See https://bugzilla.redhat.com/1346806 for details.
 Requires:         nss-pem
+
+# NSS 3.28.1 introduced a curve, that is smaller than a check in
+# Firefox allows.  The fix has been added in firefox >= 50.1.0-3:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1413182
+Conflicts:        firefox < 50.1.0-3
 
 %if %{defined nss_ckbi_suffix}
 %define full_nss_version %{version}%{nss_ckbi_suffix}
@@ -793,6 +798,10 @@ fi
 
 
 %changelog
+* Tue Jan 17 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.2
+- Add "Conflicts" with older firefox packages which don't have support
+  for smaller curves added in NSS 3.28.1
+
 * Fri Jan 13 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.1
 - Fix incorrect version specification in %%nss_{util,softokn}_version,
   pointed by Elio Maldonado
