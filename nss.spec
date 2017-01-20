@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.28.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.2%{?dist}
+Release:          1.3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -51,10 +51,18 @@ BuildRequires:    perl
 # removed.  See https://bugzilla.redhat.com/1346806 for details.
 Requires:         nss-pem
 
-# NSS 3.28.1 introduced a curve, that is smaller than a check in
-# Firefox allows.  The fix has been added in firefox >= 50.1.0-3:
+# NSS 3.28.1 introduced a curve, that is smaller than a check in old
+# Mozilla code allows.
 # https://bugzilla.redhat.com/show_bug.cgi?id=1413182
 Conflicts:        firefox < 50.1.0-3
+# https://bugzilla.redhat.com/show_bug.cgi?id=1414983
+Conflicts:        xulrunner < 44.0-9
+# https://bugzilla.redhat.com/show_bug.cgi?id=1414929
+Conflicts:        thunderbird < 45.6.0-5
+# https://bugzilla.redhat.com/show_bug.cgi?id=1414982
+Conflicts:        seamonkey < 2.46-2
+# https://bugzilla.redhat.com/show_bug.cgi?id=1414987
+Conflicts:        icecat < 45.5.1-5
 
 %if %{defined nss_ckbi_suffix}
 %define full_nss_version %{version}%{nss_ckbi_suffix}
@@ -284,12 +292,9 @@ export USE_64
 export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 2: build the rest of nss
-# nss supports pluggable ecc with more than suite-b
-export NSS_ECC_MORE_THAN_SUITE_B=1
-
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-export NSS_ENABLE_TLS_1_3=1
+# export NSS_ENABLE_TLS_1_3=1
 
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
@@ -399,7 +404,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-export NSS_ENABLE_TLS_1_3=1
+# export NSS_ENABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -798,6 +803,12 @@ fi
 
 
 %changelog
+* Fri Jan 20 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.3
+- Disable TLS 1.3
+- Add "Conflicts" with packages using older Mozilla codebase, which is
+  not compatible with NSS 3.28.1
+- Remove NSS_ECC_MORE_THAN_SUITE_B setting, as it was removed in upstream
+
 * Tue Jan 17 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.2
 - Add "Conflicts" with older firefox packages which don't have support
   for smaller curves added in NSS 3.28.1
