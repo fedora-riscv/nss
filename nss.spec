@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.28.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -40,7 +40,8 @@ BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
-BuildRequires:    pkgconfig
+# TODO: revert to "pkgconfig" once pkgconf transition has been settled
+BuildRequires:    /usr/bin/pkg-config
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
@@ -803,6 +804,9 @@ fi
 
 
 %changelog
+* Mon Jan 23 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-6
+- Work around pkgconfig -> pkgconf transition issue (releng#6597)
+
 * Fri Jan 20 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-5
 - Disable TLS 1.3
 - Add "Conflicts" with packages using older Mozilla codebase, which is
