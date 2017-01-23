@@ -62,7 +62,7 @@ Conflicts:        thunderbird < 45.6.0-5
 # https://bugzilla.redhat.com/show_bug.cgi?id=1414982
 Conflicts:        seamonkey < 2.46-2
 # https://bugzilla.redhat.com/show_bug.cgi?id=1414987
-Conflicts:        icecat < 45.5.1-5
+# Conflicts:        icecat < 45.5.1-5
 
 %if %{defined nss_ckbi_suffix}
 %define full_nss_version %{version}%{nss_ckbi_suffix}
