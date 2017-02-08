@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.28.1
-%global nss_softokn_version 3.28.1
+%global nss_util_version 3.29.0
+%global nss_softokn_version 3.29.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.28.1
+Version:          3.29.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          6%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -113,6 +113,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
+Patch63: nss-gcc7.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -196,6 +197,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
+%patch63 -p1 -b .gcc7
 popd
 
 #########################################################
@@ -804,6 +806,10 @@ fi
 
 
 %changelog
+* Wed Feb  8 2017 Daiki Ueno <dueno@redhat.com> - 3.29.0-2
+- Rebase to NSS 3.29.0
+- Suppress -Werror=int-in-bool-context warnings with GCC7
+
 * Mon Jan 23 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-6
 - Work around pkgconfig -> pkgconf transition issue (releng#6597)
 
