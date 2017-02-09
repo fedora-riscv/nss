@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.29.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -297,7 +297,7 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 ##### phase 2: build the rest of nss
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# export NSS_ENABLE_TLS_1_3=1
+export NSS_DISABLE_TLS_1_3=1
 
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
@@ -407,7 +407,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# export NSS_ENABLE_TLS_1_3=1
+export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -806,6 +806,9 @@ fi
 
 
 %changelog
+* Thu Feb  9 2017 Daiki Ueno <dueno@redhat.com> - 3.29.0-3
+- Disable TLS 1.3, following the upstream change
+
 * Wed Feb  8 2017 Daiki Ueno <dueno@redhat.com> - 3.29.0-2
 - Rebase to NSS 3.29.0
 - Suppress -Werror=int-in-bool-context warnings with GCC7
