@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.29.0
-%global nss_softokn_version 3.29.0
+%global nss_util_version 3.29.1
+%global nss_softokn_version 3.29.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.29.0
+Version:          3.29.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -806,6 +806,9 @@ fi
 
 
 %changelog
+* Fri Feb 17 2017 Daiki Ueno <dueno@redhat.com> - 3.29.1-2
+- Rebase to NSS 3.29.1
+
 * Thu Feb  9 2017 Daiki Ueno <dueno@redhat.com> - 3.29.0-3
 - Disable TLS 1.3, following the upstream change
 
