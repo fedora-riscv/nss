@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.28.1
-%global nss_softokn_version 3.28.1
+%global nss_util_version 3.28.3
+%global nss_softokn_version 3.28.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.28.1
+Version:          3.28.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.3%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -803,6 +803,9 @@ fi
 
 
 %changelog
+* Tue Feb 21 2017 Daiki Ueno <dueno@redhat.com> - 3.28.3-1.0
+- Rebase to NSS 3.28.3
+
 * Fri Jan 20 2017 Daiki Ueno <dueno@redhat.com> - 3.28.1-1.3
 - Disable TLS 1.3
 - Add "Conflicts" with packages using older Mozilla codebase, which is
