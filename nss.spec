@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.28.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -112,6 +112,8 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1342358
+Patch63: nss-init-extension-data-early.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -195,6 +197,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
+%patch63 -p1 -b .init_extension_data_early
 popd
 
 #########################################################
@@ -803,6 +806,9 @@ fi
 
 
 %changelog
+* Thu Mar 16 2017 Daiki Ueno <dueno@redhat.com> - 3.28.3-1.1
+- Fix crash in tls13_DestroyKeyShares
+
 * Tue Feb 21 2017 Daiki Ueno <dueno@redhat.com> - 3.28.3-1.0
 - Rebase to NSS 3.28.3
 
