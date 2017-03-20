@@ -1,6 +1,6 @@
 %global nspr_version 4.13.0
-%global nss_util_version 3.28.3
-%global nss_softokn_version 3.28.3
+%global nss_util_version 3.29.3
+%global nss_softokn_version 3.29.3
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.28.3
+Version:          3.29.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -112,8 +112,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1342358
-Patch63: nss-init-extension-data-early.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -197,7 +195,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
-%patch63 -p1 -b .init_extension_data_early
 popd
 
 #########################################################
@@ -297,7 +294,7 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 ##### phase 2: build the rest of nss
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# export NSS_ENABLE_TLS_1_3=1
+export NSS_DISABLE_TLS_1_3=1
 
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
@@ -407,7 +404,7 @@ export USE_64
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-# export NSS_ENABLE_TLS_1_3=1
+export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -806,6 +803,10 @@ fi
 
 
 %changelog
+* Mon Mar 20 2017 Daiki Ueno <dueno@redhat.com> - 3.29.3-1.0
+- Rebase to NSS 3.29.3
+- Remove upstreamed patch for fixing crash in tls13_DestroyKeyShares
+
 * Thu Mar 16 2017 Daiki Ueno <dueno@redhat.com> - 3.28.3-1.1
 - Fix crash in tls13_DestroyKeyShares
 
