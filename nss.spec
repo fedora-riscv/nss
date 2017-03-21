@@ -40,8 +40,7 @@ BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
-# TODO: revert to "pkgconfig" once pkgconf transition has been settled
-BuildRequires:    /usr/bin/pkg-config
+BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
