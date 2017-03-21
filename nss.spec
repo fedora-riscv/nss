@@ -1,6 +1,6 @@
-%global nspr_version 4.13.0
-%global nss_util_version 3.29.1
-%global nss_softokn_version 3.29.1
+%global nspr_version 4.13.1
+%global nss_util_version 3.30.0
+%global nss_softokn_version 3.30.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.29.1
+Version:          3.30.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -114,7 +114,6 @@ Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-gcc7.patch
-Patch64: nss-1334976-1336487.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -199,7 +198,6 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .gcc7
-%patch64 -p1 -b .1334976-1336487
 popd
 
 #########################################################
@@ -808,6 +806,10 @@ fi
 
 
 %changelog
+* Tue Mar 21 2017 Daiki Ueno <dueno@redhat.com> - 3.30.0-2
+- Rebase to NSS 3.30.0
+- Remove upstreamed patches
+
 * Thu Mar 02 2017 Kai Engert <kaie@redhat.com> - 3.29.1-3
 - Backport mozbz#1334976 and mozbz#1336487.
 
