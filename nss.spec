@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.29.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -114,6 +114,7 @@ Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-gcc7.patch
+Patch64: nss-1334976-1336487.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -198,6 +199,7 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .gcc7
+%patch64 -p1 -b .1334976-1336487
 popd
 
 #########################################################
@@ -806,6 +808,10 @@ fi
 
 
 %changelog
+* Wed Mar 22 2017 Daiki Ueno <dueno@redhat.com> - 3.29.3-1.1
+- Re-add patch to check CKA_NSS_MOZILLA_CA_POLICY, which was
+  mistakenly removed in the previous update
+
 * Mon Mar 20 2017 Daiki Ueno <dueno@redhat.com> - 3.29.3-1.0
 - Rebase to NSS 3.29.3
 - Remove upstreamed patch for fixing crash in tls13_DestroyKeyShares
