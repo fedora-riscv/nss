@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.30.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -113,6 +113,7 @@ Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-gcc7.patch
+Patch65: nss-1328318-v8-3.30.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -197,6 +198,7 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .gcc7
+%patch65 -p1 -b .1328318
 popd
 
 #########################################################
@@ -805,6 +807,9 @@ fi
 
 
 %changelog
+* Thu Mar 30 2017 Kai Engert <kaie@redhat.com> - 3.30.0-3
+- Backport upstream mozbz#1328318 to support crypto policy FUTURE.
+
 * Tue Mar 21 2017 Daiki Ueno <dueno@redhat.com> - 3.30.0-2
 - Rebase to NSS 3.30.0
 - Remove upstreamed patches
