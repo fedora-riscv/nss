@@ -1,6 +1,6 @@
-%global nspr_version 4.13.1
-%global nss_util_version 3.29.3
-%global nss_softokn_version 3.29.3
+%global nspr_version 4.14.0
+%global nss_util_version 3.30.2
+%global nss_softokn_version 3.30.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.29.3
+Version:          3.30.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.3%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -40,8 +40,7 @@ BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
 BuildRequires:    nss-util-devel >= %{nss_util_version}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
-# TODO: revert to "pkgconfig" once pkgconf transition has been settled
-BuildRequires:    /usr/bin/pkg-config
+BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl
@@ -114,8 +113,7 @@ Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-gcc7.patch
-Patch64: nss-1334976-1336487.patch
-Patch65: nss-1328318-v7-3.29.patch
+Patch64: nss-1328318-v8-3.30.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -200,8 +198,7 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
 %patch63 -p1 -b .gcc7
-%patch64 -p1 -b .1334976-1336487
-%patch65 -p1 -b .1328318
+%patch64 -p1 -b .1328318
 popd
 
 #########################################################
@@ -816,6 +813,9 @@ fi
 
 
 %changelog
+* Mon Apr 24 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-2
+- Rebase to NSS 3.30.2
+
 * Wed Mar 29 2017 Kai Engert <kaie@redhat.com> - 3.29.3-1.3
 - temporarily disable tests on armv7hl because of infrastructure timeouts
 
