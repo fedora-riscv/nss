@@ -1,0 +1,12 @@
+diff -up nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c.gcc7 nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c
+--- nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c.gcc7	2017-02-08 14:34:04.212655936 +0100
++++ nss/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocsprequest.c	2017-02-08 14:37:33.326388891 +0100
+@@ -89,7 +89,7 @@ pkix_pl_OcspRequest_Hashcode(
+         PKIX_HASHCODE(ocspRq->signerCert, &signerHash, plContext,
+                 PKIX_CERTHASHCODEFAILED);
+ 
+-        *pHashcode = (((((extensionHash << 8) || certHash) << 8) ||
++        *pHashcode = ((PKIX_UInt32)(((PKIX_UInt32)((extensionHash << 8) || certHash) << 8) ||
+                 dateHash) << 8) || signerHash;
+ 
+ cleanup:
