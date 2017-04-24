@@ -1,6 +1,6 @@
-%global nspr_version 4.13.1
-%global nss_util_version 3.30.0
-%global nss_softokn_version 3.30.0
+%global nspr_version 4.14.0
+%global nss_util_version 3.30.2
+%global nss_softokn_version 3.30.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.30.0
+Version:          3.30.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -298,8 +298,6 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 ##### phase 2: build the rest of nss
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-export NSS_DISABLE_TLS_1_3=1
-
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 
@@ -407,8 +405,6 @@ export USE_64
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
-
-export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -807,6 +803,10 @@ fi
 
 
 %changelog
+* Mon Apr 24 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-2
+- Rebase to NSS 3.30.2
+- Enable TLS 1.3
+
 * Thu Mar 30 2017 Kai Engert <kaie@redhat.com> - 3.30.0-3
 - Backport upstream mozbz#1328318 to support crypto policy FUTURE.
 
