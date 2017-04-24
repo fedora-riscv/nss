@@ -1,6 +1,6 @@
-%global nspr_version 4.13.0
-%global nss_util_version 3.29.3
-%global nss_softokn_version 3.29.3
+%global nspr_version 4.14.0
+%global nss_util_version 3.30.2
+%global nss_softokn_version 3.30.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.29.3
+Version:          3.30.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -112,7 +112,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-Patch63: nss-1334976-1336487.patch
+Patch63: nss-1328318-v8-3.30.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -196,7 +196,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p0 -b .skip_util_gtest
-%patch63 -p1 -b .1334976-1336487
+%patch63 -p1 -b .1328318
 popd
 
 #########################################################
@@ -385,6 +385,12 @@ done
 
 
 %check
+
+%ifarch armv7hl
+#temporarily disable tests on armv7hl because infrastructure is running into timeouts
+DISABLETEST=1
+%endif
+
 if [ ${DISABLETEST:-0} -eq 1 ]; then
   echo "testing disabled"
   exit 0
@@ -805,6 +811,9 @@ fi
 
 
 %changelog
+* Mon Apr 24 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-2
+- Rebase to NSS 3.30.2
+
 * Wed Mar 29 2017 Daiki Ueno <dueno@redhat.com> - 3.29.3-1.1
 - Backport mozbz#1334976 and mozbz#1336487, from F26
 
