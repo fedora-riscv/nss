@@ -383,12 +383,6 @@ done
 
 
 %check
-
-%ifarch armv7hl
-#temporarily disable tests on armv7hl because infrastructure is running into timeouts
-DISABLETEST=1
-%endif
-
 if [ ${DISABLETEST:-0} -eq 1 ]; then
   echo "testing disabled"
   exit 0
