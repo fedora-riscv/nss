@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.30.2
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -296,8 +296,6 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
 ##### phase 2: build the rest of nss
 export NSS_BLTEST_NOT_AVAILABLE=1
 
-export NSS_DISABLE_TLS_1_3=1
-
 %{__make} -C ./nss/coreconf
 %{__make} -C ./nss/lib/dbm
 
@@ -411,8 +409,6 @@ export USE_64
 %endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
-
-export NSS_DISABLE_TLS_1_3=1
 
 # needed for the fips mangling test
 export SOFTOKEN_LIB_DIR=%{_libdir}
@@ -811,6 +807,10 @@ fi
 
 
 %changelog
+* Wed May 10 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-1.1
+- Re-enable tests on armv7hl
+- Enable TLS 1.3 again
+
 * Mon Apr 24 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-2
 - Rebase to NSS 3.30.2
 
