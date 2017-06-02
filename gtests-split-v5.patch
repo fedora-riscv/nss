@@ -1,0 +1,447 @@
+diff -up nss/cmd/platlibs.mk.gtests-split nss/cmd/platlibs.mk
+--- nss/cmd/platlibs.mk.gtests-split	2017-06-02 10:47:41.000000000 +0200
++++ nss/cmd/platlibs.mk	2017-06-02 10:54:18.707290028 +0200
+@@ -32,6 +32,12 @@ else
+ DBMLIB = $(DIST)/lib/$(LIB_PREFIX)dbm.$(LIB_SUFFIX) 
+ endif
+ 
++ifeq ($(NSS_BUILD_UTIL_ONLY),1)
++SECTOOL_LIB = $(NULL)
++else
++SECTOOL_LIB = $(DIST)/lib/$(LIB_PREFIX)sectool.$(LIB_SUFFIX)
++endif
++
+ ifdef USE_STATIC_LIBS
+ 
+ DEFINES += -DNSS_USE_STATIC_LIBS
+@@ -70,20 +76,10 @@ endif
+ endif
+ 
+ NSS_LIBS_1=
+-SECTOOL_LIB=
+ NSS_LIBS_2=
+ NSS_LIBS_3=
+ NSS_LIBS_4=
+ 
+-ifneq ($(NSS_BUILD_UTIL_ONLY),1)
+-SECTOOL_LIB = \
+-	$(DIST)/lib/$(LIB_PREFIX)sectool.$(LIB_SUFFIX) \
+-	$(NULL)
+-else
+-SECTOOL_LIB = \
+-	$(NULL)
+-endif
+-
+ ifneq ($(NSS_BUILD_SOFTOKEN_ONLY),1)
+ ifeq ($(OS_ARCH), WINNT)
+ # breakdown for windows
+@@ -121,9 +117,6 @@ NSS_LIBS_1 = \
+ 	$(DIST)/lib/$(LIB_PREFIX)ssl.$(LIB_SUFFIX) \
+ 	$(DIST)/lib/$(LIB_PREFIX)nss.$(LIB_SUFFIX) \
+ 	$(NULL)
+-SECTOOL_LIB = \
+-	$(DIST)/lib/$(LIB_PREFIX)sectool.$(LIB_SUFFIX) \
+-	$(NULL)
+ NSS_LIBS_2 = \
+ 	$(DIST)/lib/$(LIB_PREFIX)pkcs12.$(LIB_SUFFIX) \
+ 	$(DIST)/lib/$(LIB_PREFIX)pkcs7.$(LIB_SUFFIX) \
+@@ -201,7 +194,7 @@ ifeq ($(OS_ARCH), WINNT)
+ 
+ # $(PROGRAM) has explicit dependencies on $(EXTRA_LIBS)
+ EXTRA_LIBS += \
+-	$(DIST)/lib/$(LIB_PREFIX)sectool.$(LIB_SUFFIX) \
++	$(SECTOOL_LIB) \
+ 	$(NSSUTIL_LIB_DIR)/$(IMPORT_LIB_PREFIX)nssutil3$(IMPORT_LIB_SUFFIX) \
+ 	$(DIST)/lib/$(IMPORT_LIB_PREFIX)smime3$(IMPORT_LIB_SUFFIX) \
+ 	$(DIST)/lib/$(IMPORT_LIB_PREFIX)ssl3$(IMPORT_LIB_SUFFIX) \
+@@ -220,7 +213,7 @@ else
+ 
+ # $(PROGRAM) has explicit dependencies on $(EXTRA_LIBS)
+ EXTRA_LIBS += \
+-	$(DIST)/lib/$(LIB_PREFIX)sectool.$(LIB_SUFFIX) \
++	$(SECTOOL_LIB) \
+ 	$(NULL)
+ 
+ ifeq ($(OS_ARCH), AIX) 
+@@ -238,6 +231,7 @@ EXTRA_SHARED_LIBS += \
+ 	-lplds4 \
+ 	-lnspr4 \
+ 	$(NULL)
++ifndef NSS_BUILD_UTIL_ONLY
+ ifndef NSS_BUILD_SOFTOKEN_ONLY
+ EXTRA_SHARED_LIBS += \
+ 	-lssl3 \
+@@ -245,6 +239,7 @@ EXTRA_SHARED_LIBS += \
+ 	-lnss3
+ endif
+ endif
++endif
+ 
+ ifdef SOFTOKEN_LIB_DIR
+ ifdef NSS_USE_SYSTEM_FREEBL
+diff -up nss/cpputil/scoped_ptrs_base.h.gtests-split nss/cpputil/scoped_ptrs_base.h
+--- nss/cpputil/scoped_ptrs_base.h.gtests-split	2017-06-02 10:54:18.707290028 +0200
++++ nss/cpputil/scoped_ptrs_base.h	2017-06-02 10:54:18.707290028 +0200
+@@ -0,0 +1,29 @@
++/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
++/* vim: set ts=2 et sw=2 tw=80: */
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifndef scoped_ptrs_base_h__
++#define scoped_ptrs_base_h__
++
++#include <memory>
++
++template <class T>
++struct ScopedDelete {
++  void operator()(T*);
++};
++
++template <class T>
++struct ScopedMaybeDelete {
++  void operator()(T* ptr) {
++    if (ptr) {
++      ScopedDelete<T> del;
++      del(ptr);
++    }
++  }
++};
++
++#define SCOPED(x) typedef std::unique_ptr<x, ScopedMaybeDelete<x> > Scoped##x
++
++#endif  // scoped_ptrs_base_h__
+diff -up nss/cpputil/scoped_ptrs_util.h.gtests-split nss/cpputil/scoped_ptrs_util.h
+--- nss/cpputil/scoped_ptrs_util.h.gtests-split	2017-06-02 10:54:18.707290028 +0200
++++ nss/cpputil/scoped_ptrs_util.h	2017-06-02 11:03:10.361102513 +0200
+@@ -0,0 +1,41 @@
++/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
++/* vim: set ts=2 et sw=2 tw=80: */
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#ifndef scoped_ptrs_util_h__
++#define scoped_ptrs_util_h__
++
++#include "scoped_ptrs_base.h"
++
++#include "nspr.h"
++#include "secitem.h"
++#include "secoid.h"
++
++template <>
++struct ScopedDelete<PRFileDesc> {
++  void operator()(PRFileDesc* fd) { PR_Close(fd); }
++};
++
++template <>
++struct ScopedDelete<SECItem> {
++  void operator()(SECItem* item) { SECITEM_FreeItem(item, true); }
++};
++
++template <>
++struct ScopedDelete<SECAlgorithmID> {
++  void operator()(SECAlgorithmID* id) { SECOID_DestroyAlgorithmID(id, true); }
++};
++
++template <>
++struct ScopedDelete<PLArenaPool> {
++  void operator()(PLArenaPool* arena) { PORT_FreeArena(arena, PR_FALSE); }
++};
++
++SCOPED(PRFileDesc);
++SCOPED(SECItem);
++SCOPED(SECAlgorithmID);
++SCOPED(PLArenaPool);
++
++#endif  // scoped_ptrs_util_h__
+diff -up nss/gtests/common/gtests-util.cc.gtests-split nss/gtests/common/gtests-util.cc
+--- nss/gtests/common/gtests-util.cc.gtests-split	2017-06-02 10:54:18.707290028 +0200
++++ nss/gtests/common/gtests-util.cc	2017-06-02 10:54:18.707290028 +0200
+@@ -0,0 +1,26 @@
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#include "nspr.h"
++#include "secoid.h"
++
++#include <cstdlib>
++
++#define GTEST_HAS_RTTI 0
++#include "gtest/gtest.h"
++
++int main(int argc, char **argv) {
++  ::testing::InitGoogleTest(&argc, argv);
++
++  if (SECOID_Init() != SECSuccess) {
++    return 1;
++  }
++  int rv = RUN_ALL_TESTS();
++
++  if (SECOID_Shutdown() != SECSuccess) {
++    return 1;
++  }
++
++  return rv;
++}
+diff -up nss/gtests/common/manifest.mn.gtests-split nss/gtests/common/manifest.mn
+--- nss/gtests/common/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/common/manifest.mn	2017-06-02 10:54:18.707290028 +0200
+@@ -6,9 +6,13 @@ CORE_DEPTH = ../..
+ DEPTH      = ../..
+ MODULE = nss
+ 
+-CPPSRCS = \
+-      gtests.cc \
+-      $(NULL)
++LIBRARY_NAME = gtestutil
++
++ifeq ($(NSS_BUILD_UTIL_ONLY),1)
++CPPSRCS = gtests-util.cc
++else
++CPPSRCS = gtests.cc
++endif
+ 
+ INCLUDES += -I$(CORE_DEPTH)/gtests/google_test/gtest/include \
+             -I$(CORE_DEPTH)/gtests/common \
+@@ -17,6 +21,3 @@ INCLUDES += -I$(CORE_DEPTH)/gtests/googl
+ REQUIRES = gtest
+ 
+ EXTRA_LIBS = $(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX)
+-
+-# NOTE: this is not actually used but required to build gtests.o
+-PROGRAM = gtests
+diff -up nss/gtests/der_gtest/der_getint_unittest.cc.gtests-split nss/gtests/der_gtest/der_getint_unittest.cc
+--- nss/gtests/der_gtest/der_getint_unittest.cc.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/der_gtest/der_getint_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+@@ -4,14 +4,13 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
++#include "secder.h"
++#include "secerr.h"
++
+ #include <climits>
+ #include <memory>
+-#include "nss.h"
+-#include "pk11pub.h"
+-#include "secutil.h"
+ 
+ #include "gtest/gtest.h"
+-#include "scoped_ptrs.h"
+ 
+ namespace nss_test {
+ 
+diff -up nss/gtests/der_gtest/der_gtest.gyp.gtests-split nss/gtests/der_gtest/der_gtest.gyp
+--- nss/gtests/der_gtest/der_gtest.gyp.gtests-split	2017-06-02 10:54:18.708290005 +0200
++++ nss/gtests/der_gtest/der_gtest.gyp	2017-06-02 11:03:35.778519718 +0200
+@@ -12,7 +12,6 @@
+       'type': 'executable',
+       'sources': [
+         'der_getint_unittest.cc',
+-        'der_private_key_import_unittest.cc',
+         '<(DEPTH)/gtests/common/gtests.cc'
+       ],
+       'dependencies': [
+diff -up nss/gtests/der_gtest/manifest.mn.gtests-split nss/gtests/der_gtest/manifest.mn
+--- nss/gtests/der_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/der_gtest/manifest.mn	2017-06-02 11:03:55.137075847 +0200
+@@ -8,16 +8,15 @@ MODULE = nss
+ 
+ CPPSRCS = \
+       der_getint_unittest.cc \
+-      der_private_key_import_unittest.cc \
+       $(NULL)
+ 
+ INCLUDES += -I$(CORE_DEPTH)/gtests/google_test/gtest/include \
+             -I$(CORE_DEPTH)/gtests/common \
+             -I$(CORE_DEPTH)/cpputil
+ 
+-REQUIRES = nspr nss libdbm gtest
++REQUIRES = nspr gtest
+ 
+ PROGRAM = der_gtest
+ 
+ EXTRA_LIBS = $(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) $(EXTRA_OBJS) \
+-             ../common/$(OBJDIR)/gtests$(OBJ_SUFFIX)
++             $(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX)
+diff -up nss/gtests/pk11_gtest/manifest.mn.gtests-split nss/gtests/pk11_gtest/manifest.mn
+--- nss/gtests/pk11_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/pk11_gtest/manifest.mn	2017-06-02 10:54:18.708290005 +0200
+@@ -16,6 +16,7 @@ CPPSRCS = \
+       pk11_prf_unittest.cc \
+       pk11_prng_unittest.cc \
+       pk11_rsapss_unittest.cc \
++      pk11_der_private_key_import_unittest.cc \
+       $(NULL)
+ 
+ INCLUDES += -I$(CORE_DEPTH)/gtests/google_test/gtest/include \
+@@ -27,5 +28,5 @@ REQUIRES = nspr nss libdbm gtest
+ PROGRAM = pk11_gtest
+ 
+ EXTRA_LIBS = $(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) $(EXTRA_OBJS) \
+-             ../common/$(OBJDIR)/gtests$(OBJ_SUFFIX)
++             $(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX)
+ 
+diff -up nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc.gtests-split nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc
+--- nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc.gtests-split	2017-06-02 10:54:18.708290005 +0200
++++ nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+@@ -0,0 +1,110 @@
++/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
++/* vim: set ts=2 et sw=2 tw=80: */
++/* This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at http://mozilla.org/MPL/2.0/. */
++
++#include <climits>
++#include <memory>
++#include "nss.h"
++#include "pk11pub.h"
++#include "secutil.h"
++
++#include "gtest/gtest.h"
++#include "scoped_ptrs.h"
++
++namespace nss_test {
++
++const std::vector<uint8_t> kValidRSAKey = {
++    // 512-bit RSA private key (PKCS#8)
++    0x30, 0x82, 0x01, 0x54, 0x02, 0x01, 0x00, 0x30, 0x0d, 0x06, 0x09, 0x2a,
++    0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
++    0x01, 0x3e, 0x30, 0x82, 0x01, 0x3a, 0x02, 0x01, 0x00, 0x02, 0x41, 0x00,
++    0xa2, 0x40, 0xce, 0xb5, 0x4e, 0x70, 0xdc, 0x14, 0x82, 0x5b, 0x58, 0x7d,
++    0x2f, 0x5d, 0xfd, 0x46, 0x3c, 0x4b, 0x82, 0x50, 0xb6, 0x96, 0x00, 0x4a,
++    0x1a, 0xca, 0xaf, 0xe4, 0x9b, 0xcf, 0x38, 0x4a, 0x46, 0xaa, 0x9f, 0xb4,
++    0xd9, 0xc7, 0xee, 0x88, 0xe9, 0xef, 0x0a, 0x31, 0x5f, 0x53, 0x86, 0x8f,
++    0x63, 0x68, 0x0b, 0x58, 0x34, 0x72, 0x49, 0xba, 0xed, 0xd9, 0x34, 0x15,
++    0x16, 0xc4, 0xca, 0xb7, 0x02, 0x03, 0x01, 0x00, 0x01, 0x02, 0x40, 0x34,
++    0xe6, 0xdc, 0x7e, 0xd0, 0xec, 0x8b, 0x55, 0x44, 0x8b, 0x73, 0xf6, 0x9d,
++    0x13, 0x10, 0x19, 0x6e, 0x5f, 0x50, 0x45, 0xf0, 0xc2, 0x47, 0xa5, 0xe1,
++    0xc6, 0x64, 0x43, 0x2d, 0x6a, 0x0a, 0xf7, 0xe7, 0xda, 0x40, 0xb8, 0x3a,
++    0xf0, 0x47, 0xdd, 0x01, 0xf5, 0xe0, 0xa9, 0x0e, 0x47, 0xc2, 0x24, 0xd7,
++    0xb5, 0x13, 0x3a, 0x35, 0x4d, 0x11, 0xaa, 0x50, 0x03, 0xb3, 0xe8, 0x54,
++    0x6c, 0x99, 0x01, 0x02, 0x21, 0x00, 0xcd, 0xb2, 0xd7, 0xa7, 0x43, 0x5b,
++    0xcb, 0x45, 0xe5, 0x0e, 0x86, 0xf6, 0xc1, 0x4e, 0x97, 0xed, 0x78, 0x1f,
++    0x09, 0x56, 0xcd, 0x26, 0xe6, 0xf7, 0x5e, 0xd9, 0xfc, 0x88, 0x12, 0x5f,
++    0x84, 0x07, 0x02, 0x21, 0x00, 0xc9, 0xee, 0x30, 0xaf, 0x6c, 0xb9, 0x5a,
++    0xc9, 0xc1, 0x14, 0x9e, 0xd8, 0x4b, 0x33, 0x38, 0x48, 0x17, 0x41, 0x35,
++    0x94, 0x09, 0xf3, 0x69, 0xc4, 0x97, 0xbe, 0x17, 0x7d, 0x95, 0x0f, 0xb7,
++    0xd1, 0x02, 0x21, 0x00, 0x8b, 0x0e, 0xf9, 0x8d, 0x61, 0x13, 0x20, 0x63,
++    0x9b, 0x0b, 0x6c, 0x20, 0x4a, 0xe4, 0xa7, 0xfe, 0xe8, 0xf3, 0x0a, 0x6c,
++    0x3c, 0xfa, 0xac, 0xaf, 0xd4, 0xd6, 0xc7, 0x4a, 0xf2, 0x28, 0xd2, 0x67,
++    0x02, 0x20, 0x6b, 0x0e, 0x1d, 0xbf, 0x93, 0x5b, 0xbd, 0x77, 0x43, 0x27,
++    0x24, 0x83, 0xb5, 0x72, 0xa5, 0x3f, 0x0b, 0x1d, 0x26, 0x43, 0xa2, 0xf6,
++    0xea, 0xb7, 0x30, 0x5f, 0xb6, 0x62, 0x7c, 0xf9, 0x85, 0x51, 0x02, 0x20,
++    0x3d, 0x22, 0x63, 0x15, 0x6b, 0x32, 0x41, 0x46, 0x44, 0x78, 0xb7, 0x13,
++    0xeb, 0x85, 0x4c, 0x4f, 0x6b, 0x3e, 0xf0, 0x52, 0xf0, 0x46, 0x3b, 0x65,
++    0xd8, 0x21, 0x7d, 0xae, 0xc0, 0x09, 0x98, 0x34};
++
++const std::vector<uint8_t> kInvalidLengthKey = {
++    0x30, 0x1b,        // SEQUENCE(len=27)
++    0x02, 0x01, 0x00,  // INT(len=1) = 0
++    0x30, 0x13,        // SEQUENCE(len=19)
++    0x06, 0x07,        // OID(len=7)
++    // dhPublicKey (1.2.840.10046.2.1)
++    0x2a, 0x86, 0x48, 0xce, 0x3e, 0x02, 0x01, 0x06, 0x08,  // OID(len=8)
++    // prime256v1 (1.2.840.10045.3.1.7) */
++    0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x04,
++    0x00  // OCTET STRING(len=0)
++};
++
++const std::vector<uint8_t> kInvalidZeroLengthKey = {
++    0x30, 0x1a,        // SEQUENCE(len=26)
++    0x02, 0x01, 0x00,  // INT(len=1) = 0
++    0x30, 0x13,        // SEQUENCE(len=19)
++    0x06, 0x07,        // OID(len=7)
++    // dhPublicKey (1.2.840.10046.2.1)
++    0x2a, 0x86, 0x48, 0xce, 0x3e, 0x02, 0x01, 0x06, 0x08,  // OID(len=8)
++    // prime256v1 (1.2.840.10045.3.1.7) */
++    0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x04,
++    0x00  // OCTET STRING(len=0)
++};
++
++class DERPrivateKeyImportTest : public ::testing::Test {
++ public:
++  bool ParsePrivateKey(const std::vector<uint8_t>& data) {
++    ScopedPK11SlotInfo slot(PK11_GetInternalSlot());
++    EXPECT_TRUE(slot);
++
++    SECKEYPrivateKey* key = nullptr;
++    SECItem item = {siBuffer, const_cast<unsigned char*>(data.data()),
++                    (unsigned int)data.size()};
++
++    SECStatus rv = PK11_ImportDERPrivateKeyInfoAndReturnKey(
++        slot.get(), &item, nullptr, nullptr, false, false, KU_ALL, &key,
++        nullptr);
++
++    EXPECT_EQ(rv == SECSuccess, key != nullptr);
++    SECKEY_DestroyPrivateKey(key);
++
++    return rv == SECSuccess;
++  }
++};
++
++TEST_F(DERPrivateKeyImportTest, ImportPrivateRSAKey) {
++  EXPECT_TRUE(ParsePrivateKey(kValidRSAKey));
++  EXPECT_FALSE(PORT_GetError());
++}
++
++TEST_F(DERPrivateKeyImportTest, ImportInvalidPrivateKey) {
++  EXPECT_FALSE(ParsePrivateKey(kInvalidLengthKey));
++  EXPECT_EQ(PORT_GetError(), SEC_ERROR_BAD_DER);
++}
++
++TEST_F(DERPrivateKeyImportTest, ImportZeroLengthPrivateKey) {
++  EXPECT_FALSE(ParsePrivateKey(kInvalidZeroLengthKey));
++  EXPECT_EQ(PORT_GetError(), SEC_ERROR_BAD_KEY);
++}
++
++}  // namespace nss_test
+diff -up nss/gtests/pk11_gtest/pk11_gtest.gyp.gtests-split nss/gtests/pk11_gtest/pk11_gtest.gyp
+--- nss/gtests/pk11_gtest/pk11_gtest.gyp.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/pk11_gtest/pk11_gtest.gyp	2017-06-02 10:54:18.708290005 +0200
+@@ -19,6 +19,7 @@
+         'pk11_prf_unittest.cc',
+         'pk11_prng_unittest.cc',
+         'pk11_rsapss_unittest.cc',
++        'pk11_der_private_key_import_unittest.cc',
+         '<(DEPTH)/gtests/common/gtests.cc'
+       ],
+       'dependencies': [
+diff -up nss/gtests/util_gtest/manifest.mn.gtests-split nss/gtests/util_gtest/manifest.mn
+--- nss/gtests/util_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/util_gtest/manifest.mn	2017-06-02 10:54:18.708290005 +0200
+@@ -24,5 +24,5 @@ PROGRAM = util_gtest
+ EXTRA_LIBS = \
+ 	$(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) \
+ 	$(DIST)/lib/$(LIB_PREFIX)nssutil.$(LIB_SUFFIX) \
+-	../common/$(OBJDIR)/gtests$(OBJ_SUFFIX) \
++	$(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX) \
+ 	$(NULL)
+diff -up nss/gtests/util_gtest/util_b64_unittest.cc.gtests-split nss/gtests/util_gtest/util_b64_unittest.cc
+--- nss/gtests/util_gtest/util_b64_unittest.cc.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/util_gtest/util_b64_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+@@ -9,7 +9,7 @@
+ #include "nssb64.h"
+ 
+ #include "gtest/gtest.h"
+-#include "scoped_ptrs.h"
++#include "scoped_ptrs_util.h"
+ 
+ namespace nss_test {
+ 
+diff -up nss/tests/gtests/gtests.sh.gtests-split nss/tests/gtests/gtests.sh
+--- nss/tests/gtests/gtests.sh.gtests-split	2017-04-20 16:25:50.000000000 +0200
++++ nss/tests/gtests/gtests.sh	2017-06-02 10:54:18.708290005 +0200
+@@ -24,7 +24,7 @@ gtest_init()
+ {
+   cd "$(dirname "$1")"
+   if [ -z "${INIT_SOURCED}" -o "${INIT_SOURCED}" != "TRUE" ]; then
+-      cd common
++      cd ../common
+       . ./init.sh
+   fi
+ 

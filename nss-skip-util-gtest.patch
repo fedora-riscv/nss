@@ -1,12 +1,12 @@
-diff -up ./gtests/manifest.mn.skip_util_gtest ./gtests/manifest.mn
---- ./gtests/manifest.mn.skip_util_gtest	2016-09-29 12:05:28.858019733 +0200
-+++ ./gtests/manifest.mn	2016-09-29 12:06:17.298681765 +0200
-@@ -9,8 +9,5 @@ DIRS = \
+diff -up nss/gtests/manifest.mn.skip_util_gtest nss/gtests/manifest.mn
+--- nss/gtests/manifest.mn.skip_util_gtest	2017-04-20 16:25:50.000000000 +0200
++++ nss/gtests/manifest.mn	2017-06-02 12:36:48.278269769 +0200
+@@ -8,8 +8,6 @@ DEPTH      = ..
+ DIRS = \
  	google_test \
  	common \
- 	der_gtest \
+-	der_gtest \
 -	util_gtest \
--	pk11_gtest \
--	ssl_gtest \
+ 	pk11_gtest \
+ 	ssl_gtest \
          nss_bogo_shim \
- 	$(NULL)
