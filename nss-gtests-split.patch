@@ -1,6 +1,14 @@
-diff -up nss/cmd/platlibs.mk.gtests-split nss/cmd/platlibs.mk
---- nss/cmd/platlibs.mk.gtests-split	2017-06-02 10:47:41.000000000 +0200
-+++ nss/cmd/platlibs.mk	2017-06-02 10:54:18.707290028 +0200
+# HG changeset patch
+# User Daiki Ueno <dueno@redhat.com>
+# Date 1496306850 -7200
+#      Thu Jun 01 10:47:30 2017 +0200
+# Node ID a15755b99b544dc9643f6e3e7c3b36825112c5b2
+# Parent  d20ee6560caf7c8ed6640583791700451fe06921
+Bug 1280846 - tests: adjust gtests to compile under modular builds, r=franziskus
+
+diff --git a/cmd/platlibs.mk b/cmd/platlibs.mk
+--- a/cmd/platlibs.mk
++++ b/cmd/platlibs.mk
 @@ -32,6 +32,12 @@ else
  DBMLIB = $(DIST)/lib/$(LIB_PREFIX)dbm.$(LIB_SUFFIX) 
  endif
@@ -79,43 +87,11 @@ diff -up nss/cmd/platlibs.mk.gtests-split nss/cmd/platlibs.mk
  
  ifdef SOFTOKEN_LIB_DIR
  ifdef NSS_USE_SYSTEM_FREEBL
-diff -up nss/cpputil/scoped_ptrs_base.h.gtests-split nss/cpputil/scoped_ptrs_base.h
---- nss/cpputil/scoped_ptrs_base.h.gtests-split	2017-06-02 10:54:18.707290028 +0200
-+++ nss/cpputil/scoped_ptrs_base.h	2017-06-02 10:54:18.707290028 +0200
-@@ -0,0 +1,29 @@
-+/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-+/* vim: set ts=2 et sw=2 tw=80: */
-+/* This Source Code Form is subject to the terms of the Mozilla Public
-+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
-+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
-+
-+#ifndef scoped_ptrs_base_h__
-+#define scoped_ptrs_base_h__
-+
-+#include <memory>
-+
-+template <class T>
-+struct ScopedDelete {
-+  void operator()(T*);
-+};
-+
-+template <class T>
-+struct ScopedMaybeDelete {
-+  void operator()(T* ptr) {
-+    if (ptr) {
-+      ScopedDelete<T> del;
-+      del(ptr);
-+    }
-+  }
-+};
-+
-+#define SCOPED(x) typedef std::unique_ptr<x, ScopedMaybeDelete<x> > Scoped##x
-+
-+#endif  // scoped_ptrs_base_h__
-diff -up nss/cpputil/scoped_ptrs_util.h.gtests-split nss/cpputil/scoped_ptrs_util.h
---- nss/cpputil/scoped_ptrs_util.h.gtests-split	2017-06-02 10:54:18.707290028 +0200
-+++ nss/cpputil/scoped_ptrs_util.h	2017-06-02 11:03:10.361102513 +0200
-@@ -0,0 +1,41 @@
+diff --git a/cpputil/scoped_ptrs_util.h b/cpputil/scoped_ptrs_util.h
+new file mode 100644
+--- /dev/null
++++ b/cpputil/scoped_ptrs_util.h
+@@ -0,0 +1,39 @@
 +/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 +/* vim: set ts=2 et sw=2 tw=80: */
 +/* This Source Code Form is subject to the terms of the Mozilla Public
@@ -125,41 +101,55 @@ diff -up nss/cpputil/scoped_ptrs_util.h.gtests-split nss/cpputil/scoped_ptrs_uti
 +#ifndef scoped_ptrs_util_h__
 +#define scoped_ptrs_util_h__
 +
-+#include "scoped_ptrs_base.h"
-+
-+#include "nspr.h"
-+#include "secitem.h"
++#include <memory>
++#include "pkcs11uri.h"
 +#include "secoid.h"
 +
-+template <>
-+struct ScopedDelete<PRFileDesc> {
-+  void operator()(PRFileDesc* fd) { PR_Close(fd); }
-+};
-+
-+template <>
-+struct ScopedDelete<SECItem> {
-+  void operator()(SECItem* item) { SECITEM_FreeItem(item, true); }
-+};
-+
-+template <>
-+struct ScopedDelete<SECAlgorithmID> {
++struct ScopedDelete {
 +  void operator()(SECAlgorithmID* id) { SECOID_DestroyAlgorithmID(id, true); }
-+};
-+
-+template <>
-+struct ScopedDelete<PLArenaPool> {
++  void operator()(SECItem* item) { SECITEM_FreeItem(item, true); }
++  void operator()(PK11URI* uri) { PK11URI_DestroyURI(uri); }
 +  void operator()(PLArenaPool* arena) { PORT_FreeArena(arena, PR_FALSE); }
 +};
 +
-+SCOPED(PRFileDesc);
-+SCOPED(SECItem);
++template <class T>
++struct ScopedMaybeDelete {
++  void operator()(T* ptr) {
++    if (ptr) {
++      ScopedDelete del;
++      del(ptr);
++    }
++  }
++};
++
++#define SCOPED(x) typedef std::unique_ptr<x, ScopedMaybeDelete<x> > Scoped##x
++
 +SCOPED(SECAlgorithmID);
-+SCOPED(PLArenaPool);
++SCOPED(SECItem);
++SCOPED(PK11URI);
++
++#undef SCOPED
 +
 +#endif  // scoped_ptrs_util_h__
-diff -up nss/gtests/common/gtests-util.cc.gtests-split nss/gtests/common/gtests-util.cc
---- nss/gtests/common/gtests-util.cc.gtests-split	2017-06-02 10:54:18.707290028 +0200
-+++ nss/gtests/common/gtests-util.cc	2017-06-02 10:54:18.707290028 +0200
+diff --git a/gtests/certhigh_gtest/manifest.mn b/gtests/certhigh_gtest/manifest.mn
+--- a/gtests/certhigh_gtest/manifest.mn
++++ b/gtests/certhigh_gtest/manifest.mn
+@@ -14,9 +14,9 @@ INCLUDES += -I$(CORE_DEPTH)/gtests/googl
+             -I$(CORE_DEPTH)/gtests/common \
+             -I$(CORE_DEPTH)/cpputil
+ 
+-REQUIRES = nspr nss libdbm gtest
++REQUIRES = nspr gtest
+ 
+ PROGRAM = certhigh_gtest
+ 
+ EXTRA_LIBS = $(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) $(EXTRA_OBJS) \
+-             ../common/$(OBJDIR)/gtests$(OBJ_SUFFIX)
++             $(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX)
+diff --git a/gtests/common/gtests-util.cc b/gtests/common/gtests-util.cc
+new file mode 100644
+--- /dev/null
++++ b/gtests/common/gtests-util.cc
 @@ -0,0 +1,26 @@
 +/* This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -187,9 +177,9 @@ diff -up nss/gtests/common/gtests-util.cc.gtests-split nss/gtests/common/gtests-
 +
 +  return rv;
 +}
-diff -up nss/gtests/common/manifest.mn.gtests-split nss/gtests/common/manifest.mn
---- nss/gtests/common/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/common/manifest.mn	2017-06-02 10:54:18.707290028 +0200
+diff --git a/gtests/common/manifest.mn b/gtests/common/manifest.mn
+--- a/gtests/common/manifest.mn
++++ b/gtests/common/manifest.mn
 @@ -6,9 +6,13 @@ CORE_DEPTH = ../..
  DEPTH      = ../..
  MODULE = nss
@@ -214,9 +204,9 @@ diff -up nss/gtests/common/manifest.mn.gtests-split nss/gtests/common/manifest.m
 -
 -# NOTE: this is not actually used but required to build gtests.o
 -PROGRAM = gtests
-diff -up nss/gtests/der_gtest/der_getint_unittest.cc.gtests-split nss/gtests/der_gtest/der_getint_unittest.cc
---- nss/gtests/der_gtest/der_getint_unittest.cc.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/der_gtest/der_getint_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+diff --git a/gtests/der_gtest/der_getint_unittest.cc b/gtests/der_gtest/der_getint_unittest.cc
+--- a/gtests/der_gtest/der_getint_unittest.cc
++++ b/gtests/der_gtest/der_getint_unittest.cc
 @@ -4,14 +4,13 @@
   * License, v. 2.0. If a copy of the MPL was not distributed with this file,
   * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -235,28 +225,46 @@ diff -up nss/gtests/der_gtest/der_getint_unittest.cc.gtests-split nss/gtests/der
  
  namespace nss_test {
  
-diff -up nss/gtests/der_gtest/der_gtest.gyp.gtests-split nss/gtests/der_gtest/der_gtest.gyp
---- nss/gtests/der_gtest/der_gtest.gyp.gtests-split	2017-06-02 10:54:18.708290005 +0200
-+++ nss/gtests/der_gtest/der_gtest.gyp	2017-06-02 11:03:35.778519718 +0200
+diff --git a/gtests/der_gtest/der_gtest.gyp b/gtests/der_gtest/der_gtest.gyp
+--- a/gtests/der_gtest/der_gtest.gyp
++++ b/gtests/der_gtest/der_gtest.gyp
 @@ -12,7 +12,6 @@
        'type': 'executable',
        'sources': [
          'der_getint_unittest.cc',
 -        'der_private_key_import_unittest.cc',
+         'der_quickder_unittest.cc',
          '<(DEPTH)/gtests/common/gtests.cc'
        ],
-       'dependencies': [
-diff -up nss/gtests/der_gtest/manifest.mn.gtests-split nss/gtests/der_gtest/manifest.mn
---- nss/gtests/der_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/der_gtest/manifest.mn	2017-06-02 11:03:55.137075847 +0200
-@@ -8,16 +8,15 @@ MODULE = nss
+diff --git a/gtests/der_gtest/der_quickder_unittest.cc b/gtests/der_gtest/der_quickder_unittest.cc
+--- a/gtests/der_gtest/der_quickder_unittest.cc
++++ b/gtests/der_gtest/der_quickder_unittest.cc
+@@ -7,11 +7,12 @@
+ #include <stdint.h>
+ 
+ #include "gtest/gtest.h"
+-#include "scoped_ptrs.h"
++#include "scoped_ptrs_util.h"
+ 
+ #include "nss.h"
+ #include "prerror.h"
+ #include "secasn1.h"
++#include "secder.h"
+ #include "secerr.h"
+ #include "secitem.h"
+ 
+diff --git a/gtests/der_gtest/manifest.mn b/gtests/der_gtest/manifest.mn
+--- a/gtests/der_gtest/manifest.mn
++++ b/gtests/der_gtest/manifest.mn
+@@ -8,7 +8,6 @@ MODULE = nss
  
  CPPSRCS = \
        der_getint_unittest.cc \
 -      der_private_key_import_unittest.cc \
+       der_quickder_unittest.cc \
        $(NULL)
  
- INCLUDES += -I$(CORE_DEPTH)/gtests/google_test/gtest/include \
+@@ -16,9 +15,9 @@ INCLUDES += -I$(CORE_DEPTH)/gtests/googl
              -I$(CORE_DEPTH)/gtests/common \
              -I$(CORE_DEPTH)/cpputil
  
@@ -268,9 +276,9 @@ diff -up nss/gtests/der_gtest/manifest.mn.gtests-split nss/gtests/der_gtest/mani
  EXTRA_LIBS = $(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) $(EXTRA_OBJS) \
 -             ../common/$(OBJDIR)/gtests$(OBJ_SUFFIX)
 +             $(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX)
-diff -up nss/gtests/pk11_gtest/manifest.mn.gtests-split nss/gtests/pk11_gtest/manifest.mn
---- nss/gtests/pk11_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/pk11_gtest/manifest.mn	2017-06-02 10:54:18.708290005 +0200
+diff --git a/gtests/pk11_gtest/manifest.mn b/gtests/pk11_gtest/manifest.mn
+--- a/gtests/pk11_gtest/manifest.mn
++++ b/gtests/pk11_gtest/manifest.mn
 @@ -16,6 +16,7 @@ CPPSRCS = \
        pk11_prf_unittest.cc \
        pk11_prng_unittest.cc \
@@ -286,9 +294,10 @@ diff -up nss/gtests/pk11_gtest/manifest.mn.gtests-split nss/gtests/pk11_gtest/ma
 -             ../common/$(OBJDIR)/gtests$(OBJ_SUFFIX)
 +             $(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX)
  
-diff -up nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc.gtests-split nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc
---- nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc.gtests-split	2017-06-02 10:54:18.708290005 +0200
-+++ nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+diff --git a/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc b/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc
+new file mode 100644
+--- /dev/null
++++ b/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc
 @@ -0,0 +1,110 @@
 +/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 +/* vim: set ts=2 et sw=2 tw=80: */
@@ -400,10 +409,10 @@ diff -up nss/gtests/pk11_gtest/pk11_der_private_key_import_unittest.cc.gtests-sp
 +}
 +
 +}  // namespace nss_test
-diff -up nss/gtests/pk11_gtest/pk11_gtest.gyp.gtests-split nss/gtests/pk11_gtest/pk11_gtest.gyp
---- nss/gtests/pk11_gtest/pk11_gtest.gyp.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/pk11_gtest/pk11_gtest.gyp	2017-06-02 10:54:18.708290005 +0200
-@@ -19,6 +19,7 @@
+diff --git a/gtests/pk11_gtest/pk11_gtest.gyp b/gtests/pk11_gtest/pk11_gtest.gyp
+--- a/gtests/pk11_gtest/pk11_gtest.gyp
++++ b/gtests/pk11_gtest/pk11_gtest.gyp
+@@ -20,6 +20,7 @@
          'pk11_prf_unittest.cc',
          'pk11_prng_unittest.cc',
          'pk11_rsapss_unittest.cc',
@@ -411,19 +420,19 @@ diff -up nss/gtests/pk11_gtest/pk11_gtest.gyp.gtests-split nss/gtests/pk11_gtest
          '<(DEPTH)/gtests/common/gtests.cc'
        ],
        'dependencies': [
-diff -up nss/gtests/util_gtest/manifest.mn.gtests-split nss/gtests/util_gtest/manifest.mn
---- nss/gtests/util_gtest/manifest.mn.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/util_gtest/manifest.mn	2017-06-02 10:54:18.708290005 +0200
-@@ -24,5 +24,5 @@ PROGRAM = util_gtest
+diff --git a/gtests/util_gtest/manifest.mn b/gtests/util_gtest/manifest.mn
+--- a/gtests/util_gtest/manifest.mn
++++ b/gtests/util_gtest/manifest.mn
+@@ -25,5 +25,5 @@ PROGRAM = util_gtest
  EXTRA_LIBS = \
  	$(DIST)/lib/$(LIB_PREFIX)gtest.$(LIB_SUFFIX) \
  	$(DIST)/lib/$(LIB_PREFIX)nssutil.$(LIB_SUFFIX) \
 -	../common/$(OBJDIR)/gtests$(OBJ_SUFFIX) \
 +	$(DIST)/lib/$(LIB_PREFIX)gtestutil.$(LIB_SUFFIX) \
  	$(NULL)
-diff -up nss/gtests/util_gtest/util_b64_unittest.cc.gtests-split nss/gtests/util_gtest/util_b64_unittest.cc
---- nss/gtests/util_gtest/util_b64_unittest.cc.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/gtests/util_gtest/util_b64_unittest.cc	2017-06-02 10:54:18.708290005 +0200
+diff --git a/gtests/util_gtest/util_b64_unittest.cc b/gtests/util_gtest/util_b64_unittest.cc
+--- a/gtests/util_gtest/util_b64_unittest.cc
++++ b/gtests/util_gtest/util_b64_unittest.cc
 @@ -9,7 +9,7 @@
  #include "nssb64.h"
  
@@ -433,9 +442,21 @@ diff -up nss/gtests/util_gtest/util_b64_unittest.cc.gtests-split nss/gtests/util
  
  namespace nss_test {
  
-diff -up nss/tests/gtests/gtests.sh.gtests-split nss/tests/gtests/gtests.sh
---- nss/tests/gtests/gtests.sh.gtests-split	2017-04-20 16:25:50.000000000 +0200
-+++ nss/tests/gtests/gtests.sh	2017-06-02 10:54:18.708290005 +0200
+diff --git a/gtests/util_gtest/util_pkcs11uri_unittest.cc b/gtests/util_gtest/util_pkcs11uri_unittest.cc
+--- a/gtests/util_gtest/util_pkcs11uri_unittest.cc
++++ b/gtests/util_gtest/util_pkcs11uri_unittest.cc
+@@ -9,7 +9,7 @@
+ #include "pkcs11uri.h"
+ 
+ #include "gtest/gtest.h"
+-#include "scoped_ptrs.h"
++#include "scoped_ptrs_util.h"
+ 
+ namespace nss_test {
+ 
+diff --git a/tests/gtests/gtests.sh b/tests/gtests/gtests.sh
+--- a/tests/gtests/gtests.sh
++++ b/tests/gtests/gtests.sh
 @@ -24,7 +24,7 @@ gtest_init()
  {
    cd "$(dirname "$1")"
