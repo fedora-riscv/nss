@@ -111,8 +111,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
-Patch63: nss-gcc7.patch
-Patch64: nss-1328318-v8-3.30.patch
 Patch66: nss-gtests-split.patch
 
 %description
@@ -196,9 +194,7 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-%patch62 -p0 -b .skip_util_gtest
-%patch63 -p1 -b .gcc7
-%patch64 -p1 -b .1328318
+%patch62 -p1 -b .skip_util_gtest
 %patch66 -p1 -b .gtests-split
 popd
 
