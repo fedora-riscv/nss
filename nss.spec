@@ -43,7 +43,7 @@ BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
-BuildRequires:    perl
+BuildRequires:    perl-interpreter
 
 # nss-pem used to be bundled with the nss package on Fedora -- make sure that
 # programs relying on that continue to work until they are fixed to require
