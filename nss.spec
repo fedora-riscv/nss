@@ -1,6 +1,6 @@
-%global nspr_version 4.14.0
-%global nss_util_version 3.30.2
-%global nss_softokn_version 3.30.2
+%global nspr_version 4.15.0
+%global nss_util_version 3.31.0
+%global nss_softokn_version 3.31.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.30.2
+Version:          3.31.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -112,7 +112,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1280846
 Patch62: nss-skip-util-gtest.patch
-Patch63: nss-1328318-v8-3.30.patch
+Patch66: nss-gtests-split.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -195,8 +195,8 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
-%patch62 -p0 -b .skip_util_gtest
-%patch63 -p1 -b .1328318
+%patch62 -p1 -b .skip_util_gtest
+%patch66 -p1 -b .gtests-split
 popd
 
 #########################################################
@@ -224,9 +224,6 @@ popd
 %{__rm} -rf ./nss/cmd/bltest
 %{__rm} -rf ./nss/cmd/fipstest
 %{__rm} -rf ./nss/cmd/rsaperf_low
-
-######## Remove portions that need to statically link with libnssutil.a
-%{__rm} -rf ./nss/external_tests/util_gtests
 
 
 %build
@@ -801,6 +798,9 @@ fi
 
 
 %changelog
+* Wed Jun 21 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-1.0
+- Rebase to NSS 3.31.0
+
 * Wed May 10 2017 Daiki Ueno <dueno@redhat.com> - 3.30.2-1.1
 - Re-enable tests on armv7hl
 - Enable TLS 1.3 again
