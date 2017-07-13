@@ -2,7 +2,7 @@
 %global nss_util_version 3.31.0
 %global nss_softokn_version 3.31.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.31.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -561,7 +561,7 @@ do
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump listsuites ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -687,7 +687,6 @@ fi
 %{_bindir}/crlutil
 %{_bindir}/modutil
 %{_bindir}/pk12util
-%{_bindir}/signtool
 %{_bindir}/signver
 %{_bindir}/ssltap
 %{unsupported_tools_directory}/atob
@@ -697,6 +696,7 @@ fi
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
+%{unsupported_tools_directory}/signtool
 %{unsupported_tools_directory}/strsclnt
 %{unsupported_tools_directory}/symkeyutil
 %{unsupported_tools_directory}/tstclnt
@@ -709,10 +709,10 @@ fi
 %attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
 # unsupported tools
 %attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %if %{defined rhel}
 %attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
 %else
@@ -797,6 +797,10 @@ fi
 
 
 %changelog
+* Thu Jul 13 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-3
+- Move signtool to %%_libdir/nss/unsupported-tools, for:
+  https://fedoraproject.org/wiki/Changes/NSSSigntoolDeprecation
+
 * Wed Jun 21 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-2
 - Rebase to NSS 3.31.0
 
