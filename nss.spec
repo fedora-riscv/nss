@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.31.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -112,6 +112,8 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 Patch66: nss-gtests-split.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1381784
+Patch67: nss-devslot-lock.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -196,6 +198,7 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
 %patch66 -p1 -b .gtests-split
+%patch67 -p1 -b .devslot-lock
 popd
 
 #########################################################
@@ -797,6 +800,9 @@ fi
 
 
 %changelog
+* Tue Jul 18 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-1.1
+- Backport mozbz#1381784 to avoid deadlock in dnf
+
 * Wed Jun 21 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-1.0
 - Rebase to NSS 3.31.0
 

@@ -1,0 +1,36 @@
+# HG changeset patch
+# User Daiki Ueno <dueno@redhat.com>
+# Date 1500370430 -7200
+#      Tue Jul 18 11:33:50 2017 +0200
+# Branch wip/dueno/devslot-lock
+# Node ID 421c812e3143b3f7e62825cb5749e5239412c56b
+# Parent  4c1358d767de5da9a5f34afc2821b281fb37ca57
+Avoid deadlock in nssSlot_IsTokenPresent
+
+diff --git a/lib/dev/devslot.c b/lib/dev/devslot.c
+--- a/lib/dev/devslot.c
++++ b/lib/dev/devslot.c
+@@ -226,15 +226,17 @@ nssSlot_GetToken(
+     NSSSlot *slot)
+ {
+     NSSToken *rvToken = NULL;
+-    nssSlot_EnterMonitor(slot);
+ 
+-    /* Even if a token should be present, check `slot->token` too as it
+-     * might be gone already. This would happen mostly on shutdown. */
+-    if (nssSlot_IsTokenPresent(slot) && slot->token) {
+-        rvToken = nssToken_AddRef(slot->token);
++    if (nssSlot_IsTokenPresent(slot)) {
++        /* Even if a token should be present, check `slot->token` too as it
++         * might be gone already. This would happen mostly on shutdown. */
++        nssSlot_EnterMonitor(slot);
++        if (slot->token) {
++            rvToken = nssToken_AddRef(slot->token);
++        }
++        nssSlot_ExitMonitor(slot);
+     }
+ 
+-    nssSlot_ExitMonitor(slot);
+     return rvToken;
+ }
+ 
