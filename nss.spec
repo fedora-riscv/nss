@@ -2,7 +2,7 @@
 %global nss_util_version 3.31.0
 %global nss_softokn_version 3.31.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util signver ssltap vfychain vfyserv"
+%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 # solution taken from icedtea-web.spec
 %define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
