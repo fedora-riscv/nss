@@ -1,6 +1,6 @@
-%global nspr_version 4.15.0
-%global nss_util_version 3.31.0
-%global nss_softokn_version 3.31.0
+%global nspr_version 4.16.0
+%global nss_util_version 3.32.0
+%global nss_softokn_version 3.32.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.31.0
+Version:          3.32.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -43,7 +43,7 @@ BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
-BuildRequires:    perl
+BuildRequires:    perl-interpreter
 
 # nss-pem used to be bundled with the nss package on Fedora -- make sure that
 # programs relying on that continue to work until they are fixed to require
@@ -111,9 +111,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
-Patch66: nss-gtests-split.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1381784
-Patch67: nss-devslot-lock.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -197,8 +194,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
-%patch66 -p1 -b .gtests-split
-%patch67 -p1 -b .devslot-lock
 popd
 
 #########################################################
@@ -558,13 +553,13 @@ do
 done
 
 # Copy the binaries we want
-for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
+for file in certutil cmsutil crlutil modutil pk12util signver ssltap
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump listsuites ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -690,7 +685,6 @@ fi
 %{_bindir}/crlutil
 %{_bindir}/modutil
 %{_bindir}/pk12util
-%{_bindir}/signtool
 %{_bindir}/signver
 %{_bindir}/ssltap
 %{unsupported_tools_directory}/atob
@@ -700,6 +694,7 @@ fi
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
+%{unsupported_tools_directory}/signtool
 %{unsupported_tools_directory}/strsclnt
 %{unsupported_tools_directory}/symkeyutil
 %{unsupported_tools_directory}/tstclnt
@@ -712,10 +707,10 @@ fi
 %attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
 # unsupported tools
 %attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %if %{defined rhel}
 %attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
 %else
@@ -800,6 +795,9 @@ fi
 
 
 %changelog
+* Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.0
+- Update to NSS 3.32.0
+
 * Tue Jul 18 2017 Daiki Ueno <dueno@redhat.com> - 3.31.0-1.1
 - Backport mozbz#1381784 to avoid deadlock in dnf
 
