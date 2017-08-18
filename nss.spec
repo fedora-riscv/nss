@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.32.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -553,13 +553,13 @@ do
 done
 
 # Copy the binaries we want
-for file in certutil cmsutil crlutil modutil pk12util signver ssltap
+for file in certutil cmsutil crlutil modutil pk12util signtool signver ssltap
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in atob btoa derdump listsuites ocspclnt pp selfserv strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -685,6 +685,7 @@ fi
 %{_bindir}/crlutil
 %{_bindir}/modutil
 %{_bindir}/pk12util
+%{_bindir}/signtool
 %{_bindir}/signver
 %{_bindir}/ssltap
 %{unsupported_tools_directory}/atob
@@ -694,7 +695,6 @@ fi
 %{unsupported_tools_directory}/ocspclnt
 %{unsupported_tools_directory}/pp
 %{unsupported_tools_directory}/selfserv
-%{unsupported_tools_directory}/signtool
 %{unsupported_tools_directory}/strsclnt
 %{unsupported_tools_directory}/symkeyutil
 %{unsupported_tools_directory}/tstclnt
@@ -707,10 +707,10 @@ fi
 %attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
+%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
 # unsupported tools
 %attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
 %if %{defined rhel}
 %attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
 %else
@@ -795,6 +795,9 @@ fi
 
 
 %changelog
+* Fri Aug 18 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.1
+- Revert signtool deprecation, which was only targeting F27
+
 * Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.0
 - Update to NSS 3.32.0
 
