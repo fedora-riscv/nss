@@ -4,24 +4,12 @@
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
-# solution taken from icedtea-web.spec
-%define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
-%ifarch %{multilib_arches}
-%define alt_ckbi  libnssckbi.so.%{_arch}
-%else
-%define alt_ckbi  libnssckbi.so
-%endif
-
-# Define if using a source archive like "nss-version.with.ckbi.version".
-# To "disable", add "#" to start of line, AND a space after "%".
-#% define nss_ckbi_suffix .with.ckbi.1.93
-
 Summary:          Network Security Services
 Name:             nss
 Version:          3.32.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -30,8 +18,7 @@ Requires:         nss-util >= %{nss_util_version}
 # TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
-Requires(post):   %{_sbindir}/update-alternatives
-Requires(postun): %{_sbindir}/update-alternatives
+Requires:         p11-kit-trust
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
@@ -64,13 +51,7 @@ Conflicts:        seamonkey < 2.46-2
 # https://bugzilla.redhat.com/show_bug.cgi?id=1414987
 # Conflicts:        icecat < 45.5.1-5
 
-%if %{defined nss_ckbi_suffix}
-%define full_nss_version %{version}%{nss_ckbi_suffix}
-%else
-%define full_nss_version %{version}
-%endif
-
-Source0:          %{name}-%{full_nss_version}.tar.gz
+Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
@@ -526,9 +507,6 @@ echo "test suite completed"
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
-touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
-%{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
-
 # Copy the binary libraries we want
 for file in libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
@@ -617,33 +595,9 @@ done
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-# If we upgrade, and the shared filename is a regular file, then we must
-# remove it, before we can install the alternatives symbolic link.
-if [ $1 -gt 1 ] ; then
-  # when upgrading or downgrading
-  if ! test -L %{_libdir}/libnssckbi.so; then
-    rm -f %{_libdir}/libnssckbi.so
-  fi
-fi
-# Install the symbolic link
-# FYI: Certain other packages use alternatives --set to enforce that the first
-# installed package is preferred. We don't do that. Highest priority wins.
-%{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
-  %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
 /sbin/ldconfig
 
 %postun
-if [ $1 -eq 0 ] ; then
-  # package removal
-  %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
-else
-  # upgrade or downgrade
-  # If the new installed package uses a regular file (not a symblic link),
-  # then cleanup the alternatives link.
-  if ! test -L %{_libdir}/libnssckbi.so; then
-    %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
-  fi
-fi
 /sbin/ldconfig
 
 
@@ -654,8 +608,6 @@ fi
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%ghost %{_libdir}/libnssckbi.so
-%{_libdir}/nss/libnssckbi.so
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
@@ -795,6 +747,9 @@ fi
 
 
 %changelog
+* Wed Aug 23 2017 Kai Engert <kaie@redhat.com> - 3.32.0-3
+- NSS libnssckbi.so has already been obsoleted by p11-kit-trust, rhbz#1484449
+
 * Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-2
 - Update to NSS 3.32.0
 
