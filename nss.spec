@@ -21,7 +21,7 @@ Name:             nss
 Version:          3.32.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -99,12 +99,17 @@ Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 Patch47:          utilwrap-include-templates.patch
 # TODO remove when we switch to building nss without softoken
 Patch49:          nss-skip-bltest-and-fipstest.patch
-# This patch uses the gcc-iquote dir option documented at
+# This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
-# to place the in-tree directories at the head of the list of list of directories
-# to be searched for for header files. This ensures a build even when system
-# headers are older. Such is the case when starting an update with API changes or even private export changes.
-# Once the buildroot aha been bootstrapped the patch may be removed but it doesn't hurt to keep it.
+# to give the in-tree headers a higher priority over the system headers,
+# when they are included through the quote form (#include "file.h").
+#
+# This ensures a build even when system headers are older. Such is the
+# case when starting an update with API changes or even private export
+# changes.
+#
+# Once the buildroot aha been bootstrapped the patch may be removed
+# but it doesn't hurt to keep it.
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
@@ -795,6 +800,9 @@ fi
 
 
 %changelog
+* Tue Oct  3 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-1.1
+- Update iquote.patch to really prefer in-tree headers over system headers
+
 * Fri Sep 15 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-1.0
 - Update to NSS 3.32.1
 
