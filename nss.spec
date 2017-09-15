@@ -6,10 +6,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.32.0
+Version:          3.32.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -752,6 +752,9 @@ done
 
 
 %changelog
+* Fri Sep 15 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-2
+- Update to NSS 3.32.1
+
 * Wed Sep  6 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-4
 - Update iquote.patch to really prefer in-tree headers over system headers
 
