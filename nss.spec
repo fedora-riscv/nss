@@ -801,12 +801,6 @@ fi
 * Fri Aug 18 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.1
 - Revert signtool deprecation, which was only targeting F27
 
-* Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-2
-- Update to NSS 3.32.0
-
-* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.31.0-6
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
-
 * Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.0
 - Update to NSS 3.32.0
 
