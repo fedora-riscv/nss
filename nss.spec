@@ -18,10 +18,10 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.32.0
+Version:          3.32.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -795,8 +795,17 @@ fi
 
 
 %changelog
+* Fri Sep 15 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-1.0
+- Update to NSS 3.32.1
+
 * Fri Aug 18 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.1
 - Revert signtool deprecation, which was only targeting F27
+
+* Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-2
+- Update to NSS 3.32.0
+
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.31.0-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
 * Mon Aug  7 2017 Daiki Ueno <dueno@redhat.com> - 3.32.0-1.0
 - Update to NSS 3.32.0
