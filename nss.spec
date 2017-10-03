@@ -1,12 +1,12 @@
-%global nspr_version 4.16.0
-%global nss_util_version 3.32.0
-%global nss_softokn_version 3.32.0
+%global nspr_version 4.17.0
+%global nss_util_version 3.33.0
+%global nss_softokn_version 3.33.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.32.1
+Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          2%{?dist}
@@ -752,6 +752,9 @@ done
 
 
 %changelog
+* Tue Oct  3 2017 Daiki Ueno <dueno@redhat.com> - 3.33.0-2
+- Update to NSS 3.33.0
+
 * Fri Sep 15 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-2
 - Update to NSS 3.32.1
 
