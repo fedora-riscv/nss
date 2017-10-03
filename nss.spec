@@ -1,6 +1,6 @@
-%global nspr_version 4.16.0
-%global nss_util_version 3.32.0
-%global nss_softokn_version 3.32.0
+%global nspr_version 4.17.0
+%global nss_util_version 3.33.0
+%global nss_softokn_version 3.33.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.32.1
+Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.1%{?dist}
@@ -412,6 +412,8 @@ export SOFTOKEN_LIB_DIR=%{_libdir}
 # disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
 
+export NSS_FORCE_FIPS=1
+
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
 
@@ -778,6 +780,7 @@ fi
 %{_includedir}/nss3/smime.h
 %{_includedir}/nss3/ssl.h
 %{_includedir}/nss3/sslerr.h
+%{_includedir}/nss3/sslexp.h
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
 
@@ -800,6 +803,9 @@ fi
 
 
 %changelog
+* Tue Oct  3 2017 Daiki Ueno <dueno@redhat.com> - 3.33.0-1.0
+- Update to NSS 3.33.0
+
 * Tue Oct  3 2017 Daiki Ueno <dueno@redhat.com> - 3.32.1-1.1
 - Update iquote.patch to really prefer in-tree headers over system headers
 
