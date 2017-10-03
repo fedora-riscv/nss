@@ -393,6 +393,8 @@ export SOFTOKEN_LIB_DIR=%{_libdir}
 # disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
 
+export NSS_FORCE_FIPS=1
+
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
 
@@ -730,6 +732,7 @@ done
 %{_includedir}/nss3/smime.h
 %{_includedir}/nss3/ssl.h
 %{_includedir}/nss3/sslerr.h
+%{_includedir}/nss3/sslexp.h
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
 
