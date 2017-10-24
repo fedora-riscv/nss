@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -98,6 +98,15 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 
+# rhbz#1505487, backport several upstream fixes from upstream NSS 3.34
+Patch71: nss-sql-1-1403691-a.patch
+Patch72: nss-sql-1-1403691-b.patch
+Patch73: nss-sql-2-1382278-a.patch
+Patch74: nss-sql-2-1382278-b.patch
+Patch75: nss-sql-3-1395495-a.patch
+Patch76: nss-sql-3-1395495-b.patch
+
+
 %description
 Network Security Services (NSS) is a set of libraries designed to
 support cross-platform development of security-enabled client and
@@ -180,6 +189,14 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
+
+%patch71 -p1 -b .1403691-a
+%patch72 -p1 -b .1403691-b
+%patch73 -p1 -b .1382278-a
+%patch74 -p1 -b .1382278-b
+%patch75 -p1 -b .1395495-a
+%patch76 -p1 -b .1395495-b
+
 popd
 
 #########################################################
@@ -755,6 +772,9 @@ done
 
 
 %changelog
+* Tue Oct 24 2017 Kai Engert <kaie@redhat.com> - 3.33.0-3
+- rhbz#1505487, backport upstream fixes required for rhbz#1496560
+
 * Tue Oct  3 2017 Daiki Ueno <dueno@redhat.com> - 3.33.0-2
 - Update to NSS 3.33.0
 

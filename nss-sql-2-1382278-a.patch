@@ -1,0 +1,56 @@
+
+# HG changeset patch
+# User Bob Relyea <rrelyea@redhat.com>
+# Date 1505757778 -7200
+# Node ID 18edd4ad8389d50d4231cc1a545a468dbb11185c
+# Parent  70109a01ce53328b511aaa6c839593a3282cb725
+Bug 1382278, certutil -A creates uninitialised database, r=kaie
+
+diff --git a/cmd/certutil/certutil.c b/cmd/certutil/certutil.c
+--- a/cmd/certutil/certutil.c
++++ b/cmd/certutil/certutil.c
+@@ -3005,16 +3005,43 @@ certutil_main(int argc, char **argv, PRB
+                                 certutil.options[opt_NewPasswordFile].arg);
+         }
+         if (rv != SECSuccess) {
+             SECU_PrintError(progName, "Could not set password for the slot");
+             goto shutdown;
+         }
+     }
+ 
++    /* if we are going to modify the cert database,
++     * make sure it's initialized */
++    if (certutil.commands[cmd_ModifyCertTrust].activated ||
++        certutil.commands[cmd_CreateAndAddCert].activated ||
++        certutil.commands[cmd_AddCert].activated ||
++        certutil.commands[cmd_AddEmailCert].activated) {
++        if (PK11_NeedUserInit(slot)) {
++            char *password = NULL;
++            /* fetch the password from the command line or the file
++             * if no password is supplied, initialize the password to NULL */
++            if (pwdata.source == PW_FROMFILE) {
++                password = SECU_FilePasswd(slot, PR_FALSE, pwdata.data);
++            } else if (pwdata.source == PW_PLAINTEXT) {
++                password = PL_strdup(pwdata.data);
++            }
++            rv = PK11_InitPin(slot, (char *)NULL, password ? password : "");
++            if (password) {
++                PORT_Memset(password, 0, PL_strlen(password));
++                PORT_Free(password);
++            }
++            if (rv != SECSuccess) {
++                SECU_PrintError(progName, "Could not set password for the slot");
++                goto shutdown;
++            }
++        }
++    }
++
+     /* walk through the upgrade merge if necessary.
+      * This option is more to test what some applications will want to do
+      * to do an automatic upgrade. The --merge command is more useful for
+      * the general case where 2 database need to be merged together.
+      */
+     if (certutil.commands[cmd_UpgradeMerge].activated) {
+         if (*upgradeTokenName == 0) {
+             upgradeTokenName = upgradeID;
+
