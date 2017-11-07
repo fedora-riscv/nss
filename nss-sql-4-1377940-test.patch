@@ -1,0 +1,22 @@
+diff --git a/tests/merge/merge.sh b/tests/merge/merge.sh
+--- a/tests/merge/merge.sh
++++ b/tests/merge/merge.sh
+@@ -93,17 +93,17 @@ merge_init()
+   CONFLICT1DIR=conflict1
+   CONFLICT2DIR=conflict2
+   mkdir ${CONFLICT1DIR}
+   mkdir ${CONFLICT2DIR}
+   # in the upgrade mode (dbm->sql), make sure our test databases
+   # are dbm databases.
+   if [ "${TEST_MODE}" = "UPGRADE_DB" ]; then
+ 	save=${NSS_DEFAULT_DB_TYPE}
+-	NSS_DEFAULT_DB_TYPE= ; export NSS_DEFAULT_DB_TYPE
++	NSS_DEFAULT_DB_TYPE=dbm ; export NSS_DEFAULT_DB_TYPE
+   fi
+ 
+   certutil -N -d ${CONFLICT1DIR} -f ${R_PWFILE}
+   certutil -N -d ${CONFLICT2DIR} -f ${R_PWFILE}
+   certutil -A -n Alice -t ,, -i ${R_CADIR}/TestUser41.cert -d ${CONFLICT1DIR}
+   # modify CONFLICTDIR potentially corrupting the database
+   certutil -A -n "Alice #1" -t C,, -i ${R_CADIR}/TestUser42.cert -d ${CONFLICT1DIR} -f ${R_PWFILE}
+   certutil -M -n "Alice #1" -t ,, -d ${CONFLICT1DIR} -f ${R_PWFILE}

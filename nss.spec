@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -105,7 +105,8 @@ Patch73: nss-sql-2-1382278-a.patch
 Patch74: nss-sql-2-1382278-b.patch
 Patch75: nss-sql-3-1395495-a.patch
 Patch76: nss-sql-3-1395495-b.patch
-
+# Fix upgrade_db test use dbm by default, required with default sql
+Patch77: nss-sql-4-1377940-test.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -196,6 +197,7 @@ pushd nss
 %patch74 -p1 -b .1382278-b
 %patch75 -p1 -b .1395495-a
 %patch76 -p1 -b .1395495-b
+%patch77 -p1 -b .1377940
 
 popd
 
@@ -772,6 +774,10 @@ done
 
 
 %changelog
+* Tue Nov  7 2017 Kai Engert <kaie@redhat.com> - 3.33.0-4
+- Update tests to be compatible with default NSS DB changed to sql
+  (the default was changed in the nss-util package).
+
 * Tue Oct 24 2017 Kai Engert <kaie@redhat.com> - 3.33.0-3
 - rhbz#1505487, backport upstream fixes required for rhbz#1496560
 
