@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -774,6 +774,9 @@ done
 
 
 %changelog
+* Wed Nov  8 2017 Kai Engert <kaie@redhat.com> - 3.33.0-5
+- Fix test script
+
 * Tue Nov  7 2017 Kai Engert <kaie@redhat.com> - 3.33.0-4
 - Update tests to be compatible with default NSS DB changed to sql
   (the default was changed in the nss-util package).
