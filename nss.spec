@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.33.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -36,7 +36,7 @@ BuildRequires:    perl-interpreter
 # programs relying on that continue to work until they are fixed to require
 # nss-pem instead.  Once all of them are fixed, the following line can be
 # removed.  See https://bugzilla.redhat.com/1346806 for details.
-Requires:         nss-pem
+Requires:         nss-pem%{?_isa}
 
 # NSS 3.28.1 introduced a curve, that is smaller than a check in old
 # Mozilla code allows.
@@ -774,6 +774,10 @@ done
 
 
 %changelog
+* Fri Nov 10 2017 Daiki Ueno <dueno@redhat.com> - 3.33.0-6
+- Make sure 32bit nss-pem always be installed with 32bit nss in
+  multlib environment, patch by Kamil Dudka
+
 * Wed Nov  8 2017 Kai Engert <kaie@redhat.com> - 3.33.0-5
 - Fix test script
 
