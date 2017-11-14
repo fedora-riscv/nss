@@ -1,15 +1,15 @@
 %global nspr_version 4.17.0
-%global nss_util_version 3.33.0
-%global nss_softokn_version 3.33.0
+%global nss_util_version 3.34.0
+%global nss_softokn_version 3.34.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.33.0
+Version:          3.34.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          6%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -98,13 +98,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 
-# rhbz#1505487, backport several upstream fixes from upstream NSS 3.34
-Patch71: nss-sql-1-1403691-a.patch
-Patch72: nss-sql-1-1403691-b.patch
-Patch73: nss-sql-2-1382278-a.patch
-Patch74: nss-sql-2-1382278-b.patch
-Patch75: nss-sql-3-1395495-a.patch
-Patch76: nss-sql-3-1395495-b.patch
 # Fix upgrade_db test use dbm by default, required with default sql
 Patch77: nss-sql-4-1377940-test.patch
 
@@ -191,12 +184,6 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
 
-%patch71 -p1 -b .1403691-a
-%patch72 -p1 -b .1403691-b
-%patch73 -p1 -b .1382278-a
-%patch74 -p1 -b .1382278-b
-%patch75 -p1 -b .1395495-a
-%patch76 -p1 -b .1395495-b
 %patch77 -p1 -b .1377940
 
 popd
@@ -774,6 +761,9 @@ done
 
 
 %changelog
+* Tue Nov 14 2017 Daiki Ueno <dueno@redhat.com> - 3.34.0-2
+- Update to NSS 3.34.0
+
 * Fri Nov 10 2017 Daiki Ueno <dueno@redhat.com> - 3.33.0-6
 - Make sure 32bit nss-pem always be installed with 32bit nss in
   multlib environment, patch by Kamil Dudka
