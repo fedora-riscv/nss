@@ -1,12 +1,12 @@
-%global nspr_version 4.17.0
-%global nss_util_version 3.34.0
-%global nss_softokn_version 3.34.0
+%global nspr_version 4.18.0
+%global nss_util_version 3.35.0
+%global nss_softokn_version 3.35.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.34.0
+Version:          3.35.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          2%{?dist}
@@ -98,9 +98,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 
-# Fix upgrade_db test use dbm by default, required with default sql
-Patch77: nss-sql-4-1377940-test.patch
-
 %description
 Network Security Services (NSS) is a set of libraries designed to
 support cross-platform development of security-enabled client and
@@ -183,9 +180,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
-
-%patch77 -p1 -b .1377940
-
 popd
 
 #########################################################
@@ -761,6 +755,9 @@ done
 
 
 %changelog
+* Tue Jan 23 2018 Daiki Ueno <dueno@redhat.com> - 3.35.0-2
+- Update to NSS 3.35.0
+
 * Tue Nov 14 2017 Daiki Ueno <dueno@redhat.com> - 3.34.0-2
 - Update to NSS 3.34.0
 
