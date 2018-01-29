@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.35.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,6 +91,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
+Patch63: sign-sprintf-check.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -174,6 +175,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
+%patch63 -p2 -b .sign-sprintf-check
 popd
 
 #########################################################
@@ -749,6 +751,9 @@ done
 
 
 %changelog
+* Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-4
+- Fix a compiler error with gcc 8, mozbz#1434070
+
 * Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-3
 - Stop pulling in nss-pem automatically, packages that need it should
   depend on it, rhbz#1539401
