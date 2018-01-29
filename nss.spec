@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.35.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -31,12 +31,6 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
-
-# nss-pem used to be bundled with the nss package on Fedora -- make sure that
-# programs relying on that continue to work until they are fixed to require
-# nss-pem instead.  Once all of them are fixed, the following line can be
-# removed.  See https://bugzilla.redhat.com/1346806 for details.
-Requires:         nss-pem%{?_isa}
 
 # NSS 3.28.1 introduced a curve, that is smaller than a check in old
 # Mozilla code allows.
@@ -755,6 +749,10 @@ done
 
 
 %changelog
+* Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-3
+- Stop pulling in nss-pem automatically, packages that need it should
+  depend on it, rhbz#1539401
+
 * Tue Jan 23 2018 Daiki Ueno <dueno@redhat.com> - 3.35.0-2
 - Update to NSS 3.35.0
 
