@@ -213,6 +213,9 @@ export NSS_NO_PKCS11_BYPASS
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
+NSS_FORCE_FIPS=1
+export NSS_FORCE_FIPS
+
 # Enable compiler optimizations and disable debugging code
 export BUILD_OPT=1
 
@@ -388,8 +391,6 @@ export SOFTOKEN_LIB_DIR=%{_libdir}
 # This is necessary because the test suite tests algorithms that are
 # disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
-
-export NSS_FORCE_FIPS=1
 
 # enable the following line to force a test failure
 # find ./nss -name \*.chk | xargs rm -f
@@ -753,6 +754,7 @@ done
 %changelog
 * Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-4
 - Fix a compiler error with gcc 8, mozbz#1434070
+- Set NSS_FORCE_FIPS=1 at %%build time, and remove from %%check.
 
 * Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-3
 - Stop pulling in nss-pem automatically, packages that need it should
