@@ -236,6 +236,9 @@ export NSS_NO_PKCS11_BYPASS
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
+NSS_FORCE_FIPS=1
+export NSS_FORCE_FIPS
+
 # Enable compiler optimizations and disable debugging code
 export BUILD_OPT=1
 
@@ -391,9 +394,6 @@ fi
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
-
-NSS_FORCE_FIPS=1
-export NSS_FORCE_FIPS
 
 export BUILD_OPT=1
 
