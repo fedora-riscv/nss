@@ -116,6 +116,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
+Patch63: nss-sql-default.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -199,6 +200,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
+%patch63 -p1 -R -b .sql-default
 popd
 
 #########################################################

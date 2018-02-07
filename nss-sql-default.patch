@@ -1,0 +1,42 @@
+# HG changeset patch
+# User Kai Engert <kaie@kuix.de>
+# Date 1511548994 -3600
+#      Fri Nov 24 19:43:14 2017 +0100
+# Node ID b0658ed367633e505d38c0c0f63b801ddbbb21a4
+# Parent  807662e6ba57db5be05036511ac8634466ed473f
+Bug 1377940, Change NSS default storage file format (currently DBM), when no prefix is given, to SQL, r=rrelyea, r=fkiefer
+
+--- a/tests/all.sh
++++ b/tests/all.sh
+@@ -111,6 +111,8 @@ RUN_FIPS=""
+ ########################################################################
+ run_tests()
+ {
++    echo "Running test cycle: ${TEST_MODE} ----------------------"
++    echo "List of tests that will be executed: ${TESTS}"
+     for TEST in ${TESTS}
+     do
+         # NOTE: the spaces are important. If you don't include
+@@ -172,8 +174,9 @@ run_cycle_pkix()
+     NSS_SSL_TESTS=`echo "${NSS_SSL_TESTS}" | sed -e "s/normal//g" -e "s/fips//g" -e "s/_//g"`
+     export -n NSS_SSL_RUN
+ 
+-    # use the default format
++    # use the default format. (unset for the shell, export -n for binaries)
+     export -n NSS_DEFAULT_DB_TYPE
++    unset NSS_DEFAULT_DB_TYPE
+ 
+     run_tests
+ }
+diff --git a/tests/merge/merge.sh b/tests/merge/merge.sh
+--- a/tests/merge/merge.sh
++++ b/tests/merge/merge.sh
+@@ -98,7 +98,7 @@ merge_init()
+   # are dbm databases.
+   if [ "${TEST_MODE}" = "UPGRADE_DB" ]; then
+ 	save=${NSS_DEFAULT_DB_TYPE}
+-	NSS_DEFAULT_DB_TYPE= ; export NSS_DEFAULT_DB_TYPE
++	NSS_DEFAULT_DB_TYPE=dbm ; export NSS_DEFAULT_DB_TYPE
+   fi
+ 
+   certutil -N -d ${CONFLICT1DIR} -f ${R_PWFILE}
