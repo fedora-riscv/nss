@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.35.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -752,6 +752,9 @@ done
 
 
 %changelog
+* Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.35.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
 * Mon Jan 29 2018 Kai Engert <kaie@redhat.com> - 3.35.0-4
 - Fix a compiler error with gcc 8, mozbz#1434070
 - Set NSS_FORCE_FIPS=1 at %%build time, and remove from %%check.
