@@ -19,7 +19,6 @@ Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
-BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
 # Using '>=' but on RHEL the requires should be '='
