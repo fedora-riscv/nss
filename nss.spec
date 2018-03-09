@@ -1,6 +1,6 @@
-%global nspr_version 4.18.0
-%global nss_util_version 3.35.0
-%global nss_softokn_version 3.35.0
+%global nspr_version 4.19.0
+%global nss_util_version 3.36.0
+%global nss_softokn_version 3.36.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.35.0
+Version:          3.36.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -44,6 +44,7 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
+BuildRequires:    gcc-c++
 
 # nss-pem used to be bundled with the nss package on Fedora -- make sure that
 # programs relying on that continue to work until they are fixed to require
@@ -489,7 +490,7 @@ popd
 killall $RANDSERV || :
 
 if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
-  TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+  TEST_FAILURES=$(grep -c -- '- FAILED$' ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 else
   TEST_FAILURES=0
   GREP_EXIT_STATUS=1
@@ -808,6 +809,11 @@ fi
 
 
 %changelog
+* Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-1.0
+- Update to NSS 3.36.0
+- Add gcc-c++ to BuildRequires (C++ is needed for gtests)
+- Make test failure detection robuster
+
 * Wed Feb  7 2018 Daiki Ueno <dueno@redhat.com> - 3.35.0-1.0
 - Update to NSS 3.35.0
 
