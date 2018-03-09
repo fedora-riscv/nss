@@ -460,7 +460,7 @@ popd
 killall $RANDSERV || :
 
 if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
-  TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+  TEST_FAILURES=$(grep -c -- '- FAILED$' ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 else
   TEST_FAILURES=0
   GREP_EXIT_STATUS=1
@@ -750,6 +750,7 @@ done
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-1.0
 - Update to NSS 3.36.0
 - Add gcc-c++ to BuildRequires (C++ is needed for gtests)
+- Make test failure detection robuster
 
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.35.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
