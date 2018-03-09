@@ -30,6 +30,7 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
+BuildRequires:    gcc-c++
 
 # NSS 3.28.1 introduced a curve, that is smaller than a check in old
 # Mozilla code allows.
@@ -203,9 +204,6 @@ popd
 
 
 %build
-
-NSS_NO_PKCS11_BYPASS=1
-export NSS_NO_PKCS11_BYPASS
 
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
@@ -459,7 +457,7 @@ popd
 killall $RANDSERV || :
 
 if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
-  TEST_FAILURES=$(grep -c FAILED ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
+  TEST_FAILURES=$(grep -c -- '- FAILED$' ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 else
   TEST_FAILURES=0
   GREP_EXIT_STATUS=1
@@ -748,6 +746,9 @@ done
 %changelog
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
 - Update to NSS 3.36.0
+- Add gcc-c++ to BuildRequires (C++ is needed for gtests)
+- Remove NSS_NO_PKCS11_BYPASS, which is no-op in upstream
+- Make test failure detection robuster
 
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.35.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
