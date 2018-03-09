@@ -1,15 +1,15 @@
-%global nspr_version 4.18.0
-%global nss_util_version 3.35.0
-%global nss_softokn_version 3.35.0
+%global nspr_version 4.19.0
+%global nss_util_version 3.36.0
+%global nss_softokn_version 3.36.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.35.0
+Version:          3.36.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          5%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -90,7 +90,6 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
-Patch63: sign-sprintf-check.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -174,7 +173,6 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
-%patch63 -p2 -b .sign-sprintf-check
 popd
 
 #########################################################
@@ -748,6 +746,9 @@ done
 
 
 %changelog
+* Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
+- Update to NSS 3.36.0
+
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.35.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
