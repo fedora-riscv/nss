@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.36.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -68,8 +68,6 @@ Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
-# TODO: Remove this patch when the ocsp test are fixed
-Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # TODO remove when we switch to building nss without softoken
@@ -166,7 +164,6 @@ low level services.
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
 %patch16 -p0 -b .539183
-%patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
@@ -744,6 +741,9 @@ done
 
 
 %changelog
+* Mon Mar 12 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-3
+- Remove nss-3.14.0.0-disble-ocsp-test.patch
+
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
 - Update to NSS 3.36.0
 - Add gcc-c++ to BuildRequires (C++ is needed for gtests)
