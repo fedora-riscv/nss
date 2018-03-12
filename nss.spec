@@ -32,19 +32,6 @@ BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
 
-# NSS 3.28.1 introduced a curve, that is smaller than a check in old
-# Mozilla code allows.
-# https://bugzilla.redhat.com/show_bug.cgi?id=1413182
-Conflicts:        firefox < 50.1.0-3
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414983
-Conflicts:        xulrunner < 44.0-9
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414929
-Conflicts:        thunderbird < 45.6.0-5
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414982
-Conflicts:        seamonkey < 2.46-2
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414987
-# Conflicts:        icecat < 45.5.1-5
-
 Source0:          %{name}-%{version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
@@ -743,6 +730,7 @@ done
 %changelog
 * Mon Mar 12 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-3
 - Remove nss-3.14.0.0-disble-ocsp-test.patch
+- Remove obsolete Conflicts
 
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
 - Update to NSS 3.36.0
