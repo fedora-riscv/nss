@@ -30,7 +30,7 @@ BuildRequires:    pkgconfig
 BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
-BuildRequires:    gcc
+BuildRequires:    gcc-c++
 
 # NSS 3.28.1 introduced a curve, that is smaller than a check in old
 # Mozilla code allows.
