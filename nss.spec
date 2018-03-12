@@ -206,6 +206,9 @@ export BUILD_OPT=1
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
 
+LDFLAGS=$RPM_LD_FLAGS
+export LDFLAGS
+
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
@@ -731,6 +734,7 @@ done
 * Mon Mar 12 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-3
 - Remove nss-3.14.0.0-disble-ocsp-test.patch
 - Remove obsolete Conflicts
+- Fix partial injection of LDFLAGS
 
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
 - Update to NSS 3.36.0
