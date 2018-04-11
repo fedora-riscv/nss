@@ -1,15 +1,15 @@
 %global nspr_version 4.19.0
-%global nss_util_version 3.36.0
-%global nss_softokn_version 3.36.0
+%global nss_util_version 3.36.1
+%global nss_softokn_version 3.36.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.36.0
+Version:          3.36.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -731,6 +731,9 @@ done
 
 
 %changelog
+* Wed Apr 11 2018 Daiki Ueno <dueno@redhat.com> - 3.36.1-2
+- Update to NSS 3.36.1
+
 * Mon Mar 12 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-3
 - Remove nss-3.14.0.0-disble-ocsp-test.patch
 - Remove obsolete Conflicts
