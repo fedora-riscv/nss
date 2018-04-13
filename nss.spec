@@ -1,12 +1,12 @@
 %global nspr_version 4.19.0
-%global nss_util_version 3.36.0
-%global nss_softokn_version 3.36.0
+%global nss_util_version 3.36.1
+%global nss_softokn_version 3.36.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.36.0
+Version:          3.36.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -68,8 +68,6 @@ Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
-# TODO: Remove this patch when the ocsp test are fixed
-Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # TODO remove when we switch to building nss without softoken
@@ -166,7 +164,6 @@ low level services.
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
 %patch16 -p0 -b .539183
-%patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
@@ -205,9 +202,6 @@ popd
 
 %build
 
-NSS_NO_PKCS11_BYPASS=1
-export NSS_NO_PKCS11_BYPASS
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -224,6 +218,9 @@ export BUILD_OPT=1
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
+
+LDFLAGS=$RPM_LD_FLAGS
+export LDFLAGS
 
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
@@ -747,6 +744,12 @@ done
 
 
 %changelog
+* Wed Apr 11 2018 Daiki Ueno <dueno@redhat.com> - 3.36.1-2
+- Update to NSS 3.36.1
+- Remove nss-3.14.0.0-disble-ocsp-test.patch
+- Fix partial injection of LDFLAGS
+- Remove NSS_NO_PKCS11_BYPASS, which is no-op in upstream
+
 * Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-1.0
 - Update to NSS 3.36.0
 - Add gcc-c++ to BuildRequires (C++ is needed for gtests)
