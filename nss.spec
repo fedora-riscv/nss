@@ -1,15 +1,15 @@
 %global nspr_version 4.19.0
-%global nss_util_version 3.36.1
-%global nss_softokn_version 3.36.1
+%global nss_util_version 3.37.1
+%global nss_softokn_version 3.37.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.36.1
+Version:          3.37.1
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -747,6 +747,9 @@ done
 
 
 %changelog
+* Mon Jun  4 2018 Daiki Ueno <dueno@redhat.com> - 3.37.1-1.0
+- Update to NSS 3.37.1
+
 * Wed May 02 2018 Kai Engert <kaie@redhat.com> - 3.36.1-1.1
 - Upstream patch to keep nicknames stable on repeated certificate
   import into SQL DB, mozbz#1458518
