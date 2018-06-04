@@ -366,10 +366,8 @@ export USE_64
 %endif
 %endif
 
-# This test currently fails intermittently on those archtectures
-%ifarch s390x aarch64
+# This test currently fails intermittently
 export GTESTFILTER='-GenericDatagram/TlsConnectGeneric.AlertBeforeServerHello'
-%endif
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
@@ -741,7 +739,7 @@ done
 %changelog
 * Mon May 28 2018 Daiki Ueno <dueno@redhat.com> - 3.37.1-2
 - Update to NSS 3.37.1
-- Temporarily disable AlertBeforeServerHello test on s390x and aarch64
+- Temporarily disable AlertBeforeServerHello test
 
 * Wed May 02 2018 Kai Engert <kaie@redhat.com> - 3.36.1-3
 - Upstream patch to keep nicknames stable on repeated certificate
