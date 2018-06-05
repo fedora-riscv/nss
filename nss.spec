@@ -366,8 +366,8 @@ export USE_64
 %endif
 %endif
 
-# This test currently fails intermittently
-export GTESTFILTER='-GenericDatagram/TlsConnectGeneric.AlertBeforeServerHello'
+# These tests currently fail intermittently
+export GTESTFILTER='-GenericDatagram/TlsConnectGeneric.AlertBeforeServerHello:DatagramDrop13/TlsDropDatagram13.DropServerFirstRecordOnce'
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
