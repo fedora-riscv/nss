@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.37.3
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -91,6 +91,8 @@ Patch59: nss-check-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1458518
 Patch63: nss-moz1458518.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1452549
+Patch64: nss-dtls-discard-app-data-before-handshake.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -174,6 +176,7 @@ pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch62 -p1 -b .skip_util_gtest
 %patch63 -p1 -b .moz1458518
+%patch64 -p1 -b .dtls-discard-app-data
 popd
 
 #########################################################
@@ -378,9 +381,6 @@ USE_64=1
 export USE_64
 %endif
 %endif
-
-# These tests currently fail intermittently
-export GTESTFILTER='-GenericDatagram/TlsConnectGeneric.AlertBeforeServerHello:DatagramDrop13/TlsDropDatagram13.DropServerFirstRecordOnce'
 
 export NSS_BLTEST_NOT_AVAILABLE=1
 
@@ -750,6 +750,9 @@ done
 
 
 %changelog
+* Wed Jun  6 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-1.1
+- Backport fix for handling DTLS application_data before handshake
+
 * Tue Jun  5 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-1.0
 - Update to NSS 3.37.3
 
