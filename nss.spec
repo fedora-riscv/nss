@@ -1,6 +1,6 @@
 %global nspr_version 4.19.0
-%global nss_util_version 3.37.3
-%global nss_softokn_version 3.37.3
+%global nss_util_version 3.38.0
+%global nss_softokn_version 3.38.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
@@ -18,7 +18,7 @@
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.37.3
+Version:          3.38.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -116,6 +116,7 @@ Patch50:          iquote.patch
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
+Patch60: nss-load-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-sql-default.patch
 
@@ -200,6 +201,7 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch59 -p1 -b .check_policy_file
+%patch60 -p1 -b .load_policy_file
 %patch62 -p1 -b .skip_util_gtest
 %patch63 -p1 -R -b .sql-default
 popd
@@ -809,6 +811,9 @@ fi
 
 
 %changelog
+* Tue Jul  3 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-1.0
+- Update to NSS 3.38
+
 * Tue Jun  5 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-1.0
 - Update to NSS 3.37.3
 
