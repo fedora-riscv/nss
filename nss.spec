@@ -19,6 +19,7 @@ Requires:         nss-util >= %{nss_util_version}
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
+Requires:         crypto-policies
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
 # Using '>=' but on RHEL the requires should be '='
@@ -50,6 +51,7 @@ Source24:         cert9.db.xml
 Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
+Source28:         nss-p11-kit.config
 
 Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
@@ -485,6 +487,7 @@ echo "test suite completed"
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 %{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 %if %{defined rhel}
 # not needed for rhel and its derivatives only fedora
 %else
@@ -574,16 +577,21 @@ for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
+# Copy the crypto-policies configuration file
+%{__install} -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
+
 %triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
 # Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-/sbin/ldconfig
+update-crypto-policies
 
 %postun
-/sbin/ldconfig
+update-crypto-policies
+
+%ldconfig_scriptlets
 
 
 %files
@@ -600,6 +608,7 @@ done
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/crypto-policies/local.d/nss-p11-kit.config
 %attr(0644,root,root) %doc %{_mandir}/man5/cert8.db.5.gz
 %attr(0644,root,root) %doc %{_mandir}/man5/key3.db.5.gz
 %attr(0644,root,root) %doc %{_mandir}/man5/secmod.db.5.gz
@@ -735,6 +744,9 @@ done
 %changelog
 * Mon Jul  2 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-2
 - Update to NSS 3.38
+- Install crypto-policies configuration file for
+  https://fedoraproject.org/wiki/Changes/NSSLoadP11KitModules
+- Use %%ldconfig_scriptlets
 
 * Wed Jun  6 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-3
 - Backport fix for handling DTLS application_data before handshake
