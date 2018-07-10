@@ -595,7 +595,6 @@ update-crypto-policies
 
 
 %files
-%defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license nss/COPYING
 %{_libdir}/libnss3.so
@@ -617,7 +616,6 @@ update-crypto-policies
 %attr(0644,root,root) %doc %{_mandir}/man5/pkcs11.txt.5.gz
 
 %files sysinit
-%defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
@@ -625,7 +623,6 @@ update-crypto-policies
 %attr(0644,root,root) %doc %{_mandir}/man1/setup-nsssysinit.1.gz
 
 %files tools
-%defattr(-,root,root)
 %{_bindir}/certutil
 %{_bindir}/cmsutil
 %{_bindir}/crlutil
@@ -668,7 +665,6 @@ update-crypto-policies
 %attr(0644,root,root) %doc %{_mandir}/man1/vfyserv.1.gz
 
 %files devel
-%defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
@@ -725,7 +721,6 @@ update-crypto-policies
 
 
 %files pkcs11-devel
-%defattr(-, root, root)
 %{_includedir}/nss3/nssbase.h
 %{_includedir}/nss3/nssbaset.h
 %{_includedir}/nss3/nssckepv.h
