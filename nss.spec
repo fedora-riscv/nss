@@ -9,7 +9,7 @@ Name:             nss
 Version:          3.38.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -737,6 +737,9 @@ update-crypto-policies
 
 
 %changelog
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.38.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Mon Jul  2 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-2
 - Update to NSS 3.38
 - Install crypto-policies configuration file for
