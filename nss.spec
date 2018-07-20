@@ -1,5 +1,6 @@
 %global nspr_version 4.19.0
 %global nss_util_version 3.38.0
+%global nss_util_build -4
 %global nss_softokn_version 3.38.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
@@ -9,12 +10,12 @@ Name:             nss
 Version:          3.38.0
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-util >= %{nss_util_version}%{nss_util_build}
 # TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
@@ -24,7 +25,7 @@ BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
 # Using '>=' but on RHEL the requires should be '='
 BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
-BuildRequires:    nss-util-devel >= %{nss_util_version}
+BuildRequires:    nss-util-devel >= %{nss_util_version}%{nss_util_build}
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -78,6 +79,7 @@ Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
 Patch59: nss-check-policy-file.patch
 Patch60: nss-load-policy-file.patch
+Patch61: backport-policycheck-1474887.patch
 Patch62: nss-skip-util-gtest.patch
 
 %description
@@ -161,6 +163,7 @@ low level services.
 pushd nss
 %patch59 -p1 -b .check_policy_file
 %patch60 -p1 -b .load_policy_file
+%patch61 -p1 -b .1474887
 %patch62 -p1 -b .skip_util_gtest
 popd
 
@@ -522,7 +525,7 @@ do
 done
 
 # Copy the binaries we want
-for file in certutil cmsutil crlutil modutil pk12util signver ssltap
+for file in certutil cmsutil crlutil modutil nss-policy-check pk12util signver ssltap
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
@@ -627,6 +630,7 @@ update-crypto-policies
 %{_bindir}/cmsutil
 %{_bindir}/crlutil
 %{_bindir}/modutil
+%{_bindir}/nss-policy-check
 %{_bindir}/pk12util
 %{_bindir}/signver
 %{_bindir}/ssltap
@@ -737,6 +741,9 @@ update-crypto-policies
 
 
 %changelog
+* Fri Jul 20 2018 Kai Engert <kaie@redhat.com> - 3.38.0-4
+- Backport upstream addition of nss-policy-check utility, rhbz#1428746
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.38.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
