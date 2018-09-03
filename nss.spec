@@ -1,24 +1,21 @@
-%global nspr_version 4.19.0
-%global nss_util_version 3.38.0
-%global nss_softokn_version 3.38.0
+%global nspr_version 4.20.0
+%global nss_util_version 3.39.0
+%global nss_softokn_version 3.39.0
+%global nss_version 3.39.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 
-# solution taken from icedtea-web.spec
-%define multilib_arches %{power64} sparc64 x86_64 mips64 mips64el
-%ifarch %{multilib_arches}
-%define alt_ckbi  libnssckbi.so.%{_arch}
-%else
-%define alt_ckbi  libnssckbi.so
-%endif
-
-# Define if using a source archive like "nss-version.with.ckbi.version".
-# To "disable", add "#" to start of line, AND a space after "%".
-#% define nss_ckbi_suffix .with.ckbi.1.93
+# The upstream omits the trailing ".0", while we need it for
+# consistency with the pkg-config version:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1578106
+%{lua:
+rpm.define(string.format("nss_archive_version %s",
+           string.gsub(rpm.expand("%nss_version"), "(.*)%.0$", "%1")))
+}
 
 Summary:          Network Security Services
 Name:             nss
-Version:          3.38.0
+Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          1.0%{?dist}
@@ -30,9 +27,7 @@ Requires:         nss-util >= %{nss_util_version}
 # TODO: revert to same version as nss once we are done with the merge
 Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
 Requires:         nss-system-init
-Requires(post):   %{_sbindir}/update-alternatives
-Requires(postun): %{_sbindir}/update-alternatives
-BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Requires:         p11-kit-trust
 BuildRequires:    nspr-devel >= %{nspr_version}
 # TODO: revert to same version as nss once we are done with the merge
 # Using '>=' but on RHEL the requires should be '='
@@ -65,13 +60,7 @@ Conflicts:        seamonkey < 2.46-2
 # https://bugzilla.redhat.com/show_bug.cgi?id=1414987
 # Conflicts:        icecat < 45.5.1-5
 
-%if %{defined nss_ckbi_suffix}
-%define full_nss_version %{version}%{nss_ckbi_suffix}
-%else
-%define full_nss_version %{version}
-%endif
-
-Source0:          %{name}-%{full_nss_version}.tar.gz
+Source0:          %{name}-%{nss_archive_version}.tar.gz
 Source1:          nss.pc.in
 Source2:          nss-config.in
 Source3:          blank-cert8.db
@@ -94,8 +83,6 @@ Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
-# TODO: Remove this patch when the ocsp test are fixed
-Patch40:          nss-3.14.0.0-disble-ocsp-test.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
 Patch47:          utilwrap-include-templates.patch
 # TODO remove when we switch to building nss without softoken
@@ -114,9 +101,6 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1279520
-Patch59: nss-check-policy-file.patch
-Patch60: nss-load-policy-file.patch
 Patch62: nss-skip-util-gtest.patch
 Patch63: nss-sql-default.patch
 
@@ -188,20 +172,16 @@ low level services.
 
 
 %prep
-%setup -q
-%setup -q -T -D -n %{name}-%{version}
+%setup -q -n %{name}-%{nss_archive_version}
 
 %patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
 %patch16 -p0 -b .539183
-%patch40 -p0 -b .noocsptest
 %patch47 -p0 -b .templates
 %patch49 -p0 -b .skipthem
 %patch50 -p0 -b .iquote
 %patch58 -p0 -b .1185708_3des
 pushd nss
-%patch59 -p1 -b .check_policy_file
-%patch60 -p1 -b .load_policy_file
 %patch62 -p1 -b .skip_util_gtest
 %patch63 -p1 -R -b .sql-default
 popd
@@ -235,9 +215,6 @@ popd
 
 %build
 
-NSS_NO_PKCS11_BYPASS=1
-export NSS_NO_PKCS11_BYPASS
-
 FREEBL_NO_DEPEND=1
 export FREEBL_NO_DEPEND
 
@@ -254,6 +231,9 @@ export BUILD_OPT=1
 # Generate symbolic info for debuggers
 XCFLAGS=$RPM_OPT_FLAGS
 export XCFLAGS
+
+LDFLAGS=$RPM_LD_FLAGS
+export LDFLAGS
 
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
@@ -541,9 +521,6 @@ echo "test suite completed"
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
-touch $RPM_BUILD_ROOT%{_libdir}/libnssckbi.so
-%{__install} -p -m 755 dist/*.OBJ/lib/libnssckbi.so $RPM_BUILD_ROOT/%{_libdir}/nss/libnssckbi.so
-
 # Copy the binary libraries we want
 for file in libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
@@ -568,7 +545,7 @@ do
 done
 
 # Copy the binaries we want
-for file in certutil cmsutil crlutil modutil pk12util signver ssltap
+for file in certutil cmsutil crlutil modutil nss-policy-check pk12util signver ssltap
 do
   %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
@@ -623,8 +600,8 @@ for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
-%clean
-%{__rm} -rf $RPM_BUILD_ROOT
+# Copy the crypto-policies configuration file
+%{__install} -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 
 %triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
 # Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
@@ -632,33 +609,9 @@ done
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-# If we upgrade, and the shared filename is a regular file, then we must
-# remove it, before we can install the alternatives symbolic link.
-if [ $1 -gt 1 ] ; then
-  # when upgrading or downgrading
-  if ! test -L %{_libdir}/libnssckbi.so; then
-    rm -f %{_libdir}/libnssckbi.so
-  fi
-fi
-# Install the symbolic link
-# FYI: Certain other packages use alternatives --set to enforce that the first
-# installed package is preferred. We don't do that. Highest priority wins.
-%{_sbindir}/update-alternatives --install %{_libdir}/libnssckbi.so \
-  %{alt_ckbi} %{_libdir}/nss/libnssckbi.so 10
 /sbin/ldconfig
 
 %postun
-if [ $1 -eq 0 ] ; then
-  # package removal
-  %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
-else
-  # upgrade or downgrade
-  # If the new installed package uses a regular file (not a symblic link),
-  # then cleanup the alternatives link.
-  if ! test -L %{_libdir}/libnssckbi.so; then
-    %{_sbindir}/update-alternatives --remove %{alt_ckbi} %{_libdir}/nss/libnssckbi.so
-  fi
-fi
 /sbin/ldconfig
 
 
@@ -669,8 +622,6 @@ fi
 %{_libdir}/libnss3.so
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
-%ghost %{_libdir}/libnssckbi.so
-%{_libdir}/nss/libnssckbi.so
 %dir %{_sysconfdir}/pki/nssdb
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
@@ -699,6 +650,7 @@ fi
 %{_bindir}/cmsutil
 %{_bindir}/crlutil
 %{_bindir}/modutil
+%{_bindir}/nss-policy-check
 %{_bindir}/pk12util
 %{_bindir}/signver
 %{_bindir}/ssltap
@@ -811,6 +763,10 @@ fi
 
 
 %changelog
+* Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-1.0
+- Update to NSS 3.39
+- Use the upstream tarball as it is (rhbz#1578106)
+
 * Tue Jul  3 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-1.0
 - Update to NSS 3.38
 
