@@ -251,6 +251,8 @@ export NSS_BUILD_WITHOUT_SOFTOKEN=1
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
+export NSS_ALLOW_SSLKEYLOGFILE=1
+
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
 USE_64=1
@@ -744,6 +746,7 @@ update-crypto-policies
 * Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-2
 - Update to NSS 3.39
 - Use the upstream tarball as it is (rhbz#1578106)
+- Allow SSLKEYLOGFILE (rhbz#1620207)
 
 * Fri Jul 20 2018 Kai Engert <kaie@redhat.com> - 3.38.0-4
 - Backport upstream addition of nss-policy-check utility, rhbz#1428746
