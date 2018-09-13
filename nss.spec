@@ -18,7 +18,7 @@ Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -62,7 +62,6 @@ Source26:         key4.db.xml
 Source27:         secmod.db.xml
 Source28:         nss-p11-kit.config
 
-Patch2:           add-relro-linker-option.patch
 Patch3:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch16:          nss-539183.patch
@@ -156,7 +155,6 @@ low level services.
 %prep
 %setup -q -n %{name}-%{nss_archive_version}
 
-%patch2 -p0 -b .relro
 %patch3 -p0 -b .transitional
 %patch16 -p0 -b .539183
 %patch47 -p0 -b .templates
@@ -215,6 +213,9 @@ export XCFLAGS
 
 LDFLAGS=$RPM_LD_FLAGS
 export LDFLAGS
+
+DSO_LDOPTS=$RPM_LD_FLAGS
+export DSO_LDOPTS
 
 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
@@ -743,6 +744,9 @@ update-crypto-policies
 
 
 %changelog
+* Thu Sep 13 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-3
+- Fix LDFLAGS injection
+
 * Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-2
 - Update to NSS 3.39
 - Use the upstream tarball as it is (rhbz#1578106)
