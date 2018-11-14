@@ -18,7 +18,7 @@ Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Group:            System Environment/Libraries
@@ -61,6 +61,8 @@ Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
 Source28:         nss-p11-kit.config
+Source29:         PayPalICA.cert
+Source30:         PayPalEE.cert
 
 Patch3:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
@@ -84,6 +86,8 @@ Patch50:          iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 Patch62: nss-skip-util-gtest.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1505317
+Patch63:          nss-tests-paypal-certs-v2.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -163,6 +167,8 @@ low level services.
 %patch58 -p0 -b .1185708_3des
 pushd nss
 %patch62 -p1 -b .skip_util_gtest
+%patch63 -p1 -b .paypal-certs
+cp %{SOURCE29} %{SOURCE30} tests/libpkix/certs
 popd
 
 #########################################################
@@ -744,6 +750,9 @@ update-crypto-policies
 
 
 %changelog
+* Wed Nov 14 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-4
+- Fix FTBFS with expired test certs
+
 * Thu Sep 13 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-3
 - Fix LDFLAGS injection
 
