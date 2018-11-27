@@ -1,9 +1,46 @@
 %global nspr_version 4.20.0
-%global nss_util_version 3.39.0
-%global nss_softokn_version 3.39.0
 %global nss_version 3.39.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
+%global saved_files_dir %{_libdir}/nss/saved
+%global prelink_conf_dir %{_sysconfdir}/prelink.conf.d/
+%global dracutlibdir %{_prefix}/lib/dracut
+%global dracut_modules_dir %{dracutlibdir}/modules.d/05nss-softokn/
+%global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
+
+%bcond_without tests
+
+# Produce .chk files for the final stripped binaries
+#
+# NOTE: The LD_LIBRARY_PATH line guarantees shlibsign links
+# against the freebl that we just built. This is necessary
+# because the signing algorithm changed on 3.14 to DSA2 with SHA256
+# whereas we previously signed with DSA and SHA1. We must Keep this line
+# until all mock platforms have been updated.
+# After %%{__os_install_post} we would add
+# export LD_LIBRARY_PATH=$RPM_BUILD_ROOT/%%{_libdir}
+%define __spec_install_post \
+    %{?__debug_package:%{__debug_install_post}} \
+    %{__arch_install_post} \
+    %{__os_install_post} \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libsoftokn3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libfreeblpriv3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libfreebl3.so \
+    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libnssdbm3.so \
+%{nil}
+
+# The upstream omits the trailing ".0", while we need it for
+# consistency with the pkg-config version:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1578106
+%{lua:
+rpm.define(string.format("nss_archive_version %s",
+           string.gsub(rpm.expand("%nss_version"), "(.*)%.0$", "%1")))
+}
+
+%{lua:
+rpm.define(string.format("nss_release_tag NSS_%s_RTM",
+           string.gsub(rpm.expand("%nss_archive_version"), "%.", "_")))
+}
 
 # The upstream omits the trailing ".0", while we need it for
 # consistency with the pkg-config version:
@@ -18,21 +55,19 @@ Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1.1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
-Group:            System Environment/Libraries
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util >= %{nss_util_version}
+Requires:         nss-util >= %{nss_version}
 # TODO: revert to same version as nss once we are done with the merge
-Requires:         nss-softokn%{_isa} >= %{nss_softokn_version}
+Requires:         nss-softokn%{_isa} >= %{nss_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
+Requires:         crypto-policies
 BuildRequires:    nspr-devel >= %{nspr_version}
-# TODO: revert to same version as nss once we are done with the merge
-# Using '>=' but on RHEL the requires should be '='
-BuildRequires:    nss-softokn-devel >= %{nss_softokn_version}
-BuildRequires:    nss-util-devel >= %{nss_util_version}
+# for shlibsign
+BuildRequires:    nss-softokn
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
 BuildRequires:    pkgconfig
@@ -41,29 +76,23 @@ BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
 
-# NSS 3.28.1 introduced a curve, that is smaller than a check in old
-# Mozilla code allows.
-# https://bugzilla.redhat.com/show_bug.cgi?id=1413182
-Conflicts:        firefox < 50.1.0-3
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414983
-Conflicts:        xulrunner < 44.0-9
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414929
-Conflicts:        thunderbird < 45.6.0-5
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414982
-Conflicts:        seamonkey < 2.46-2
-# https://bugzilla.redhat.com/show_bug.cgi?id=1414987
-# Conflicts:        icecat < 45.5.1-5
-
-Source0:          %{name}-%{nss_archive_version}.tar.gz
-Source1:          nss.pc.in
-Source2:          nss-config.in
-Source3:          blank-cert8.db
-Source4:          blank-key3.db
-Source5:          blank-secmod.db
-Source6:          blank-cert9.db
-Source7:          blank-key4.db
-Source8:          system-pkcs11.txt
-Source9:          setup-nsssysinit.sh
+Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
+Source1:          nss-util.pc.in
+Source2:          nss-util-config.in
+Source3:          nss-softokn.pc.in
+Source4:          nss-softokn-config.in
+Source5:          nss-softokn-prelink.conf
+Source6:          nss-softokn-dracut-module-setup.sh
+Source7:          nss-softokn-dracut.conf
+Source8:          nss.pc.in
+Source9:          nss-config.in
+Source10:         blank-cert8.db
+Source11:         blank-key3.db
+Source12:         blank-secmod.db
+Source13:         blank-cert9.db
+Source14:         blank-key4.db
+Source15:         system-pkcs11.txt
+Source16:         setup-nsssysinit.sh
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
@@ -72,15 +101,15 @@ Source24:         cert9.db.xml
 Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
+Source28:         nss-p11-kit.config
+Source29:         PayPalICA.cert
+Source30:         PayPalEE.cert
 
-Patch2:           add-relro-linker-option.patch
-Patch3:           renegotiate-transitional.patch
+Patch1:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
-Patch16:          nss-539183.patch
+Patch2:           nss-539183.patch
 # Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
-Patch47:          utilwrap-include-templates.patch
-# TODO remove when we switch to building nss without softoken
-Patch49:          nss-skip-bltest-and-fipstest.patch
+Patch3:           utilwrap-include-templates.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
@@ -92,10 +121,11 @@ Patch49:          nss-skip-bltest-and-fipstest.patch
 #
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
-Patch50:          iquote.patch
+Patch4:           iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
-Patch58: rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-Patch62: nss-skip-util-gtest.patch
+Patch5:           rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1505317
+Patch6:           nss-tests-paypal-certs-v2.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -106,7 +136,6 @@ v3 certificates, and other security standards.
 
 %package tools
 Summary:          Tools for the Network Security Services
-Group:            System Environment/Base
 Requires:         %{name}%{?_isa} = %{version}-%{release}
 
 %description tools
@@ -121,7 +150,6 @@ manipulate the NSS certificate and key database.
 
 %package sysinit
 Summary:          System NSS Initialization
-Group:            System Environment/Base
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
@@ -136,9 +164,8 @@ any system or user configured modules.
 
 %package devel
 Summary:          Development libraries for Network Security Services
-Group:            Development/Libraries
 Provides:         nss-static = %{version}-%{release}
-Requires:         nss = %{version}-%{release}
+Requires:         nss%{?_isa} = %{version}-%{release}
 Requires:         nss-util-devel
 Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
@@ -151,67 +178,109 @@ Header and Library files for doing development with Network Security Services.
 
 %package pkcs11-devel
 Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
-Group:            Development/Libraries
 Provides:         nss-pkcs11-devel-static = %{version}-%{release}
 Requires:         nss-devel = %{version}-%{release}
-# TODO: revert to using nss_softokn_version once we are done with
-# the merge into to new rhel git repo
-# For RHEL we should have '=' instead of '>='
-Requires:         nss-softokn-freebl-devel >= %{nss_softokn_version}
+Requires:         nss-softokn-freebl-devel = %{version}-%{release}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS
 low level services.
 
 
+%package util
+Summary:          Network Security Services Utilities Library
+Requires:         nspr >= %{nspr_version}
+
+%description util
+Utilities for Network Security Services and the Softoken module
+
+%package util-devel
+Summary:          Development libraries for Network Security Services Utilities
+Requires:         nss-util%{?_isa} = %{version}-%{release}
+Requires:         nspr-devel >= %{nspr_version}
+Requires:         pkgconfig
+
+%description util-devel
+Header and library files for doing development with Network Security Services.
+
+
+%package softokn
+Summary:          Network Security Services Softoken Module
+Requires:         nspr >= %{nspr_version}
+Requires:         nss-util >= %{version}-%{release}
+Requires:         nss-softokn-freebl%{_isa} >= %{version}-%{release}
+
+%description softokn
+Network Security Services Softoken Cryptographic Module
+
+%package softokn-freebl
+Summary:          Freebl library for the Network Security Services
+# For PR_GetEnvSecure() from nspr >= 4.12
+Requires:         nspr >= 4.12
+# For NSS_SecureMemcmpZero() from nss-util >= 3.33
+Requires:         nss-util >= 3.33
+Conflicts:        nss < 3.12.2.99.3-5
+Conflicts:        prelink < 0.4.3
+Conflicts:        filesystem < 3
+
+%description softokn-freebl
+NSS Softoken Cryptographic Module Freebl Library
+
+Install the nss-softokn-freebl package if you need the freebl library.
+
+%package softokn-freebl-devel
+Summary:          Header and Library files for doing development with the Freebl library for NSS
+Provides:         nss-softokn-freebl-static = %{version}-%{release}
+Requires:         nss-softokn-freebl%{?_isa} = %{version}-%{release}
+
+%description softokn-freebl-devel
+NSS Softoken Cryptographic Module Freebl Library Development Tools
+This package supports special needs of some PKCS #11 module developers and
+is otherwise considered private to NSS. As such, the programming interfaces
+may change and the usual NSS binary compatibility commitments do not apply.
+Developers should rely only on the officially supported NSS public API.
+
+%package softokn-devel
+Summary:          Development libraries for Network Security Services
+Requires:         nss-softokn%{?_isa} = %{version}-%{release}
+Requires:         nss-softokn-freebl-devel%{?_isa} = %{version}-%{release}
+Requires:         nspr-devel >= %{nspr_version}
+Requires:         nss-util-devel >= %{version}-%{release}
+Requires:         pkgconfig
+BuildRequires:    nspr-devel >= %{nspr_version}
+
+%description softokn-devel
+Header and library files for doing development with Network Security Services.
+
+
 %prep
 %setup -q -n %{name}-%{nss_archive_version}
 
-%patch2 -p0 -b .relro
-%patch3 -p0 -b .transitional
-%patch16 -p0 -b .539183
-%patch47 -p0 -b .templates
-%patch49 -p0 -b .skipthem
-%patch50 -p0 -b .iquote
-%patch58 -p0 -b .1185708_3des
+%patch1 -p0 -b .transitional
+%patch2 -p0 -b .539183
+%patch3 -p0 -b .templates
+%patch4 -p0 -b .iquote
+%patch5 -p0 -b .1185708_3des
 pushd nss
-%patch62 -p1 -b .skip_util_gtest
+%patch6 -p1 -b .paypal-certs
+cp %{SOURCE29} %{SOURCE30} tests/libpkix/certs
 popd
-
-#########################################################
-# Higher-level libraries and test tools need access to
-# module-private headers from util, freebl, and softoken
-# until fixed upstream we must copy some headers locally
-#########################################################
-
-# Copying these headers until the upstream bug is accepted
-# Upstream https://bugzilla.mozilla.org/show_bug.cgi?id=820207
-%{__cp} ./nss/lib/softoken/lowkeyi.h ./nss/cmd/rsaperf
-%{__cp} ./nss/lib/softoken/lowkeyti.h ./nss/cmd/rsaperf
-
-# Before removing util directory we must save verref.h
-# as it will be needed later during the build phase.
-%{__mv} ./nss/lib/util/verref.h ./nss/verref.h
-
-##### Remove util/freebl/softoken and low level tools
-######## Remove freebl, softoken and util
-%{__rm} -rf ./nss/lib/freebl
-%{__rm} -rf ./nss/lib/softoken
-%{__rm} -rf ./nss/lib/util
-######## Remove nss-softokn test tools as we already ran
-# the cipher test suite as part of the nss-softokn build
-%{__rm} -rf ./nss/cmd/bltest
-%{__rm} -rf ./nss/cmd/fipstest
-%{__rm} -rf ./nss/cmd/rsaperf_low
 
 
 %build
 
-FREEBL_NO_DEPEND=1
-export FREEBL_NO_DEPEND
+export FREEBL_NO_DEPEND=1
 
-NSS_FORCE_FIPS=1
-export NSS_FORCE_FIPS
+# Must export FREEBL_LOWHASH=1 for nsslowhash.h so that it gets
+# copied to dist and the rpm install phase can find it
+# This due of the upstream changes to fix
+# https://bugzilla.mozilla.org/show_bug.cgi?id=717906
+export FREEBL_LOWHASH=1
+
+# uncomment if the iquote patch is activated
+export IN_TREE_FREEBL_HEADERS_FIRST=1
+
+export NSS_FORCE_FIPS=1
 
 # Enable compiler optimizations and disable debugging code
 export BUILD_OPT=1
@@ -221,62 +290,31 @@ export BUILD_OPT=1
 #export RPM_OPT_FLAGS
 
 # Generate symbolic info for debuggers
-XCFLAGS=$RPM_OPT_FLAGS
-export XCFLAGS
+export XCFLAGS=$RPM_OPT_FLAGS
 
-LDFLAGS=$RPM_LD_FLAGS
-export LDFLAGS
+export LDFLAGS=$RPM_LD_FLAGS
 
-PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
-PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+export DSO_LDOPTS=$RPM_LD_FLAGS
 
-export PKG_CONFIG_ALLOW_SYSTEM_LIBS
-export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
+export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
-NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
-NSPR_LIB_DIR=%{_libdir}
+export NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
+export NSPR_LIB_DIR=%{_libdir}
 
-export NSPR_INCLUDE_DIR
-export NSPR_LIB_DIR
+export NSS_USE_SYSTEM_SQLITE=1
 
-export NSSUTIL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-util | sed 's/-I//'`
-export NSSUTIL_LIB_DIR=%{_libdir}
-
-export FREEBL_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nss-softokn | sed 's/-I//'`
-export FREEBL_LIB_DIR=%{_libdir}
-export USE_SYSTEM_FREEBL=1
-# FIXME choose one or the other style and submit a patch upstream
-# wtc has suggested using NSS_USE_SYSTEM_FREEBL
-export NSS_USE_SYSTEM_FREEBL=1
-
-export FREEBL_LIBS=`/usr/bin/pkg-config --libs nss-softokn`
-
-export SOFTOKEN_LIB_DIR=%{_libdir}
-# use the system ones
-export USE_SYSTEM_NSSUTIL=1
-export USE_SYSTEM_SOFTOKEN=1
-
-# tell the upstream build system what we are doing
-export NSS_BUILD_WITHOUT_SOFTOKEN=1
-
-NSS_USE_SYSTEM_SQLITE=1
-export NSS_USE_SYSTEM_SQLITE
+export NSS_ALLOW_SSLKEYLOGFILE=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
-USE_64=1
-export USE_64
+export USE_64=1
 %endif
 %endif
-
-# uncomment if the iquote patch is activated
-export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 ##### phase 2: build the rest of nss
-export NSS_BLTEST_NOT_AVAILABLE=1
-
-%{__make} -C ./nss/coreconf
-%{__make} -C ./nss/lib/dbm
+make -C ./nss/coreconf
+make -C ./nss/lib/dbm
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load if it exists
@@ -284,48 +322,82 @@ export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-# nss/nssinit.c, ssl/sslcon.c, smime/smimeutil.c and ckfw/builtins/binst.c
-# need nss/lib/util/verref.h which is exported privately,
-# copy the one we saved during prep so it they can find it.
-%{__mkdir_p} ./dist/private/nss
-%{__mv} ./nss/verref.h ./dist/private/nss/verref.h
-
-%{__make} -C ./nss
-unset NSS_BLTEST_NOT_AVAILABLE
+make -C ./nss
 
 # build the man pages clean
 pushd ./nss
-%{__make} clean_docs build_docs
+make clean_docs build_docs
 popd
 
 # and copy them to the dist directory for %%install to find them
-%{__mkdir_p} ./dist/docs/nroff
-%{__cp} ./nss/doc/nroff/* ./dist/docs/nroff
+mkdir -p ./dist/docs/nroff
+cp ./nss/doc/nroff/* ./dist/docs/nroff
 
-# Set up our package file
-# The nspr_version and nss_{util|softokn}_version globals used
-# here match the ones nss has for its Requires.
-# Using the current %%{nss_softokn_version} for fedora again
-%{__mkdir_p} ./dist/pkgconfig
-%{__cat} %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
+# Set up our package files
+mkdir -p ./dist/pkgconfig
+
+cat %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
+                          -e "s,%%prefix%%,%{_prefix},g" \
+                          -e "s,%%exec_prefix%%,%{_prefix},g" \
+                          -e "s,%%includedir%%,%{_includedir}/nss3,g" \
+                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
+                          -e "s,%%NSSUTIL_VERSION%%,%{version},g" > \
+                          ./dist/pkgconfig/nss-util.pc
+
+NSSUTIL_VMAJOR=`cat nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VMAJOR" | awk '{print $3}'`
+NSSUTIL_VMINOR=`cat nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VMINOR" | awk '{print $3}'`
+NSSUTIL_VPATCH=`cat nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VPATCH" | awk '{print $3}'`
+
+cat %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
+                          -e "s,@prefix@,%{_prefix},g" \
+                          -e "s,@exec_prefix@,%{_prefix},g" \
+                          -e "s,@includedir@,%{_includedir}/nss3,g" \
+                          -e "s,@MOD_MAJOR_VERSION@,$NSSUTIL_VMAJOR,g" \
+                          -e "s,@MOD_MINOR_VERSION@,$NSSUTIL_VMINOR,g" \
+                          -e "s,@MOD_PATCH_VERSION@,$NSSUTIL_VPATCH,g" \
+                          > ./dist/pkgconfig/nss-util-config
+
+chmod 755 ./dist/pkgconfig/nss-util-config
+
+cat %{SOURCE3} | sed -e "s,%%libdir%%,%{_libdir},g" \
+                          -e "s,%%prefix%%,%{_prefix},g" \
+                          -e "s,%%exec_prefix%%,%{_prefix},g" \
+                          -e "s,%%includedir%%,%{_includedir}/nss3,g" \
+                          -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
+                          -e "s,%%NSSUTIL_VERSION%%,%{nss_version},g" \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{version},g" > \
+                          ./dist/pkgconfig/nss-softokn.pc
+
+SOFTOKEN_VMAJOR=`cat nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VMAJOR" | awk '{print $3}'`
+SOFTOKEN_VMINOR=`cat nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VMINOR" | awk '{print $3}'`
+SOFTOKEN_VPATCH=`cat nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VPATCH" | awk '{print $3}'`
+
+cat %{SOURCE4} | sed -e "s,@libdir@,%{_libdir},g" \
+                          -e "s,@prefix@,%{_prefix},g" \
+                          -e "s,@exec_prefix@,%{_prefix},g" \
+                          -e "s,@includedir@,%{_includedir}/nss3,g" \
+                          -e "s,@MOD_MAJOR_VERSION@,$SOFTOKEN_VMAJOR,g" \
+                          -e "s,@MOD_MINOR_VERSION@,$SOFTOKEN_VMINOR,g" \
+                          -e "s,@MOD_PATCH_VERSION@,$SOFTOKEN_VPATCH,g" \
+                          > ./dist/pkgconfig/nss-softokn-config
+
+chmod 755 ./dist/pkgconfig/nss-softokn-config
+
+cat %{SOURCE8} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSS_VERSION%%,%{version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%NSSUTIL_VERSION%%,%{nss_util_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_softokn_version},g" > \
+                          -e "s,%%NSSUTIL_VERSION%%,%{nss_version},g" \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_version},g" > \
                           ./dist/pkgconfig/nss.pc
 
 NSS_VMAJOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMAJOR" | awk '{print $3}'`
 NSS_VMINOR=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VMINOR" | awk '{print $3}'`
 NSS_VPATCH=`cat nss/lib/nss/nss.h | grep "#define.*NSS_VPATCH" | awk '{print $3}'`
 
-export NSS_VMAJOR
-export NSS_VMINOR
-export NSS_VPATCH
-
-%{__cat} %{SOURCE2} | sed -e "s,@libdir@,%{_libdir},g" \
+cat %{SOURCE9} | sed -e "s,@libdir@,%{_libdir},g" \
                           -e "s,@prefix@,%{_prefix},g" \
                           -e "s,@exec_prefix@,%{_prefix},g" \
                           -e "s,@includedir@,%{_includedir}/nss3,g" \
@@ -336,10 +408,10 @@ export NSS_VPATCH
 
 chmod 755 ./dist/pkgconfig/nss-config
 
-%{__cat} %{SOURCE9} > ./dist/pkgconfig/setup-nsssysinit.sh
+cat %{SOURCE16} > ./dist/pkgconfig/setup-nsssysinit.sh
 chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 
-%{__cp} ./nss/lib/ckfw/nssck.api ./dist/private/nss/
+cp ./nss/lib/ckfw/nssck.api ./dist/private/nss/
 
 date +"%e %B %Y" | tr -d '\n' > date.xml
 echo -n %{version} > version.xml
@@ -362,29 +434,18 @@ done
 
 
 %check
-if [ ${DISABLETEST:-0} -eq 1 ]; then
-  echo "testing disabled"
-  exit 0
-fi
-
+%if %{with tests}
 # Begin -- copied from the build section
 
-FREEBL_NO_DEPEND=1
-export FREEBL_NO_DEPEND
+export FREEBL_NO_DEPEND=1
 
 export BUILD_OPT=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
-USE_64=1
-export USE_64
+export USE_64=1
 %endif
 %endif
-
-export NSS_BLTEST_NOT_AVAILABLE=1
-
-# needed for the fips mangling test
-export SOFTOKEN_LIB_DIR=%{_libdir}
 
 # End -- copied from the build section
 
@@ -444,13 +505,7 @@ pushd ./nss/tests/
 # % define nss_ssl_tests "normal_fips"
 # % define nss_ssl_run "cov"
 
-SKIP_NSS_TEST_SUITE=`echo $SKIP_NSS_TEST_SUITE`
-
-if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
-  HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
-else
-  echo "skipped test suite"
-fi
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
 
 popd
 
@@ -461,12 +516,7 @@ popd
 # GREP_EXIT_STATUS > 1 would indicate an error in grep such as failure to find the log file.
 killall $RANDSERV || :
 
-if [ "x$SKIP_NSS_TEST_SUITE" == "x" ]; then
-  TEST_FAILURES=$(grep -c -- '- FAILED$' ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
-else
-  TEST_FAILURES=0
-  GREP_EXIT_STATUS=1
-fi
+TEST_FAILURES=$(grep -c -- '- FAILED$' ./tests_results/security/localhost.1/output.log) || GREP_EXIT_STATUS=$?
 
 if [ ${GREP_EXIT_STATUS:-0} -eq 1 ]; then
   echo "okay: test suite detected no failures"
@@ -488,81 +538,105 @@ else
   fi
 fi
 echo "test suite completed"
+%endif
 
 %install
 
-%{__rm} -rf $RPM_BUILD_ROOT
-
 # There is no make install target so we'll do it ourselves.
 
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_bindir}
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}
-%{__mkdir_p} $RPM_BUILD_ROOT/%{unsupported_tools_directory}
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+mkdir -p $RPM_BUILD_ROOT/%{_includedir}/nss3
+mkdir -p $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
+mkdir -p $RPM_BUILD_ROOT/%{_bindir}
+mkdir -p $RPM_BUILD_ROOT/%{_libdir}
+mkdir -p $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+mkdir -p $RPM_BUILD_ROOT/%{saved_files_dir}
+mkdir -p $RPM_BUILD_ROOT/%{prelink_conf_dir}
+mkdir -p $RPM_BUILD_ROOT/%{dracut_modules_dir}
+mkdir -p $RPM_BUILD_ROOT/%{dracut_conf_dir}
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 %if %{defined rhel}
 # not needed for rhel and its derivatives only fedora
 %else
 # because of the pp.1 conflict with perl-PAR-Packer
-%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools
 %endif
+
+install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{prelink_conf_dir}
+install -m 755 %{SOURCE6} $RPM_BUILD_ROOT/%{dracut_modules_dir}/module-setup.sh
+install -m 644 %{SOURCE7} $RPM_BUILD_ROOT/%{dracut_conf_dir}/50-nss-softokn.conf
 
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
 # Copy the binary libraries we want
-for file in libnss3.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnssutil3.so libsoftokn3.so libnssdbm3.so libfreebl3.so libfreeblpriv3.so libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
-  %{__install} -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Install the empty NSS db files
 # Legacy db
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
-%{__install} -p -m 644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
-%{__install} -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
-%{__install} -p -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
+install -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
+install -p -m 644 %{SOURCE11} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
+install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
 # Shared db
-%{__install} -p -m 644 %{SOURCE6} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert9.db
-%{__install} -p -m 644 %{SOURCE7} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key4.db
-%{__install} -p -m 644 %{SOURCE8} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.txt
+install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert9.db
+install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key4.db
+install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.txt
 
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  %{__install} -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil nss-policy-check pk12util signver ssltap
 do
-  %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
-for file in atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in bltest ecperf fbectest fipstest shlibsign atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  %{__install} -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
 for file in dist/public/nss/*.h
 do
-  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+  install -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3
+done
+
+# Copy some freebl include files we also want
+for file in blapi.h alghmac.h
+do
+  install -p -m 644 dist/private/nss/$file $RPM_BUILD_ROOT/%{_includedir}/nss3
+done
+
+# Copy the static freebl library
+for file in libfreebl.a
+do
+install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the template files we want
-for file in dist/private/nss/nssck.api
+for file in dist/private/nss/templates.c dist/private/nss/nssck.api
 do
-  %{__install} -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
+  install -p -m 644 $file $RPM_BUILD_ROOT/%{_includedir}/nss3/templates
 done
 
 # Copy the package configuration files
-%{__install} -p -m 644 ./dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
-%{__install} -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
+install -p -m 644 ./dist/pkgconfig/nss-util.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-util.pc
+install -p -m 755 ./dist/pkgconfig/nss-util-config $RPM_BUILD_ROOT/%{_bindir}/nss-util-config
+install -p -m 644 ./dist/pkgconfig/nss-softokn.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss-softokn.pc
+install -p -m 755 ./dist/pkgconfig/nss-softokn-config $RPM_BUILD_ROOT/%{_bindir}/nss-softokn-config
+install -p -m 644 ./dist/pkgconfig/nss.pc $RPM_BUILD_ROOT/%{_libdir}/pkgconfig/nss.pc
+install -p -m 755 ./dist/pkgconfig/nss-config $RPM_BUILD_ROOT/%{_bindir}/nss-config
 # Copy the pkcs #11 configuration script
-%{__install} -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
+install -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh
 # install a symbolic link to it, without the ".sh" suffix,
 # that matches the man page documentation
 ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
@@ -590,20 +664,22 @@ for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
+# Copy the crypto-policies configuration file
+install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
+
 %triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
 # Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-/sbin/ldconfig
+update-crypto-policies
 
 %postun
-/sbin/ldconfig
+update-crypto-policies
 
 
 %files
-%defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license nss/COPYING
 %{_libdir}/libnss3.so
@@ -616,23 +692,22 @@ done
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%attr(0644,root,root) %doc %{_mandir}/man5/cert8.db.5.gz
-%attr(0644,root,root) %doc %{_mandir}/man5/key3.db.5.gz
-%attr(0644,root,root) %doc %{_mandir}/man5/secmod.db.5.gz
-%attr(0644,root,root) %doc %{_mandir}/man5/cert9.db.5.gz
-%attr(0644,root,root) %doc %{_mandir}/man5/key4.db.5.gz
-%attr(0644,root,root) %doc %{_mandir}/man5/pkcs11.txt.5.gz
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/crypto-policies/local.d/nss-p11-kit.config
+%doc %{_mandir}/man5/cert8.db.5*
+%doc %{_mandir}/man5/key3.db.5*
+%doc %{_mandir}/man5/secmod.db.5*
+%doc %{_mandir}/man5/cert9.db.5*
+%doc %{_mandir}/man5/key4.db.5*
+%doc %{_mandir}/man5/pkcs11.txt.5*
 
 %files sysinit
-%defattr(-,root,root)
 %{_libdir}/libnsssysinit.so
 %{_bindir}/setup-nsssysinit.sh
 # symbolic link to setup-nsssysinit.sh
 %{_bindir}/setup-nsssysinit
-%attr(0644,root,root) %doc %{_mandir}/man1/setup-nsssysinit.1.gz
+%doc %{_mandir}/man1/setup-nsssysinit.1*
 
 %files tools
-%defattr(-,root,root)
 %{_bindir}/certutil
 %{_bindir}/cmsutil
 %{_bindir}/crlutil
@@ -654,33 +729,32 @@ done
 %{unsupported_tools_directory}/tstclnt
 %{unsupported_tools_directory}/vfyserv
 %{unsupported_tools_directory}/vfychain
-# instead of %%{_mandir}/man*/* let's list them explicitely
+# instead of %%{_mandir}/man*/* let's list them explicitly
 # supported tools
-%attr(0644,root,root) %doc %{_mandir}/man1/certutil.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/cmsutil.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/crlutil.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/modutil.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/pk12util.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/signver.1.gz
+%doc %{_mandir}/man1/certutil.1*
+%doc %{_mandir}/man1/cmsutil.1*
+%doc %{_mandir}/man1/crlutil.1*
+%doc %{_mandir}/man1/modutil.1*
+%doc %{_mandir}/man1/pk12util.1*
+%doc %{_mandir}/man1/signver.1*
 # unsupported tools
-%attr(0644,root,root) %doc %{_mandir}/man1/derdump.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/signtool.1.gz
+%doc %{_mandir}/man1/derdump.1*
+%doc %{_mandir}/man1/signtool.1*
 %if %{defined rhel}
-%attr(0644,root,root) %doc %{_mandir}/man1/pp.1.gz
+%doc %{_mandir}/man1/pp.1*
 %else
 %dir %{_datadir}/doc/nss-tools
-%attr(0644,root,root) %doc %{_datadir}/doc/nss-tools/pp.1
+%doc %{_datadir}/doc/nss-tools/pp.1
 %endif
-%attr(0644,root,root) %doc %{_mandir}/man1/ssltap.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/vfychain.1.gz
-%attr(0644,root,root) %doc %{_mandir}/man1/vfyserv.1.gz
+%doc %{_mandir}/man1/ssltap.1*
+%doc %{_mandir}/man1/vfychain.1*
+%doc %{_mandir}/man1/vfyserv.1*
 
 %files devel
-%defattr(-,root,root)
 %{_libdir}/libcrmf.a
 %{_libdir}/pkgconfig/nss.pc
 %{_bindir}/nss-config
-%attr(0644,root,root) %doc %{_mandir}/man1/nss-config.1.gz
+%doc %{_mandir}/man1/nss-config.1*
 
 %dir %{_includedir}/nss3
 %{_includedir}/nss3/cert.h
@@ -731,9 +805,7 @@ done
 %{_includedir}/nss3/sslproto.h
 %{_includedir}/nss3/sslt.h
 
-
 %files pkcs11-devel
-%defattr(-, root, root)
 %{_includedir}/nss3/nssbase.h
 %{_includedir}/nss3/nssbaset.h
 %{_includedir}/nss3/nssckepv.h
@@ -748,8 +820,121 @@ done
 %{_libdir}/libnssb.a
 %{_libdir}/libnssckfw.a
 
+%files util
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
+%{_libdir}/libnssutil3.so
+
+%files util-devel
+# package configuration files
+%{_libdir}/pkgconfig/nss-util.pc
+%{_bindir}/nss-util-config
+
+# co-owned with nss
+%dir %{_includedir}/nss3
+# these are marked as public export in nss/lib/util/manifest.mk
+%{_includedir}/nss3/base64.h
+%{_includedir}/nss3/ciferfam.h
+%{_includedir}/nss3/eccutil.h
+%{_includedir}/nss3/hasht.h
+%{_includedir}/nss3/nssb64.h
+%{_includedir}/nss3/nssb64t.h
+%{_includedir}/nss3/nsslocks.h
+%{_includedir}/nss3/nssilock.h
+%{_includedir}/nss3/nssilckt.h
+%{_includedir}/nss3/nssrwlk.h
+%{_includedir}/nss3/nssrwlkt.h
+%{_includedir}/nss3/nssutil.h
+%{_includedir}/nss3/pkcs1sig.h
+%{_includedir}/nss3/pkcs11.h
+%{_includedir}/nss3/pkcs11f.h
+%{_includedir}/nss3/pkcs11n.h
+%{_includedir}/nss3/pkcs11p.h
+%{_includedir}/nss3/pkcs11t.h
+%{_includedir}/nss3/pkcs11u.h
+%{_includedir}/nss3/pkcs11uri.h
+%{_includedir}/nss3/portreg.h
+%{_includedir}/nss3/secasn1.h
+%{_includedir}/nss3/secasn1t.h
+%{_includedir}/nss3/seccomon.h
+%{_includedir}/nss3/secder.h
+%{_includedir}/nss3/secdert.h
+%{_includedir}/nss3/secdig.h
+%{_includedir}/nss3/secdigt.h
+%{_includedir}/nss3/secerr.h
+%{_includedir}/nss3/secitem.h
+%{_includedir}/nss3/secoid.h
+%{_includedir}/nss3/secoidt.h
+%{_includedir}/nss3/secport.h
+%{_includedir}/nss3/utilmodt.h
+%{_includedir}/nss3/utilpars.h
+%{_includedir}/nss3/utilparst.h
+%{_includedir}/nss3/utilrename.h
+%{_includedir}/nss3/templates/templates.c
+
+%files softokn
+%{_libdir}/libnssdbm3.so
+%{_libdir}/libnssdbm3.chk
+%{_libdir}/libsoftokn3.so
+%{_libdir}/libsoftokn3.chk
+# shared with nss-tools
+%dir %{_libdir}/nss
+%dir %{saved_files_dir}
+%dir %{unsupported_tools_directory}
+%{unsupported_tools_directory}/bltest
+%{unsupported_tools_directory}/ecperf
+%{unsupported_tools_directory}/fbectest
+%{unsupported_tools_directory}/fipstest
+%{unsupported_tools_directory}/shlibsign
+
+%files softokn-freebl
+%{!?_licensedir:%global license %%doc}
+%license nss/COPYING
+%{_libdir}/libfreebl3.so
+%{_libdir}/libfreebl3.chk
+%{_libdir}/libfreeblpriv3.so
+%{_libdir}/libfreeblpriv3.chk
+#shared
+%dir %{prelink_conf_dir}
+%{prelink_conf_dir}/nss-softokn-prelink.conf
+%dir %{dracut_modules_dir}
+%{dracut_modules_dir}/module-setup.sh
+%{dracut_conf_dir}/50-nss-softokn.conf
+
+%files softokn-freebl-devel
+%{_libdir}/libfreebl.a
+%{_includedir}/nss3/blapi.h
+%{_includedir}/nss3/blapit.h
+%{_includedir}/nss3/alghmac.h
+%{_includedir}/nss3/lowkeyi.h
+%{_includedir}/nss3/lowkeyti.h
+
+%files softokn-devel
+%{_libdir}/pkgconfig/nss-softokn.pc
+%{_bindir}/nss-softokn-config
+
+# co-owned with nss
+%dir %{_includedir}/nss3
+#
+# The following headers are those exported public in
+# nss/lib/freebl/manifest.mn and
+# nss/lib/softoken/manifest.mn
+#
+# The following list is short because many headers, such as
+# the pkcs #11 ones, have been provided by nss-util-devel
+# which installed them before us.
+#
+%{_includedir}/nss3/ecl-exp.h
+%{_includedir}/nss3/nsslowhash.h
+%{_includedir}/nss3/shsign.h
+
 
 %changelog
+* Tue Nov 27 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-1.1
+- Consolidate nss-util, nss-softokn, and nss into a single package
+- Fix FTBFS with expired test certs
+- Modernize spec file based on the suggestion from Robert-André Mauchin
+
 * Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-1.0
 - Update to NSS 3.39
 - Use the upstream tarball as it is (rhbz#1578106)
