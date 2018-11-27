@@ -68,7 +68,7 @@ BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
 
-Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/%{name}-%{nss_archive_version}.tar.gz
+Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
 Source1:          nss-util.pc.in
 Source2:          nss-util-config.in
 Source3:          nss-softokn.pc.in
