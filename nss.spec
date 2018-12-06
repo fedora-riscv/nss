@@ -47,7 +47,7 @@ Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -97,11 +97,8 @@ Source28:         nss-p11-kit.config
 Source29:         PayPalICA.cert
 Source30:         PayPalEE.cert
 
-Patch1:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
-# Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
-Patch3:           utilwrap-include-templates.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
@@ -248,9 +245,7 @@ Header and library files for doing development with Network Security Services.
 %prep
 %setup -q -n %{name}-%{nss_archive_version}
 
-%patch1 -p0 -b .transitional
 %patch2 -p0 -b .539183
-%patch3 -p0 -b .templates
 %patch4 -p0 -b .iquote
 %patch5 -p0 -b .1185708_3des
 pushd nss
@@ -922,6 +917,9 @@ update-crypto-policies
 
 
 %changelog
+* Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-3
+- Remove unnecessary patches
+
 * Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-2
 - Update to NSS 3.40.1
 
