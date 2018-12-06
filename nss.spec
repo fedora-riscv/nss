@@ -1,5 +1,5 @@
 %global nspr_version 4.20.0
-%global nss_version 3.39.0
+%global nss_version 3.40.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 %global saved_files_dir %{_libdir}/nss/saved
@@ -47,7 +47,7 @@ Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          4%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -922,6 +922,9 @@ update-crypto-policies
 
 
 %changelog
+* Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-1.0
+- Update to NSS 3.40.1
+
 * Wed Nov 14 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-4
 - Consolidate nss-util, nss-softokn, and nss into a single package
 - Fix FTBFS with expired test certs
