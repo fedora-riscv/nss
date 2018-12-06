@@ -235,11 +235,8 @@ Header and library files for doing development with Network Security Services.
 
 %prep
 %setup -q -n %{name}-%{nss_archive_version}
-
-%patch2 -p0 -b .539183
-%patch5 -p0 -b .1185708_3des
 pushd nss
-%patch6 -p1 -b .paypal-certs
+%autopatch -p1
 cp %{SOURCE29} %{SOURCE30} tests/libpkix/certs
 popd
 
