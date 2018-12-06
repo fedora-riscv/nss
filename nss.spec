@@ -1,5 +1,5 @@
 %global nspr_version 4.20.0
-%global nss_version 3.39.0
+%global nss_version 3.40.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 %global saved_files_dir %{_libdir}/nss/saved
@@ -42,20 +42,12 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
            string.gsub(rpm.expand("%nss_archive_version"), "%.", "_")))
 }
 
-# The upstream omits the trailing ".0", while we need it for
-# consistency with the pkg-config version:
-# https://bugzilla.redhat.com/show_bug.cgi?id=1578106
-%{lua:
-rpm.define(string.format("nss_archive_version %s",
-           string.gsub(rpm.expand("%nss_version"), "(.*)%.0$", "%1")))
-}
-
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
 # for Rawhide, please always use release >= 2
 # for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.1%{?dist}
+Release:          1.0%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -930,40 +922,60 @@ update-crypto-policies
 
 
 %changelog
-* Tue Nov 27 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-1.1
+* Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-1.0
+- Update to NSS 3.40.1
+
+* Wed Nov 14 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-4
 - Consolidate nss-util, nss-softokn, and nss into a single package
 - Fix FTBFS with expired test certs
 - Modernize spec file based on the suggestion from Robert-André Mauchin
 
-* Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-1.0
+* Thu Sep 13 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-3
+- Fix LDFLAGS injection
+
+* Mon Sep  3 2018 Daiki Ueno <dueno@redhat.com> - 3.39.0-2
 - Update to NSS 3.39
 - Use the upstream tarball as it is (rhbz#1578106)
+- Allow SSLKEYLOGFILE (rhbz#1620207)
 
-* Tue Jul  3 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-1.0
+* Fri Jul 20 2018 Kai Engert <kaie@redhat.com> - 3.38.0-4
+- Backport upstream addition of nss-policy-check utility, rhbz#1428746
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.38.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Mon Jul  2 2018 Daiki Ueno <dueno@redhat.com> - 3.38.0-2
 - Update to NSS 3.38
+- Install crypto-policies configuration file for
+  https://fedoraproject.org/wiki/Changes/NSSLoadP11KitModules
+- Use %%ldconfig_scriptlets
 
-* Wed Jun  6 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-1.1
+* Wed Jun  6 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-3
 - Backport fix for handling DTLS application_data before handshake
 
-* Tue Jun  5 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-1.0
+* Tue Jun  5 2018 Daiki Ueno <dueno@redhat.com> - 3.37.3-2
 - Update to NSS 3.37.3
 
-* Mon Jun  4 2018 Daiki Ueno <dueno@redhat.com> - 3.37.1-1.0
+* Mon May 28 2018 Daiki Ueno <dueno@redhat.com> - 3.37.1-2
 - Update to NSS 3.37.1
+- Temporarily disable AlertBeforeServerHello test
 
-* Wed May 02 2018 Kai Engert <kaie@redhat.com> - 3.36.1-1.1
+* Wed May 02 2018 Kai Engert <kaie@redhat.com> - 3.36.1-3
 - Upstream patch to keep nicknames stable on repeated certificate
   import into SQL DB, mozbz#1458518
 
-* Wed Apr 11 2018 Daiki Ueno <dueno@redhat.com> - 3.36.1-1.0
+* Wed Apr 11 2018 Daiki Ueno <dueno@redhat.com> - 3.36.1-2
 - Update to NSS 3.36.1
-- Remove nss-3.14.0.0-disble-ocsp-test.patch
-- Fix partial injection of LDFLAGS
-- Remove NSS_NO_PKCS11_BYPASS, which is no-op in upstream
 
-* Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-1.0
+* Mon Mar 12 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-3
+- Remove nss-3.14.0.0-disble-ocsp-test.patch
+- Remove obsolete Conflicts
+- Fix partial injection of LDFLAGS
+
+* Fri Mar  9 2018 Daiki Ueno <dueno@redhat.com> - 3.36.0-2
 - Update to NSS 3.36.0
 - Add gcc-c++ to BuildRequires (C++ is needed for gtests)
+- Remove NSS_NO_PKCS11_BYPASS, which is no-op in upstream
 - Make test failure detection robuster
 
 * Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.35.0-5
