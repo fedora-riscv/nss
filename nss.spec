@@ -67,6 +67,9 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
+BuildRequires:    gyp
+BuildRequires:    ninja-build
+BuildRequires:    /usr/bin/python
 
 Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
 Source1:          nss-util.pc.in
@@ -99,18 +102,6 @@ Source30:         PayPalEE.cert
 
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
-# This patch uses the GCC -iquote option documented at
-# http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
-# to give the in-tree headers a higher priority over the system headers,
-# when they are included through the quote form (#include "file.h").
-#
-# This ensures a build even when system headers are older. Such is the
-# case when starting an update with API changes or even private export
-# changes.
-#
-# Once the buildroot aha been bootstrapped the patch may be removed
-# but it doesn't hurt to keep it.
-Patch4:           iquote.patch
 # Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
 Patch5:           rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1505317
@@ -246,7 +237,6 @@ Header and library files for doing development with Network Security Services.
 %setup -q -n %{name}-%{nss_archive_version}
 
 %patch2 -p0 -b .539183
-%patch4 -p0 -b .iquote
 %patch5 -p0 -b .1185708_3des
 pushd nss
 %patch6 -p1 -b .paypal-certs
@@ -256,52 +246,24 @@ popd
 
 %build
 
-export FREEBL_NO_DEPEND=1
-
-# Must export FREEBL_LOWHASH=1 for nsslowhash.h so that it gets
-# copied to dist and the rpm install phase can find it
-# This due of the upstream changes to fix
-# https://bugzilla.mozilla.org/show_bug.cgi?id=717906
-export FREEBL_LOWHASH=1
-
 # uncomment if the iquote patch is activated
 export IN_TREE_FREEBL_HEADERS_FIRST=1
 
 export NSS_FORCE_FIPS=1
-
-# Enable compiler optimizations and disable debugging code
-export BUILD_OPT=1
 
 # Uncomment to disable optimizations
 #RPM_OPT_FLAGS=`echo $RPM_OPT_FLAGS | sed -e 's/-O2/-O0/g'`
 #export RPM_OPT_FLAGS
 
 # Generate symbolic info for debuggers
-export XCFLAGS=$RPM_OPT_FLAGS
-
+export CFLAGS=$RPM_OPT_FLAGS
 export LDFLAGS=$RPM_LD_FLAGS
-
-export DSO_LDOPTS=$RPM_LD_FLAGS
 
 export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
-export NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
+export NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed -e 's/-I//' -e 's/ *$//'`
 export NSPR_LIB_DIR=%{_libdir}
-
-export NSS_USE_SYSTEM_SQLITE=1
-
-export NSS_ALLOW_SSLKEYLOGFILE=1
-
-%ifnarch noarch
-%if 0%{__isa_bits} == 64
-export USE_64=1
-%endif
-%endif
-
-##### phase 2: build the rest of nss
-make -C ./nss/coreconf
-make -C ./nss/lib/dbm
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load if it exists
@@ -309,7 +271,7 @@ export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-make -C ./nss
+nss/build.sh --gcc --opt --with-nspr="$NSPR_INCLUDE_DIR" --system-sqlite --enable-fips
 
 # build the man pages clean
 pushd ./nss
@@ -422,20 +384,6 @@ done
 
 %check
 %if %{with tests}
-# Begin -- copied from the build section
-
-export FREEBL_NO_DEPEND=1
-
-export BUILD_OPT=1
-
-%ifnarch noarch
-%if 0%{__isa_bits} == 64
-export USE_64=1
-%endif
-%endif
-
-# End -- copied from the build section
-
 # This is necessary because the test suite tests algorithms that are
 # disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
@@ -461,7 +409,7 @@ if [ $SPACEISBAD -ne 0 ]; then
 fi
 MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
 RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
-DISTBINDIR=`ls -d ./dist/*.OBJ/bin`; echo $DISTBINDIR ||:
+DISTBINDIR=`ls -d ./dist/Release/bin`; echo $DISTBINDIR ||:
 pushd `pwd`
 cd $DISTBINDIR
 ln -s selfserv $RANDSERV
@@ -559,7 +507,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 # Copy the binary libraries we want
 for file in libnssutil3.so libsoftokn3.so libnssdbm3.so libfreebl3.so libfreeblpriv3.so libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
-  install -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 755 dist/Release/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Install the empty NSS db files
@@ -576,19 +524,19 @@ install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.tx
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 644 nss/out/Release/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil nss-policy-check pk12util signver ssltap
 do
-  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  install -p -m 755 dist/Release/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in bltest ecperf fbectest fipstest shlibsign atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  install -p -m 755 dist/Release/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
@@ -606,7 +554,7 @@ done
 # Copy the static freebl library
 for file in libfreebl.a
 do
-install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+install -p -m 644 nss/out/Release/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the template files we want
@@ -918,6 +866,7 @@ update-crypto-policies
 
 %changelog
 * Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-3
+- Switch to gyp buildsystem
 - Remove unnecessary patches
 
 * Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-2
