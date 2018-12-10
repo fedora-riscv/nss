@@ -1,7 +1,6 @@
 %global nspr_version 4.20.0
 %global nss_version 3.40.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 %global saved_files_dir %{_libdir}/nss/saved
 %global prelink_conf_dir %{_sysconfdir}/prelink.conf.d/
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -406,9 +405,7 @@ if [ $SPACEISBAD -ne 0 ]; then
 fi
 MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
 RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
-DISTBINDIR=`ls -d ./dist/Release/bin`; echo $DISTBINDIR ||:
-pushd `pwd`
-cd $DISTBINDIR
+pushd dist/Release/bin
 ln -s selfserv $RANDSERV
 popd
 # man perlrun, man perlrequick
@@ -421,7 +418,6 @@ find ./nss/tests -type f |\
 killall $RANDSERV || :
 
 rm -rf ./tests_results
-pushd ./nss/tests/
 # all.sh is the test suite script
 
 #  don't need to run all the tests when testing packaging
@@ -437,9 +433,7 @@ pushd ./nss/tests/
 # % define nss_ssl_tests "normal_fips"
 # % define nss_ssl_run "cov"
 
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
-
-popd
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} nss/tests/all.sh
 
 # Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
 # Grep exits with status greater than 1 if an error ocurred.
@@ -578,7 +572,7 @@ for f in nss-config setup-nsssysinit; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the nss tools
-for f in "%{allTools}"; do
+for f in certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv; do
   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 %if %{defined rhel}
