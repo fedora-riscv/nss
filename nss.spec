@@ -409,6 +409,7 @@ find ./nss/tests -type f |\
 killall $RANDSERV || :
 
 rm -rf ./tests_results
+pushd nss/tests
 # all.sh is the test suite script
 
 #  don't need to run all the tests when testing packaging
@@ -424,7 +425,8 @@ rm -rf ./tests_results
 # % define nss_ssl_tests "normal_fips"
 # % define nss_ssl_run "cov"
 
-HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} nss/tests/all.sh
+HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
+popd
 
 # Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
 # Grep exits with status greater than 1 if an error ocurred.
