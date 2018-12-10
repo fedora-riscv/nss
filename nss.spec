@@ -1,5 +1,5 @@
 %global nspr_version 4.20.0
-%global nss_version 3.40.1
+%global nss_version 3.41.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global prelink_conf_dir %{_sysconfdir}/prelink.conf.d/
@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -94,15 +94,9 @@ Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
 Source28:         nss-p11-kit.config
-Source29:         PayPalICA.cert
-Source30:         PayPalEE.cert
 
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
-# Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
-Patch5:           rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1505317
-Patch6:           nss-tests-paypal-certs-v2.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -234,7 +228,6 @@ Header and library files for doing development with Network Security Services.
 %setup -q -n %{name}-%{nss_archive_version}
 pushd nss
 %autopatch -p1
-cp %{SOURCE29} %{SOURCE30} tests/libpkix/certs
 popd
 
 
@@ -854,6 +847,9 @@ update-crypto-policies
 
 
 %changelog
+* Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
+- Update to NSS 3.41
+
 * Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-3
 - Switch to gyp buildsystem
 - Remove unnecessary patches
