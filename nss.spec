@@ -447,7 +447,8 @@ if [ $SPACEISBAD -ne 0 ]; then
 fi
 MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
 RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
-pushd dist/Release/bin
+DISTBINDIR=`ls -d ./dist/*.OBJ/bin`; echo $DISTBINDIR ||:
+pushd "$DISTBINDIR"
 ln -s selfserv $RANDSERV
 popd
 # man perlrun, man perlrequick
