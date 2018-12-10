@@ -44,8 +44,6 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-# for Rawhide, please always use release >= 2
-# for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
 Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
