@@ -1,5 +1,5 @@
---- ./nss/cmd/httpserv/httpserv.c.539183	2016-05-21 18:31:39.879585420 -0700
-+++ ./nss/cmd/httpserv/httpserv.c	2016-05-21 18:37:22.374464057 -0700
+--- nss/cmd/httpserv/httpserv.c.539183	2016-05-21 18:31:39.879585420 -0700
++++ nss/cmd/httpserv/httpserv.c	2016-05-21 18:37:22.374464057 -0700
 @@ -953,23 +953,23 @@
  getBoundListenSocket(unsigned short port)
  {
@@ -29,8 +29,8 @@
      if (prStatus < 0) {
          PR_Close(listen_sock);
          errExit("PR_SetSocketOption(PR_SockOpt_Nonblocking)");
---- ./nss/cmd/selfserv/selfserv.c.539183	2016-05-21 18:31:39.882585367 -0700
-+++ ./nss/cmd/selfserv/selfserv.c	2016-05-21 18:41:43.092801174 -0700
+--- nss/cmd/selfserv/selfserv.c.539183	2016-05-21 18:31:39.882585367 -0700
++++ nss/cmd/selfserv/selfserv.c	2016-05-21 18:41:43.092801174 -0700
 @@ -1711,23 +1711,23 @@
  getBoundListenSocket(unsigned short port)
  {
