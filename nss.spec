@@ -1,7 +1,6 @@
 %global nspr_version 4.20.0
-%global nss_version 3.40.1
+%global nss_version 3.41.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
-%global allTools "certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv"
 %global saved_files_dir %{_libdir}/nss/saved
 %global prelink_conf_dir %{_sysconfdir}/prelink.conf.d/
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -45,9 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-# for Rawhide, please always use release >= 2
-# for Fedora release branches, please use release < 2 (1.0, 1.1, ...)
-Release:          1.0%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -94,14 +91,9 @@ Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
 Source28:         nss-p11-kit.config
-Source29:         PayPalICA.cert
-Source30:         PayPalEE.cert
 
-Patch1:           renegotiate-transitional.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
-# Fedora / RHEL-only patch, the templates directory was originally introduced to support mod_revocator
-Patch3:           utilwrap-include-templates.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
@@ -114,10 +106,6 @@ Patch3:           utilwrap-include-templates.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-# Local patch for TLS_ECDHE_{ECDSA|RSA}_WITH_3DES_EDE_CBC_SHA ciphers
-Patch5:           rhbz1185708-enable-ecc-3des-ciphers-by-default.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1505317
-Patch6:           nss-tests-paypal-certs-v2.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -247,15 +235,8 @@ Header and library files for doing development with Network Security Services.
 
 %prep
 %setup -q -n %{name}-%{nss_archive_version}
-
-%patch1 -p0 -b .transitional
-%patch2 -p0 -b .539183
-%patch3 -p0 -b .templates
-%patch4 -p0 -b .iquote
-%patch5 -p0 -b .1185708_3des
 pushd nss
-%patch6 -p1 -b .paypal-certs
-cp %{SOURCE29} %{SOURCE30} tests/libpkix/certs
+%autopatch -p1
 popd
 
 
@@ -467,8 +448,7 @@ fi
 MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
 RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
 DISTBINDIR=`ls -d ./dist/*.OBJ/bin`; echo $DISTBINDIR ||:
-pushd `pwd`
-cd $DISTBINDIR
+pushd "$DISTBINDIR"
 ln -s selfserv $RANDSERV
 popd
 # man perlrun, man perlrequick
@@ -481,7 +461,7 @@ find ./nss/tests -type f |\
 killall $RANDSERV || :
 
 rm -rf ./tests_results
-pushd ./nss/tests/
+pushd nss/tests
 # all.sh is the test suite script
 
 #  don't need to run all the tests when testing packaging
@@ -498,7 +478,6 @@ pushd ./nss/tests/
 # % define nss_ssl_run "cov"
 
 HOST=localhost DOMSUF=localdomain PORT=$MYRAND NSS_CYCLES=%{?nss_cycles} NSS_TESTS=%{?nss_tests} NSS_SSL_TESTS=%{?nss_ssl_tests} NSS_SSL_RUN=%{?nss_ssl_run} ./all.sh
-
 popd
 
 # Normally, the grep exit status is 0 if selected lines are found and 1 otherwise,
@@ -638,7 +617,7 @@ for f in nss-config setup-nsssysinit; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the nss tools
-for f in "%{allTools}"; do
+for f in certutil cmsutil crlutil derdump modutil pk12util signtool signver ssltap vfychain vfyserv; do
   install -c -m 644 ./dist/docs/nroff/${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 %if %{defined rhel}
@@ -922,6 +901,9 @@ update-crypto-policies
 
 
 %changelog
+* Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
+- Update to NSS 3.41
+
 * Thu Dec  6 2018 Daiki Ueno <dueno@redhat.com> - 3.40.1-1.0
 - Update to NSS 3.40.1
 
