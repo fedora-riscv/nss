@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -53,7 +53,6 @@ Requires:         nss-util >= %{nss_version}
 Requires:         nss-softokn%{_isa} >= %{nss_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
-Requires:         crypto-policies
 BuildRequires:    nspr-devel >= %{nspr_version}
 # for shlibsign
 BuildRequires:    nss-softokn
@@ -90,7 +89,6 @@ Source24:         cert9.db.xml
 Source25:         key3.db.xml
 Source26:         key4.db.xml
 Source27:         secmod.db.xml
-Source28:         nss-p11-kit.config
 
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
@@ -643,12 +641,6 @@ install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/loc
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
-%post
-update-crypto-policies
-
-%postun
-update-crypto-policies
-
 
 %files
 %{!?_licensedir:%global license %%doc}
@@ -663,7 +655,6 @@ update-crypto-policies
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/crypto-policies/local.d/nss-p11-kit.config
 %doc %{_mandir}/man5/cert8.db.5*
 %doc %{_mandir}/man5/key3.db.5*
 %doc %{_mandir}/man5/secmod.db.5*
@@ -901,6 +892,9 @@ update-crypto-policies
 
 
 %changelog
+* Thu Dec 13 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-2
+- Revert p11-kit-proxy configuration, mistakenly merged from F29
+
 * Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
 - Update to NSS 3.41
 
