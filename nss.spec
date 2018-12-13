@@ -523,7 +523,6 @@ mkdir -p $RPM_BUILD_ROOT/%{saved_files_dir}
 mkdir -p $RPM_BUILD_ROOT/%{prelink_conf_dir}
 mkdir -p $RPM_BUILD_ROOT/%{dracut_modules_dir}
 mkdir -p $RPM_BUILD_ROOT/%{dracut_conf_dir}
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 %if %{defined rhel}
 # not needed for rhel and its derivatives only fedora
 %else
@@ -632,9 +631,6 @@ done
 for f in cert8.db cert9.db key3.db key4.db secmod.db; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
-
-# Copy the crypto-policies configuration file
-install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 
 %triggerpostun -n nss-sysinit -- nss-sysinit < 3.12.8-3
 # Reverse unwanted disabling of sysinit by faulty preun sysinit scriplet
