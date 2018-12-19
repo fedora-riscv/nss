@@ -63,6 +63,7 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
+BuildRequires:    quilt
 
 Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
 Source1:          nss-util.pc.in
@@ -231,7 +232,7 @@ Header and library files for doing development with Network Security Services.
 
 
 %prep
-%setup -q -n %{name}-%{nss_archive_version}
+%autosetup -N -S quilt -n %{name}-%{nss_archive_version}
 pushd nss
 %autopatch -p1
 popd
@@ -897,6 +898,7 @@ update-crypto-policies
 * Tue Dec 18 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-2
 - Remove prelink.conf as prelink was removed in F24, suggested by
   Harald Reindl
+- Use quilt for %%autopatch
 
 * Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
 - Update to NSS 3.41
