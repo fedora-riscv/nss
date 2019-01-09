@@ -132,7 +132,7 @@ Summary:          System NSS Initialization
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
-Requires:         nss = %{version}-%{release}
+Requires:         nss%{?_isa} = %{version}-%{release}
 Requires(post):   coreutils, sed
 
 %description sysinit
@@ -899,6 +899,7 @@ update-crypto-policies
 - Remove prelink.conf as prelink was removed in F24, suggested by
   Harald Reindl
 - Use quilt for %%autopatch
+- Make sysinit require arch-dependent nss, suggested by Igor Gnatenko
 
 * Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
 - Update to NSS 3.41
