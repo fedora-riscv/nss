@@ -640,10 +640,10 @@ install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/loc
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-update-crypto-policies
+update-crypto-policies &> /dev/null || :
 
 %postun
-update-crypto-policies
+update-crypto-policies &> /dev/null || :
 
 
 %files
@@ -900,6 +900,7 @@ update-crypto-policies
   Harald Reindl
 - Use quilt for %%autopatch
 - Make sysinit require arch-dependent nss, suggested by Igor Gnatenko
+- Silence %%post/%%postun scriptlets, suggested by Ian Collier
 
 * Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
 - Update to NSS 3.41
