@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -895,7 +895,7 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Tue Dec 18 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-2
+* Fri Jan 11 2019 Daiki Ueno <dueno@redhat.com> - 3.41.0-3
 - Remove prelink.conf as prelink was removed in F24, suggested by
   Harald Reindl
 - Use quilt for %%autopatch
