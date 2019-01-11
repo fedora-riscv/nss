@@ -2,7 +2,6 @@
 %global nss_version 3.41.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
-%global prelink_conf_dir %{_sysconfdir}/prelink.conf.d/
 %global dracutlibdir %{_prefix}/lib/dracut
 %global dracut_modules_dir %{dracutlibdir}/modules.d/05nss-softokn/
 %global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
@@ -44,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -64,13 +63,13 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
+BuildRequires:    quilt
 
 Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
 Source1:          nss-util.pc.in
 Source2:          nss-util-config.in
 Source3:          nss-softokn.pc.in
 Source4:          nss-softokn-config.in
-Source5:          nss-softokn-prelink.conf
 Source6:          nss-softokn-dracut-module-setup.sh
 Source7:          nss-softokn-dracut.conf
 Source8:          nss.pc.in
@@ -133,7 +132,7 @@ Summary:          System NSS Initialization
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
-Requires:         nss = %{version}-%{release}
+Requires:         nss%{?_isa} = %{version}-%{release}
 Requires(post):   coreutils, sed
 
 %description sysinit
@@ -200,7 +199,6 @@ Requires:         nspr >= 4.12
 # For NSS_SecureMemcmpZero() from nss-util >= 3.33
 Requires:         nss-util >= 3.33
 Conflicts:        nss < 3.12.2.99.3-5
-Conflicts:        prelink < 0.4.3
 Conflicts:        filesystem < 3
 
 %description softokn-freebl
@@ -234,7 +232,7 @@ Header and library files for doing development with Network Security Services.
 
 
 %prep
-%setup -q -n %{name}-%{nss_archive_version}
+%autosetup -N -S quilt -n %{name}-%{nss_archive_version}
 pushd nss
 %autopatch -p1
 popd
@@ -522,7 +520,6 @@ mkdir -p $RPM_BUILD_ROOT/%{_libdir}
 mkdir -p $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 mkdir -p $RPM_BUILD_ROOT/%{saved_files_dir}
-mkdir -p $RPM_BUILD_ROOT/%{prelink_conf_dir}
 mkdir -p $RPM_BUILD_ROOT/%{dracut_modules_dir}
 mkdir -p $RPM_BUILD_ROOT/%{dracut_conf_dir}
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
@@ -533,7 +530,6 @@ mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/local.d
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools
 %endif
 
-install -m 644 %{SOURCE5} $RPM_BUILD_ROOT/%{prelink_conf_dir}
 install -m 755 %{SOURCE6} $RPM_BUILD_ROOT/%{dracut_modules_dir}/module-setup.sh
 install -m 644 %{SOURCE7} $RPM_BUILD_ROOT/%{dracut_conf_dir}/50-nss-softokn.conf
 
@@ -644,10 +640,10 @@ install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/loc
 /usr/bin/setup-nsssysinit.sh on
 
 %post
-update-crypto-policies
+update-crypto-policies &> /dev/null || :
 
 %postun
-update-crypto-policies
+update-crypto-policies &> /dev/null || :
 
 
 %files
@@ -866,8 +862,6 @@ update-crypto-policies
 %{_libdir}/libfreeblpriv3.so
 %{_libdir}/libfreeblpriv3.chk
 #shared
-%dir %{prelink_conf_dir}
-%{prelink_conf_dir}/nss-softokn-prelink.conf
 %dir %{dracut_modules_dir}
 %{dracut_modules_dir}/module-setup.sh
 %{dracut_conf_dir}/50-nss-softokn.conf
@@ -901,6 +895,13 @@ update-crypto-policies
 
 
 %changelog
+* Fri Jan 11 2019 Daiki Ueno <dueno@redhat.com> - 3.41.0-3
+- Remove prelink.conf as prelink was removed in F24, suggested by
+  Harald Reindl
+- Use quilt for %%autopatch
+- Make sysinit require arch-dependent nss, suggested by Igor Gnatenko
+- Silence %%post/%%postun scriptlets, suggested by Ian Collier
+
 * Mon Dec 10 2018 Daiki Ueno <dueno@redhat.com> - 3.41.0-1
 - Update to NSS 3.41
 
