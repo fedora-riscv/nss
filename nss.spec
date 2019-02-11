@@ -1,5 +1,5 @@
 %global nspr_version 4.20.0
-%global nss_version 3.42.0
+%global nss_version 3.42.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -867,6 +867,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Feb 11 2019 Daiki Ueno <dueno@redhat.com> - 3.42.1-1
+- Update to NSS 3.42.1
+
 * Fri Feb  8 2019 Daiki Ueno <dueno@redhat.com> - 3.42.0-1
 - Update to NSS 3.42
 
