@@ -1,4 +1,4 @@
-%global nspr_version 4.20.0
+%global nspr_version 4.21.0
 %global nss_version 3.43.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -283,7 +283,6 @@ export USE_64=1
 %endif
 %endif
 
-##### phase 2: build the rest of nss
 make -C ./nss/coreconf
 make -C ./nss/lib/dbm
 
@@ -867,6 +866,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Mar 26 2019 Elio Maldonado <elio.maldonado.batiz@gmail.com> - 3.43.0-2
+- Update %%{nspr_version} to 4.21.0 and remove obsolete comment
+
 * Thu Mar 21 2019 Daiki Ueno <dueno@redhat.com> - 3.43.0-1
 - Update to NSS 3.43
 
