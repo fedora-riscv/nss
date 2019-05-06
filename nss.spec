@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -93,6 +93,8 @@ Source28:         nss-p11-kit.config
 
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1549382
+Patch3:           nss-module-leak.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
@@ -866,6 +868,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon May  6 2019 Daiki Ueno <dueno@redhat.com> - 3.43.0-3
+- Fix PKCS#11 module leak if C_GetSlotInfo() failed
+
 * Tue Mar 26 2019 Elio Maldonado <elio.maldonado.batiz@gmail.com> - 3.43.0-2
 - Update %%{nspr_version} to 4.21.0 and remove obsolete comment
 
