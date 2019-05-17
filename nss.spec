@@ -1,5 +1,5 @@
 %global nspr_version 4.21.0
-%global nss_version 3.43.0
+%global nss_version 3.44.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -238,6 +238,9 @@ Header and library files for doing development with Network Security Services.
 pushd nss
 %autopatch -p1
 popd
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1247353
+find nss/lib/libpkix -perm /u+x -type f -exec chmod -x {} \;
 
 
 %build
@@ -868,6 +871,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri May 17 2019 Daiki Ueno <dueno@redhat.com> - 3.44.0-1
+- Update to NSS 3.44
+
 * Mon May  6 2019 Daiki Ueno <dueno@redhat.com> - 3.43.0-3
 - Fix PKCS#11 module leak if C_GetSlotInfo() failed
 
