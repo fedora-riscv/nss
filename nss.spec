@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -107,6 +107,8 @@ Patch3:           nss-module-leak.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1552767
+Patch5:           nss-skip-tls13-fips.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -871,6 +873,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon May 20 2019 Daiki Ueno <dueno@redhat.com> - 3.44.0-2
+- Skip TLS 1.3 tests under FIPS mode
+
 * Fri May 17 2019 Daiki Ueno <dueno@redhat.com> - 3.44.0-1
 - Update to NSS 3.44
 
