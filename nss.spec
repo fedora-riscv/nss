@@ -1,5 +1,5 @@
 %global nspr_version 4.21.0
-%global nss_version 3.44.0
+%global nss_version 3.44.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -874,6 +874,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Jul  2 2019 Daiki Ueno <dueno@redhat.com> - 3.44.1-1
+- Update to NSS 3.44.1
+
 * Mon May 20 2019 Daiki Ueno <dueno@redhat.com> - 3.44.0-2
 - Skip TLS 1.3 tests under FIPS mode
 
