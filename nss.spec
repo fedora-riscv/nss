@@ -109,6 +109,7 @@ Patch3:           nss-module-leak.patch
 Patch4:           iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1552767
 Patch5:           nss-skip-tls13-fips.patch
+Patch6:           nss-cavs-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
