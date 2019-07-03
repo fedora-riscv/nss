@@ -1,0 +1,155 @@
+# HG changeset patch
+# User Daiki Ueno <dueno@redhat.com>
+# Date 1562162181 -7200
+#      Wed Jul 03 15:56:21 2019 +0200
+# Node ID 88feab2a3e5e4b00b1626d59a0d3ecef93cafb92
+# Parent  b5d3f574967f8c5c705dab15682b0e16fac3e4be
+tests: ensure CAVS test dirs are created
+
+diff --git a/tests/fips/cavs_scripts/aes.sh b/tests/fips/cavs_scripts/aes.sh
+--- a/tests/fips/cavs_scripts/aes.sh
++++ b/tests/fips/cavs_scripts/aes.sh
+@@ -83,6 +83,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $cbc_kat_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/aesgcm.sh b/tests/fips/cavs_scripts/aesgcm.sh
+--- a/tests/fips/cavs_scripts/aesgcm.sh
++++ b/tests/fips/cavs_scripts/aesgcm.sh
+@@ -56,6 +56,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $gcm_decrypt_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/dsa.sh b/tests/fips/cavs_scripts/dsa.sh
+--- a/tests/fips/cavs_scripts/dsa.sh
++++ b/tests/fips/cavs_scripts/dsa.sh
+@@ -59,6 +59,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ request=KeyPair.req
+ response=`echo $request | sed -e "s/req/rsp/"`
+ echo $request $response
+diff --git a/tests/fips/cavs_scripts/ecdsa.sh b/tests/fips/cavs_scripts/ecdsa.sh
+--- a/tests/fips/cavs_scripts/ecdsa.sh
++++ b/tests/fips/cavs_scripts/ecdsa.sh
+@@ -50,6 +50,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ request=KeyPair.req
+ response=`echo $request | sed -e "s/req/rsp/"`
+ echo $request $response
+diff --git a/tests/fips/cavs_scripts/hmac.sh b/tests/fips/cavs_scripts/hmac.sh
+--- a/tests/fips/cavs_scripts/hmac.sh
++++ b/tests/fips/cavs_scripts/hmac.sh
+@@ -31,6 +31,9 @@ if [ ${COMMAND} = "verify" ]; then
+     done
+     exit $result
+ fi
++
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $hmac_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/ike.sh b/tests/fips/cavs_scripts/ike.sh
+--- a/tests/fips/cavs_scripts/ike.sh
++++ b/tests/fips/cavs_scripts/ike.sh
+@@ -33,6 +33,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ request=ikev1_dsa.req
+ response=`echo $request | sed -e "s/req/rsp/"`
+ echo $request $response
+diff --git a/tests/fips/cavs_scripts/kas.sh b/tests/fips/cavs_scripts/kas.sh
+--- a/tests/fips/cavs_scripts/kas.sh
++++ b/tests/fips/cavs_scripts/kas.sh
+@@ -68,6 +68,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ request=KASFunctionTest_ECCEphemeralUnified_NOKC_ZZOnly_init.req
+ response=`echo $request | sed -e "s/req/rsp/"`
+ echo $request $response
+diff --git a/tests/fips/cavs_scripts/rng.sh b/tests/fips/cavs_scripts/rng.sh
+--- a/tests/fips/cavs_scripts/rng.sh
++++ b/tests/fips/cavs_scripts/rng.sh
+@@ -30,6 +30,9 @@ if [ ${COMMAND} = "verify" ]; then
+     done
+     exit $result
+ fi
++
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $drbg_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/rsa.sh b/tests/fips/cavs_scripts/rsa.sh
+--- a/tests/fips/cavs_scripts/rsa.sh
++++ b/tests/fips/cavs_scripts/rsa.sh
+@@ -38,6 +38,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ request=SigGen15_186-3.req
+ response=`echo $request | sed -e "s/req/rsp/"`
+ echo $request $response
+diff --git a/tests/fips/cavs_scripts/sha.sh b/tests/fips/cavs_scripts/sha.sh
+--- a/tests/fips/cavs_scripts/sha.sh
++++ b/tests/fips/cavs_scripts/sha.sh
+@@ -51,6 +51,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $sha_ShortMsg_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/tdea.sh b/tests/fips/cavs_scripts/tdea.sh
+--- a/tests/fips/cavs_scripts/tdea.sh
++++ b/tests/fips/cavs_scripts/tdea.sh
+@@ -77,6 +77,8 @@ if [ ${COMMAND} = "verify" ]; then
+     exit $result
+ fi
+ 
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $cbc_kat_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
+diff --git a/tests/fips/cavs_scripts/tls.sh b/tests/fips/cavs_scripts/tls.sh
+--- a/tests/fips/cavs_scripts/tls.sh
++++ b/tests/fips/cavs_scripts/tls.sh
+@@ -30,6 +30,9 @@ if [ ${COMMAND} = "verify" ]; then
+     done
+     exit $result
+ fi
++
++test -d "${RSPDIR}" || mkdir "${RSPDIR}"
++
+ for request in $tls_requests; do
+     response=`echo $request | sed -e "s/req/rsp/"`
+     echo $request $response
