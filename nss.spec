@@ -1,5 +1,5 @@
 %global nspr_version 4.21.0
-%global nss_version 3.44.1
+%global nss_version 3.46.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -109,7 +109,6 @@ Patch3:           nss-module-leak.patch
 Patch4:           iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1552767
 Patch5:           nss-skip-tls13-fips.patch
-Patch6:           nss-cavs-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -875,6 +874,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Sep  3 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-1
+- Update to NSS 3.46
+
 * Tue Jul  2 2019 Daiki Ueno <dueno@redhat.com> - 3.44.1-1
 - Update to NSS 3.44.1
 
