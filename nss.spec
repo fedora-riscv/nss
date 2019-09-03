@@ -1,5 +1,5 @@
 %global nspr_version 4.21.0
-%global nss_version 3.44.1
+%global nss_version 3.46.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -109,7 +109,6 @@ Patch3:           nss-module-leak.patch
 Patch4:           iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1552767
 Patch5:           nss-skip-tls13-fips.patch
-Patch6:           nss-cavs-tests.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -874,6 +873,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Sep  3 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-2
+- Update to NSS 3.46
+
 * Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org> - 3.44.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
