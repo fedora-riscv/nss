@@ -93,8 +93,6 @@ Source28:         nss-p11-kit.config
 
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1549382
-Patch3:           nss-module-leak.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
