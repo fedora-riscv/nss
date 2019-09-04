@@ -1,4 +1,4 @@
-%global nspr_version 4.21.0
+%global nspr_version 4.22.0
 %global nss_version 3.46.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -105,8 +105,6 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1552767
-Patch5:           nss-skip-tls13-fips.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -871,6 +869,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Wed Sep  4 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-2
+- Rebuild with NSPR 4.22
+
 * Tue Sep  3 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-2
 - Update to NSS 3.46
 
