@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -105,6 +105,8 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
+# add missing ike mechanism to softoken
+Patch10:          nss-3.47-ike-fix.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -870,6 +872,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Nov 7 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
+- Include ike mechanism fix
+
 * Wed Oct 23 2019 Daiki Ueno <dueno@redhat.com> - 3.47.0-2
 - Install cmac.h required by blapi.h (#1764513)
 
