@@ -872,7 +872,7 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Mon Nov 7 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
+* Mon Nov 4 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
 - Include ike mechanism fix
 
 * Wed Oct 23 2019 Daiki Ueno <dueno@redhat.com> - 3.47.0-2
