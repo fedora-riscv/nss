@@ -1,5 +1,5 @@
 %global nspr_version 4.23.0
-%global nss_version 3.47.0
+%global nss_version 3.47.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -872,6 +872,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Nov 22 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-1
+- Update to NSS 3.47.1
+
 * Mon Nov 4 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
 - Include ike mechanism fix
 
