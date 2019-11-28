@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -107,6 +107,8 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 # add missing ike mechanism to softoken
 Patch10:          nss-3.47-ike-fix.patch
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1593167
+Patch11:	  nss-3.47-certdb-temp-cert.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -873,6 +875,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Nov 28 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-2
+- Fix intermittent SEC_ERROR_UNKNOWN_ISSUER (#1752303, #1648617)
+
 * Fri Nov 22 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-1
 - Update to NSS 3.47.1
 
