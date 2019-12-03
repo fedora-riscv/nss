@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -874,6 +874,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Dec  3 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-3
+- Update nss-3.47-certdb-temp-cert.patch to the final version
+
 * Thu Nov 28 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-2
 - Fix intermittent SEC_ERROR_UNKNOWN_ISSUER (#1752303, #1648617)
 
