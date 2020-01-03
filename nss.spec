@@ -1,5 +1,5 @@
-%global nspr_version 4.23.0
-%global nss_version 3.47.1
+%global nspr_version 4.24.0
+%global nss_version 3.48.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          4%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -875,6 +875,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Jan  3 2020 Daiki Ueno <dueno@redhat.com> - 3.48.0-1
+- Update to NSS 3.48
+
 * Tue Dec  3 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-4
 - Update nss-3.47-certdb-temp-cert.patch to avoid setting empty trust value
 
@@ -887,7 +890,7 @@ update-crypto-policies &> /dev/null || :
 * Fri Nov 22 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-1
 - Update to NSS 3.47.1
 
-* Mon Nov 7 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
+* Thu Nov 7 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
 - Include ike mechanism fix
 
 * Wed Oct 23 2019 Daiki Ueno <dueno@redhat.com> - 3.47.0-2
