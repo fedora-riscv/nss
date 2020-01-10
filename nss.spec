@@ -107,6 +107,8 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 # add missing ike mechanism to softoken
 Patch10:          nss-3.47-ike-fix.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1608327
+Patch11:          nss-3.49-neon-build-fixes.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -244,6 +246,8 @@ find nss/lib/libpkix -perm /u+x -type f -exec chmod -x {} \;
 
 
 %build
+
+gcc -mfpu=neon -dM -E - < /dev/null
 
 export FREEBL_NO_DEPEND=1
 
@@ -875,6 +879,7 @@ update-crypto-policies &> /dev/null || :
 %changelog
 * Fri Jan 10 2020 Daiki Ueno <dueno@redhat.com> - 3.49.0-1
 - Update to NSS 3.49
+- Fix build on armv7hl with the patch proposed in upstream
 
 * Fri Jan  3 2020 Daiki Ueno <dueno@redhat.com> - 3.48.0-1
 - Update to NSS 3.48
