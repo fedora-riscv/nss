@@ -890,7 +890,7 @@ update-crypto-policies &> /dev/null || :
 * Fri Nov 22 2019 Daiki Ueno <dueno@redhat.com> - 3.47.1-1
 - Update to NSS 3.47.1
 
-* Mon Nov 4 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
+* Thu Nov 7 2019 Bob Relyea <rrelyea@redhat.com> - 3.47.0-3
 - Include ike mechanism fix
 
 * Wed Oct 23 2019 Daiki Ueno <dueno@redhat.com> - 3.47.0-2
@@ -902,11 +902,11 @@ update-crypto-policies &> /dev/null || :
 * Mon Oct 21 2019 Daiki Ueno <dueno@redhat.com> - 3.46.1-1
 - Update to NSS 3.46.1
 
-* Tue Sep  3 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-1
-- Update to NSS 3.46
+* Wed Sep  4 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-2
+- Rebuild with NSPR 4.22
 
-* Thu Aug 29 2019 Daiki Ueno <dueno@redhat.com> - 3.45.0-1
-- Update to NSS 3.45
+* Tue Sep  3 2019 Daiki Ueno <dueno@redhat.com> - 3.46.0-2
+- Update to NSS 3.46
 
 * Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org> - 3.44.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
