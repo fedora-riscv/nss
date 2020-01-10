@@ -1,5 +1,5 @@
 %global nspr_version 4.24.0
-%global nss_version 3.48.0
+%global nss_version 3.49.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -107,8 +107,6 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 # add missing ike mechanism to softoken
 Patch10:          nss-3.47-ike-fix.patch
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1593167
-Patch11:	  nss-3.47-certdb-temp-cert.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -874,6 +872,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Jan 10 2020 Daiki Ueno <dueno@redhat.com> - 3.49.0-1
+- Update to NSS 3.49
+
 * Fri Jan  3 2020 Daiki Ueno <dueno@redhat.com> - 3.48.0-1
 - Update to NSS 3.48
 
