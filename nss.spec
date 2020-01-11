@@ -247,8 +247,6 @@ find nss/lib/libpkix -perm /u+x -type f -exec chmod -x {} \;
 
 %build
 
-gcc -mfpu=neon -dM -E - < /dev/null
-
 export FREEBL_NO_DEPEND=1
 
 # Must export FREEBL_LOWHASH=1 for nsslowhash.h so that it gets
