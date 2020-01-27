@@ -1,5 +1,5 @@
 %global nspr_version 4.24.0
-%global nss_version 3.49.0
+%global nss_version 3.49.2
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -107,8 +107,11 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 # add missing ike mechanism to softoken
 Patch10:          nss-3.47-ike-fix.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1608327
-Patch11:          nss-3.49-neon-build-fixes.patch
+# To revert the upstream change:
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1573118
+# as it still doesn't work under FIPS mode because of missing HKDF
+# support in PKCS #11.
+Patch11:	  nss-tls13-default.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -875,6 +878,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Jan 27 2020 Daiki Ueno <dueno@redhat.com> - 3.49.2-1
+- Update to NSS 3.49.2
+- Don't enable TLS 1.3 by default (#1794814)
+
 * Fri Jan 10 2020 Daiki Ueno <dueno@redhat.com> - 3.49.0-1
 - Update to NSS 3.49
 - Fix build on armv7hl with the patch proposed in upstream
