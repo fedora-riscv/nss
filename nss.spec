@@ -302,10 +302,7 @@ export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-make %{?_smp_mflags} -C ./nss/lib export
-make %{?_smp_mflags} -C ./nss/lib
-make %{?_smp_mflags} -C ./nss/cmd/lib
-make %{?_smp_mflags} -C ./nss
+make -C ./nss
 
 # build the man pages clean
 pushd ./nss
