@@ -1,0 +1,12 @@
+diff -up nss/lib/ssl/sslsock.c.tls13-default nss/lib/ssl/sslsock.c
+--- nss/lib/ssl/sslsock.c.tls13-default	2020-01-27 10:21:44.930830558 +0100
++++ nss/lib/ssl/sslsock.c	2020-01-27 10:21:47.419852229 +0100
+@@ -97,7 +97,7 @@ static sslOptions ssl_defaults = {
+  */
+ static SSLVersionRange versions_defaults_stream = {
+     SSL_LIBRARY_VERSION_TLS_1_0,
+-    SSL_LIBRARY_VERSION_TLS_1_3
++    SSL_LIBRARY_VERSION_TLS_1_2
+ };
+ 
+ static SSLVersionRange versions_defaults_datagram = {
