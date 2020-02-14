@@ -1,0 +1,22 @@
+diff --git a/lib/libpkix/pkix/util/pkix_list.c b/lib/libpkix/pkix/util/pkix_list.c
+--- a/lib/libpkix/pkix/util/pkix_list.c
++++ b/lib/libpkix/pkix/util/pkix_list.c
+@@ -1530,17 +1530,17 @@ cleanup:
+  */
+ PKIX_Error *
+ PKIX_List_SetItem(
+         PKIX_List *list,
+         PKIX_UInt32 index,
+         PKIX_PL_Object *item,
+         void *plContext)
+ {
+-        PKIX_List *element;
++        PKIX_List *element = NULL;
+ 
+         PKIX_ENTER(LIST, "PKIX_List_SetItem");
+         PKIX_NULLCHECK_ONE(list);
+ 
+         if (list->immutable){
+                 PKIX_ERROR(PKIX_OPERATIONNOTPERMITTEDONIMMUTABLELIST);
+         }
+ 

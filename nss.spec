@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -112,6 +112,7 @@ Patch10:          nss-3.47-ike-fix.patch
 # as it still doesn't work under FIPS mode because of missing HKDF
 # support in PKCS #11.
 Patch11:	  nss-tls13-default.patch
+Patch12:          nss-libpkix-maybe-uninitialized.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -877,6 +878,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Feb 14 2020 Daiki Ueno <dueno@redhat.com> - 3.49.2-3
+- Suppress compiler warning (treated as fatal) in libpkix
+
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.49.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
