@@ -112,6 +112,7 @@ Patch10:          nss-3.47-ike-fix.patch
 # as it still doesn't work under FIPS mode because of missing HKDF
 # support in PKCS #11.
 Patch11:	  nss-tls13-default.patch
+Patch12:          nss-signtool-format.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -885,6 +886,7 @@ update-crypto-policies &> /dev/null || :
 %changelog
 * Fri Feb 14 2020 Daiki Ueno <dueno@redhat.com> - 3.49.2-3
 - Ignore false-positive compiler warnings with gcc 10
+- Fix build with gcc 10
 
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.49.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
