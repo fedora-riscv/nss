@@ -1,5 +1,5 @@
-%global nspr_version 4.24.0
-%global nss_version 3.49.2
+%global nspr_version 4.25.0
+%global nss_version 3.50.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -884,6 +884,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Feb 17 2020 Daiki Ueno <dueno@redhat.com> - 3.50.0-3
+- Update to NSS 3.50
+
 * Fri Feb 14 2020 Daiki Ueno <dueno@redhat.com> - 3.49.2-3
 - Ignore false-positive compiler warnings with gcc 10
 - Fix build with gcc 10
