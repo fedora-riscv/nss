@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -305,8 +305,8 @@ export USE_64=1
 %endif
 %endif
 
-make -C ./nss/coreconf
-make -C ./nss/lib/dbm
+%{__make} -C ./nss/coreconf
+%{__make} -C ./nss/lib/dbm
 
 # Set the policy file location
 # if set NSS will always check for the policy file and load if it exists
@@ -314,11 +314,11 @@ export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-make -C ./nss
+%{__make} -C ./nss
 
 # build the man pages clean
 pushd ./nss
-make clean_docs build_docs
+%{__make} clean_docs build_docs
 popd
 
 # and copy them to the dist directory for %%install to find them
@@ -889,6 +889,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Mar 26 2020 Tom Stellard <tstellar@redhat.com> - 3.50.0-3
+- Use __make macro to invoke make
+
 * Thu Mar  5 2020 Daiki Ueno <dueno@redhat.com> - 3.50.0-2
 - Apply CMAC fixes from upstream
 
