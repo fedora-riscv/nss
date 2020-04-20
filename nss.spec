@@ -7,6 +7,7 @@
 %global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
 
 %bcond_without tests
+%bcond_with dbm
 
 # Produce .chk files for the final stripped binaries
 #
@@ -24,7 +25,7 @@
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libsoftokn3.so \
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libfreeblpriv3.so \
     $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libfreebl3.so \
-    $RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libnssdbm3.so \
+    %{?with_dbm:$RPM_BUILD_ROOT/%{unsupported_tools_directory}/shlibsign -i $RPM_BUILD_ROOT/%{_libdir}/libnssdbm3.so} \
 %{nil}
 
 # The upstream omits the trailing ".0", while we need it for
@@ -296,7 +297,10 @@ export NSS_USE_SYSTEM_SQLITE=1
 
 export NSS_ALLOW_SSLKEYLOGFILE=1
 
+%if %{with dbm}
+%else
 export NSS_DISABLE_DBM=1
+%endif
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -832,8 +836,10 @@ update-crypto-policies &> /dev/null || :
 %{_includedir}/nss3/templates/templates.c
 
 %files softokn
+%if %{with dbm}
 %{_libdir}/libnssdbm3.so
 %{_libdir}/libnssdbm3.chk
+%endif
 %{_libdir}/libsoftokn3.so
 %{_libdir}/libsoftokn3.chk
 # shared with nss-tools
