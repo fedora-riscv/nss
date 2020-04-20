@@ -1,5 +1,5 @@
 %global nspr_version 4.25.0
-%global nss_version 3.51.0
+%global nss_version 3.51.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -295,6 +295,8 @@ export NSPR_LIB_DIR=%{_libdir}
 export NSS_USE_SYSTEM_SQLITE=1
 
 export NSS_ALLOW_SSLKEYLOGFILE=1
+
+export NSS_DISABLE_DBM=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -886,6 +888,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Apr 20 2020 Daiki Ueno <dueno@redhat.com> - 3.51.1-1
+- Update to NSS 3.51.1
+- Disable building DBM backend
+
 * Tue Apr  7 2020 Daiki Ueno <dueno@redhat.com> - 3.51.0-1
 - Update to NSS 3.51
 
