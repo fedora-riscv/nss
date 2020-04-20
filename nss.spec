@@ -533,7 +533,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 
 # Copy the binary libraries we want
-for file in libnssutil3.so libsoftokn3.so libnssdbm3.so libfreebl3.so libfreeblpriv3.so libnss3.so libnsssysinit.so libsmime3.so libssl3.so
+for file in libnssutil3.so libsoftokn3.so %{?with_dbm:libnssdbm3.so} libfreebl3.so libfreeblpriv3.so libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
   install -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
