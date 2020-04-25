@@ -7,7 +7,7 @@
 %global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
 
 %bcond_without tests
-%bcond_with dbm
+%bcond_without dbm
 
 # Produce .chk files for the final stripped binaries
 #
@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -894,6 +894,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sat Apr 25 2020 Daiki Ueno <dueno@redhat.com> - 3.51.1-2
+- Temporarily revert DBM disablement for kernel build failure (#1827902)
+
 * Mon Apr 20 2020 Daiki Ueno <dueno@redhat.com> - 3.51.1-1
 - Update to NSS 3.51.1
 - Disable building DBM backend
