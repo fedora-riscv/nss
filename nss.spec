@@ -107,6 +107,8 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
+# https://github.com/FStarLang/kremlin/issues/166
+Patch13:          nss-kremlin-ppc64le.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
