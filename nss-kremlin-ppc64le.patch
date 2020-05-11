@@ -2,27 +2,28 @@ Index: nss/lib/freebl/verified/kremlin/include/kremlin/internal/types.h
 ===================================================================
 --- nss.orig/lib/freebl/verified/kremlin/include/kremlin/internal/types.h
 +++ nss/lib/freebl/verified/kremlin/include/kremlin/internal/types.h
-@@ -56,7 +56,9 @@ typedef const char *Prims_string;
+@@ -56,9 +56,10 @@ typedef const char *Prims_string;
+     !defined(__clang__)
  #include <emmintrin.h>
  typedef __m128i FStar_UInt128_uint128;
- #elif !defined(KRML_VERIFIED_UINT128) && !defined(_MSC_VER) && \
--    (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__))
-+    (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__) || \
+-#elif !defined(KRML_VERIFIED_UINT128) && !defined(_MSC_VER) &&           \
++#elif !defined(KRML_VERIFIED_UINT128) && !defined(_MSC_VER) && \
+     (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__) || \
+-     (defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)))
 +    (defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)) || \
 +     defined(__s390x__))
  typedef unsigned __int128 FStar_UInt128_uint128;
- #else
- typedef struct FStar_UInt128_uint128_s {
+ #elif !defined(KRML_VERIFIED_UINT128) && defined(_MSC_VER) && defined(__clang__)
+ typedef __uint128_t FStar_UInt128_uint128;
 Index: nss/lib/freebl/verified/kremlin/kremlib/dist/minimal/fstar_uint128_gcc64.h
 ===================================================================
 --- nss.orig/lib/freebl/verified/kremlin/kremlib/dist/minimal/fstar_uint128_gcc64.h
 +++ nss/lib/freebl/verified/kremlin/kremlib/dist/minimal/fstar_uint128_gcc64.h
-@@ -25,7 +25,9 @@
- #include "LowStar_Endianness.h"
+@@ -26,7 +26,8 @@
  
- #if !defined(KRML_VERIFIED_UINT128) && !defined(_MSC_VER) && \
--    (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__))
-+    (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__) || \
+ #if !defined(KRML_VERIFIED_UINT128) && (!defined(_MSC_VER) || defined(__clang__)) && \
+     (defined(__x86_64__) || defined(__x86_64) || defined(__aarch64__) ||             \
+-     (defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)))
 +    (defined(__powerpc64__) && defined(__LITTLE_ENDIAN__)) || \
 +     defined(__s390x__))
  

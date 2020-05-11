@@ -1,5 +1,5 @@
 %global nspr_version 4.25.0
-%global nss_version 3.51.1
+%global nss_version 3.52.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -105,13 +105,6 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-# add missing ike mechanism to softoken
-Patch10:          nss-3.47-ike-fix.patch
-# To revert the upstream change:
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1573118
-# as it still doesn't work under FIPS mode because of missing HKDF
-# support in PKCS #11.
-Patch11:	  nss-tls13-default.patch
 Patch12:          nss-signtool-format.patch
 # https://github.com/FStarLang/kremlin/issues/166
 Patch13:          nss-kremlin-ppc64le.patch
@@ -886,6 +879,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon May 11 2020 Daiki Ueno <dueno@redhat.com> - 3.52.0-1
+- Update to NSS 3.52
+
 * Mon May  4 2020 Daiki Ueno <dueno@redhat.com> - 3.51.1-1
 - Update to NSS 3.51.1
 
