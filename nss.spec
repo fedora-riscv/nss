@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -109,6 +109,11 @@ Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
 # https://github.com/FStarLang/kremlin/issues/166
 Patch13:          nss-kremlin-ppc64le.patch
+%if 0%{?fedora} < 34
+%if 0%{?rhel} < 9
+Patch20:          nss-gcm-param-default-pkcs11v2.patch
+%endif
+%endif
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -887,6 +892,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Wed May 13 2020 Bob Relyea <rrelyea@redhat.com> - 3.52.0-2
+- Delay CK_GCM_PARAMS semantics until fedora 34
+
 * Mon May 11 2020 Daiki Ueno <dueno@redhat.com> - 3.52.0-1
 - Update to NSS 3.52
 
