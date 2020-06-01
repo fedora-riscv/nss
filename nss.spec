@@ -1,5 +1,5 @@
 %global nspr_version 4.25.0
-%global nss_version 3.52.0
+%global nss_version 3.53.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -106,8 +106,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-# https://github.com/FStarLang/kremlin/issues/166
-Patch13:          nss-kremlin-ppc64le.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
@@ -879,6 +877,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Jun  1 2020 Daiki Ueno <dueno@redhat.com> - 3.53.0-1
+- Update to NSS 3.53
+
 * Wed May 13 2020 Bob Relyea <rrelyea@redhat.com> - 3.52.0-2
 - Delay CK_GCM_PARAMS semantics until fedora 34
 
