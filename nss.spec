@@ -293,16 +293,14 @@ export USE_64=1
 %endif
 %endif
 
-make -C ./nss/coreconf
-make -C ./nss/lib/dbm
-
 # Set the policy file location
 # if set NSS will always check for the policy file and load if it exists
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
 
-make -C ./nss
+%{__make} -C ./nss all
+%{__make} -C ./nss latest
 
 # build the man pages clean
 pushd ./nss
