@@ -1,0 +1,12 @@
+diff -up ./lib/pk11wrap/pk11pub.h.strict_proto_fix ./lib/pk11wrap/pk11pub.h
+--- ./lib/pk11wrap/pk11pub.h.strict_proto_fix	2020-06-04 16:48:54.721954514 -0700
++++ ./lib/pk11wrap/pk11pub.h	2020-06-04 16:49:17.074066050 -0700
+@@ -948,7 +948,7 @@ PRBool SECMOD_HasRootCerts(void);
+  *  the system state independent of the database state and can be called
+  *  before NSS initializes.
+  */
+-int SECMOD_GetSystemFIPSEnabled();
++int SECMOD_GetSystemFIPSEnabled(void);
+ 
+ SEC_END_PROTOS
+ 
