@@ -53,7 +53,7 @@ Requires:         nss-util >= %{nss_version}
 Requires:         nss-softokn%{_isa} >= %{nss_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
-Requires:         crypto-policies
+Requires:         /usr/bin/update-crypto-policies
 BuildRequires:    nspr-devel >= %{nspr_version}
 # for shlibsign
 BuildRequires:    nss-softokn
@@ -631,10 +631,7 @@ install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/loc
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
-%post
-update-crypto-policies &> /dev/null || :
-
-%postun
+%posttrans
 update-crypto-policies &> /dev/null || :
 
 
