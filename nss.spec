@@ -1,5 +1,5 @@
-%global nspr_version 4.25.0
-%global nss_version 3.53.0
+%global nspr_version 4.26.0
+%global nss_version 3.54.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -876,6 +876,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Wed Jul 15 2020 Daiki Ueno <dueno@redhat.com> - 3.54.0-1
+- Update to NSS 3.54
+
 * Fri Jun  5 2020 Bob Relyea <rrelyea@redhat.com> - 3.53.0-2
 - Fix non-strict prototype in pk11pub.h
 
