@@ -1,5 +1,5 @@
 %global nspr_version 4.26.0
-%global nss_version 3.54.0
+%global nss_version 3.55.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -7,7 +7,7 @@
 %global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
 
 %bcond_without tests
-%bcond_without dbm
+%bcond_with dbm
 
 # Produce .chk files for the final stripped binaries
 #
@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -887,6 +887,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sun Aug  2 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-1
+- Update to NSS 3.55
+- Disable building DBM backend
+
 * Sat Aug 01 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.54.0-3
 - Second attempt - Rebuilt for
   https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
