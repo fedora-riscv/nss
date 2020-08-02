@@ -1,5 +1,5 @@
 %global nspr_version 4.26.0
-%global nss_version 3.54.0
+%global nss_version 3.55.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -111,8 +111,6 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
-# Upstream bug https://bugzilla.mozilla.org/show_bug.cgi?id=1643528
-Patch30:          nss-3.53-strict-proto-fix.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -882,6 +880,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sun Aug  2 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-1
+- Update to NSS 3.55
+
 * Wed Jul 15 2020 Daiki Ueno <dueno@redhat.com> - 3.54.0-1
 - Update to NSS 3.54
 
