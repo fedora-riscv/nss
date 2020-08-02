@@ -112,8 +112,6 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
-# Upstream bug https://bugzilla.mozilla.org/show_bug.cgi?id=1643528
-Patch30:          nss-3.53-strict-proto-fix.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
