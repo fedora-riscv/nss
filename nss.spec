@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -249,6 +249,8 @@ find nss/lib/libpkix -perm /u+x -type f -exec chmod -x {} \;
 
 
 %build
+# This package fails its testsuite with LTO.  Disable LTO for now
+%global _lto_cflags %{nil}
 
 export FREEBL_NO_DEPEND=1
 
@@ -885,6 +887,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sat Aug  8 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-2
+- Disable LTO
+
 * Sun Aug  2 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-1
 - Update to NSS 3.55
 - Disable building DBM backend
