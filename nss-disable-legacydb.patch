@@ -1,0 +1,14 @@
+diff -up nss/lib/softoken/Makefile.dbm nss/lib/softoken/Makefile
+diff -up nss/lib/softoken/manifest.mn.dbm nss/lib/softoken/manifest.mn
+--- nss/lib/softoken/manifest.mn.dbm	2020-08-13 11:03:53.511561201 +0200
++++ nss/lib/softoken/manifest.mn	2020-08-13 11:05:17.148194158 +0200
+@@ -5,7 +5,9 @@
+ CORE_DEPTH = ../..
+ 
+ MODULE = nss
++ifndef NSS_DISABLE_DBM
+ DIRS = legacydb
++endif
+ 
+ LIBRARY_NAME = softokn
+ LIBRARY_VERSION = 3

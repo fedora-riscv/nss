@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -106,6 +106,10 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
+%if %{with dbm}
+%else
+Patch11:          nss-disable-legacydb.patch
+%endif
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
@@ -631,6 +635,20 @@ install -p -m 644 %{SOURCE28} $RPM_BUILD_ROOT/%{_sysconfdir}/crypto-policies/loc
 # from previous versions of nss.spec
 /usr/bin/setup-nsssysinit.sh on
 
+%post
+%if %{with dbm}
+%else
+# Upon upgrade, ensure that the existing database locations are migrated to SQL
+# database.
+if test $1 -eq 2; then
+    for dbdir in %{_sysconfdir}/pki/nssdb; do
+        if test ! -e ${dbdir}/pkcs11.txt; then
+            /usr/bin/certutil --merge -d ${dbdir} --source-dir ${dbdir}
+        fi
+    done
+fi
+%endif
+
 %posttrans
 update-crypto-policies &> /dev/null || :
 
@@ -887,6 +905,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Aug 13 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-3
+- Fix DBM backend disablement
+- Add scriptlet to auto-migrated known database locations
+
 * Sat Aug  8 2020 Daiki Ueno <dueno@redhat.com> - 3.55.0-2
 - Disable LTO
 
