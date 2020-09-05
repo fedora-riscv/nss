@@ -2,7 +2,7 @@
 # User Daiki Ueno <dueno@redhat.com>
 # Date 1599294537 -7200
 #      Sat Sep 05 10:28:57 2020 +0200
-# Node ID 1294add76fecdfc301c9cab3ed68ed1681979780
+# Node ID c2a28193fcf8771dc1f739bf5f41adf3f68b1d7d
 # Parent  e03296e73ba666329bd9c1257038353bc9074466
 Bug 1659256, add gcc version check on AArch64 optimization, r?rrelyea
 
@@ -12,7 +12,7 @@ Bug #: 1659256
 
 Differential Revision: https://phabricator.services.mozilla.com/D87174
 
-diff -r e03296e73ba6 -r 1294add76fec lib/freebl/Makefile
+diff -r e03296e73ba6 -r c2a28193fcf8 lib/freebl/Makefile
 --- a/lib/freebl/Makefile	Sat Sep 05 08:53:40 2020 +0200
 +++ b/lib/freebl/Makefile	Sat Sep 05 10:28:57 2020 +0200
 @@ -119,11 +119,24 @@
@@ -56,3 +56,18 @@ diff -r e03296e73ba6 -r 1294add76fec lib/freebl/Makefile
          ifneq (,$(filter 4.9,$(word 1,$(GCC_VERSION)).$(word 2,$(GCC_VERSION))))
              DEFINES += -DUSE_HW_AES -DUSE_HW_SHA1 -DUSE_HW_SHA2
              EXTRA_SRCS += aes-armv8.c sha1-armv8.c sha256-armv8.c
+@@ -728,14 +744,12 @@
+ endif
+ endif
+ 
+-ifdef NS_USE_GCC
+ ifeq ($(CPU_ARCH),aarch64)
+ $(OBJDIR)/$(PROG_PREFIX)aes-armv8$(OBJ_SUFFIX): CFLAGS += -march=armv8-a+crypto
+ $(OBJDIR)/$(PROG_PREFIX)gcm-aarch64$(OBJ_SUFFIX): CFLAGS += -march=armv8-a+crypto
+ $(OBJDIR)/$(PROG_PREFIX)sha1-armv8$(OBJ_SUFFIX): CFLAGS += -march=armv8-a+crypto
+ $(OBJDIR)/$(PROG_PREFIX)sha256-armv8$(OBJ_SUFFIX): CFLAGS += -march=armv8-a+crypto
+ endif
+-endif
+ 
+ ifeq ($(CPU_ARCH),ppc)
+ ifndef NSS_DISABLE_ALTIVEC
