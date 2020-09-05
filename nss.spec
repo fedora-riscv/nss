@@ -106,6 +106,10 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1659256
+# Also fixes the regression in bug 1652032:
+# https://phabricator.services.mozilla.com/D87174#2817994
+Patch13:          nss-aarch64-gcc.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
