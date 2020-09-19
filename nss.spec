@@ -1,5 +1,5 @@
-%global nspr_version 4.28.0
-%global nss_version 3.56.0
+%global nspr_version 4.29.0
+%global nss_version 3.57.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -106,10 +106,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1659256
-# Also fixes the regression in bug 1652032:
-# https://phabricator.services.mozilla.com/D87174#2817994
-Patch13:          nss-aarch64-gcc.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
@@ -884,6 +880,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sat Sep 19 2020 Daiki Ueno <dueno@redhat.com> - 3.57.0-1
+- Update to NSS 3.57
+
 * Mon Aug 24 2020 Daiki Ueno <dueno@redhat.com> - 3.56.0-1
 - Update to NSS 3.56
 
