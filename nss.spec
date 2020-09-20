@@ -106,10 +106,6 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-%if %{with dbm}
-%else
-Patch11:          nss-disable-legacydb.patch
-%endif
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
