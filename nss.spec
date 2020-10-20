@@ -1,5 +1,5 @@
 %global nspr_version 4.29.0
-%global nss_version 3.57.0
+%global nss_version 3.58.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -874,6 +874,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Oct 20 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-1
+- Update to NSS 3.58
+
 * Sat Sep 19 2020 Daiki Ueno <dueno@redhat.com> - 3.57.0-1
 - Update to NSS 3.57
 
