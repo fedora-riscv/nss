@@ -736,6 +736,7 @@ update-crypto-policies &> /dev/null || :
 %{_includedir}/nss3/p12plcy.h
 %{_includedir}/nss3/p12t.h
 %{_includedir}/nss3/pk11func.h
+%{_includedir}/nss3/pk11hpke.h
 %{_includedir}/nss3/pk11pqg.h
 %{_includedir}/nss3/pk11priv.h
 %{_includedir}/nss3/pk11pub.h
