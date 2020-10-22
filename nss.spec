@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -105,6 +105,8 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672703
+Patch5:		  nss-ccs.patch
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
@@ -881,6 +883,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Oct 22 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-2
+- Enable TLS 1.3 middlebox compatibility mode by default
+
 * Tue Oct 20 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-1
 - Update to NSS 3.58
 

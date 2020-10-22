@@ -1,0 +1,13 @@
+Index: nss/lib/ssl/sslsock.c
+===================================================================
+--- nss.orig/lib/ssl/sslsock.c
++++ nss/lib/ssl/sslsock.c
+@@ -86,7 +86,7 @@ static sslOptions ssl_defaults = {
+     .enableSignedCertTimestamps = PR_FALSE,
+     .requireDHENamedGroups = PR_FALSE,
+     .enable0RttData = PR_FALSE,
+-    .enableTls13CompatMode = PR_FALSE,
++    .enableTls13CompatMode = PR_TRUE,
+     .enableDtls13VersionCompat = PR_FALSE,
+     .enableDtlsShortHeader = PR_FALSE,
+     .enableHelloDowngradeCheck = PR_FALSE,
