@@ -1,4 +1,5 @@
 %global nspr_version 4.29.0
+%global nspr_release 2
 %global nss_version 3.58.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -32,6 +33,11 @@
 # consistency with the pkg-config version:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1578106
 %{lua:
+rpm.define(string.format("nspr_archive_version %s",
+           string.gsub(rpm.expand("%nspr_version"), "(.*)%.0$", "%1")))
+}
+
+%{lua:
 rpm.define(string.format("nss_archive_version %s",
            string.gsub(rpm.expand("%nss_version"), "(.*)%.0$", "%1")))
 }
@@ -44,7 +50,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -54,7 +60,6 @@ Requires:         nss-softokn%{_isa} >= %{nss_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
 Requires:         /usr/bin/update-crypto-policies
-BuildRequires:    nspr-devel >= %{nspr_version}
 # for shlibsign
 BuildRequires:    nss-softokn
 BuildRequires:    sqlite-devel
@@ -92,6 +97,9 @@ Source26:         key4.db.xml
 Source27:         secmod.db.xml
 Source28:         nss-p11-kit.config
 
+Source100:        nspr-%{nspr_archive_version}.tar.gz
+Source101:        nspr-config.xml
+
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
 Patch2:           nss-539183.patch
 # This patch uses the GCC -iquote option documented at
@@ -116,6 +124,9 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
+
+Patch100:         nspr-config-pc.patch
+Patch101:         nspr-gcc-atomics.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -236,16 +247,52 @@ Requires:         nss-softokn-freebl-devel%{?_isa} = %{version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         nss-util-devel >= %{version}-%{release}
 Requires:         pkgconfig
-BuildRequires:    nspr-devel >= %{nspr_version}
 
 %description softokn-devel
 Header and library files for doing development with Network Security Services.
 
+%package -n nspr
+Summary:        Netscape Portable Runtime
+Version:        %{nspr_version}
+Release:        %{nspr_release}%{?dist}
+License:        MPLv2.0
+URL:            http://www.mozilla.org/projects/nspr/
+Conflicts:      filesystem < 3
+BuildRequires:  gcc
+
+%description -n nspr
+NSPR provides platform independence for non-GUI operating system 
+facilities. These facilities include threads, thread synchronization, 
+normal file and network I/O, interval timing and calendar time, basic 
+memory management (malloc and free) and shared library linking.
+
+%package -n nspr-devel
+Summary:        Development libraries for the Netscape Portable Runtime
+Version:        %{nspr_version}
+Release:        %{nspr_release}%{?dist}
+Requires:       nspr = %{nspr_version}-%{nspr_release}
+Requires:       pkgconfig
+BuildRequires:  xmlto
+Conflicts:      filesystem < 3
+
+%description -n nspr-devel
+Header files for doing development with the Netscape Portable Runtime.
+
 
 %prep
-%autosetup -N -S quilt -n %{name}-%{nss_archive_version}
+%setup -q -T -b 100 -n nspr-%{nspr_archive_version}
+
+%setup -q -T -b 0 -n %{name}-%{nss_archive_version}
+mv ../nspr-%{nspr_archive_version}/nspr .
+cp ./nspr/config/nspr-config.in ./nspr/config/nspr-config-pc.in
+
+%patch100 -p0 -b .flags
+pushd nspr
+%patch101 -p1 -b .gcc-atomics
+popd
+
 pushd nss
-%autopatch -p1
+%autopatch -p1 -M 99
 popd
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1247353
@@ -253,6 +300,48 @@ find nss/lib/libpkix -perm /u+x -type f -exec chmod -x {} \;
 
 
 %build
+# Build, check, and install NSPR for building NSS in the later phase
+#
+# TODO: This phase can be done by the NSS build process if we switch
+# to using "make nss_build_all".  For now, however, we need some
+# adjustment in the NSS build process.
+mkdir -p nspr_build
+pushd nspr_build
+../nspr/configure \
+                 --prefix=%{_prefix} \
+                 --libdir=%{_libdir} \
+                 --includedir=%{_includedir}/nspr4 \
+                 --with-dist-prefix=$PWD/../dist \
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
+                 --enable-64bit \
+%endif
+%endif
+%ifarch armv7l armv7hl armv7nhl
+                 --enable-thumb2 \
+%endif
+                 --enable-optimize="$RPM_OPT_FLAGS" \
+                 --disable-debug
+
+# The assembly files are only for legacy atomics, to which we prefer GCC atomics
+%ifarch i686 x86_64
+sed -i '/^PR_MD_ASFILES/d' config/autoconf.mk
+%endif
+make
+
+date +"%e %B %Y" | tr -d '\n' > date.xml
+echo -n %{nspr_version} > version.xml
+
+for m in %{SOURCE101}; do
+  cp ${m} .
+done
+for m in nspr-config.xml; do
+  xmlto man ${m}
+done
+popd
+
+# Build NSS
+#
 # This package fails its testsuite with LTO.  Disable LTO for now
 %global _lto_cflags %{nil}
 
@@ -292,8 +381,7 @@ export DSO_LDOPTS=$RPM_LD_FLAGS
 export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
-export NSPR_INCLUDE_DIR=`/usr/bin/pkg-config --cflags-only-I nspr | sed 's/-I//'`
-export NSPR_LIB_DIR=%{_libdir}
+export NSPR_INCLUDE_DIR=$PWD/dist/include/nspr
 
 export NSS_USE_SYSTEM_SQLITE=1
 
@@ -430,6 +518,20 @@ done
 
 %check
 %if %{with tests}
+pushd nspr_build
+# Run test suite.
+perl ../nspr/pr/tests/runtests.pl 2>&1 | tee output.log
+
+TEST_FAILURES=`grep -c FAILED ./output.log` || :
+if [ $TEST_FAILURES -ne 0 ]; then
+  echo "error: test suite returned failure(s)"
+  exit 1
+fi
+echo "test suite completed"
+popd
+%endif
+
+%if %{with tests}
 # Begin -- copied from the build section
 
 export FREEBL_NO_DEPEND=1
@@ -506,6 +608,27 @@ killall $RANDSERV || :
 %endif
 
 %install
+
+pushd nspr_build
+make install DESTDIR=$RPM_BUILD_ROOT
+
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
+
+# Get rid of the things we don't want installed (per upstream)
+rm -rf \
+   $RPM_BUILD_ROOT/%{_bindir}/compile-et.pl \
+   $RPM_BUILD_ROOT/%{_bindir}/prerr.properties \
+   $RPM_BUILD_ROOT/%{_libdir}/libnspr4.a \
+   $RPM_BUILD_ROOT/%{_libdir}/libplc4.a \
+   $RPM_BUILD_ROOT/%{_libdir}/libplds4.a \
+   $RPM_BUILD_ROOT/%{_datadir}/aclocal/nspr.m4 \
+   $RPM_BUILD_ROOT/%{_includedir}/nspr4/md
+
+for f in nspr-config; do 
+   install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
+done
+popd
 
 # There is no make install target so we'll do it ourselves.
 
@@ -904,8 +1027,24 @@ update-crypto-policies &> /dev/null || :
 %{_includedir}/nss3/nsslowhash.h
 %{_includedir}/nss3/shsign.h
 
+%files -n nspr
+%{!?_licensedir:%global license %%doc}
+%license nspr/LICENSE
+%{_libdir}/libnspr4.so
+%{_libdir}/libplc4.so
+%{_libdir}/libplds4.so
+
+%files -n nspr-devel
+%{_includedir}/nspr4
+%{_libdir}/pkgconfig/nspr.pc
+%{_bindir}/nspr-config
+%{_mandir}/man*/*
+
 
 %changelog
+* Tue Oct 27 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-5
+- Consolidate NSPR package with this package
+
 * Mon Oct 26 2020 Bob Relyea <rrelyea@redhat.com> - 3.58.0-4
 - fix pkix ocsp to tolerate OCSP checking on intermediates 
   when the root is signed by sha1 and sha1 is disabled by
