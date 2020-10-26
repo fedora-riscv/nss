@@ -1,0 +1,372 @@
+
+# HG changeset patch
+# User Robert Relyea <rrelyea@redhat.com>
+# Date 1603752651 25200
+# Node ID 035110dfa0b9a7f755860020fbbb7296c543d63b
+# Parent  a79d14b06b4a3ca19c169a4b0c1f28d5e2f25b35# Parent  97f69f7a89a1a31b5acb05a551560e62b65495d4
+Bug 1672291 libpkix OCSP failures on SHA1 self-signed root certs when SHA1 signatures are disabled. r=mt
+
+When libpkix is checking an OCSP cert, it can't use the passed in set of trust anchors as a base because only the single root that signed the leaf can sign the OCSP request. As a result it actually checks the signature of the self-signed root when processing an OCSP request. This fails of the root cert signature is invalid for any reason (including it's a sha1 self-signed root cert and we've disabled sha1 signatures (say, by policy)).
+
+Further investigation indicates the difference between our classic code and the current code is the classic code only checks OCSP responses on leaf certs. In the real world, those responses are signed by intermediate certificates (who won't have sha1 signed certificates anymore), so our signature processing works just fine. pkix checks OCSP on the intermediate certificates as well, which are signed by the root cert. In this case the root cert is a chain of 1, and is effectively a leaf. This patch updates the OCSP response code to not check the signatures on the single cert if that cert is a selfsigned root cert. This requires bug 391476 so we still do the other validation checking on the certs (making sure it's trusted as a CA).
+
+Differential Revision: https://phabricator.services.mozilla.com/D94661
+
+diff --git a/lib/certhigh/certvfypkix.c b/lib/certhigh/certvfypkix.c
+--- a/lib/certhigh/certvfypkix.c
++++ b/lib/certhigh/certvfypkix.c
+@@ -406,17 +406,17 @@ cleanup:
+  * RETURNS:
+  *  Returns NULL if the function succeeds.
+  *  Returns a Cert Verify Error if the function fails in an unrecoverable way.
+  *  Returns a Fatal Error if the function fails in an unrecoverable way.
+  */
+ static PKIX_Error *
+ cert_CreatePkixProcessingParams(
+     CERTCertificate *cert,
+-    PRBool checkSig, /* not used yet. See bug 391476 */
++    PRBool checkSig,
+     PRTime time,
+     void *wincx,
+     PRBool useArena,
+     PRBool disableOCSPRemoteFetching,
+     PKIX_ProcessingParams **pprocParams,
+     void **pplContext)
+ {
+     PKIX_List *anchors = NULL;
+@@ -436,25 +436,22 @@ cert_CreatePkixProcessingParams(
+     PKIX_NULLCHECK_TWO(cert, pprocParams);
+ 
+     PKIX_CHECK(
+         PKIX_PL_NssContext_Create(0, useArena, wincx, &plContext),
+         PKIX_NSSCONTEXTCREATEFAILED);
+ 
+     *pplContext = plContext;
+ 
+-#ifdef PKIX_NOTDEF
+     /* Functions should be implemented in patch for 390532 */
+     PKIX_CHECK(
+         pkix_pl_NssContext_SetCertSignatureCheck(checkSig,
+                                                  (PKIX_PL_NssContext *)plContext),
+         PKIX_NSSCONTEXTSETCERTSIGNCHECKFAILED);
+ 
+-#endif /* PKIX_NOTDEF */
+-
+     PKIX_CHECK(
+         PKIX_ProcessingParams_Create(&procParams, plContext),
+         PKIX_PROCESSINGPARAMSCREATEFAILED);
+ 
+     PKIX_CHECK(
+         PKIX_ComCertSelParams_Create(&certSelParams, plContext),
+         PKIX_COMCERTSELPARAMSCREATEFAILED);
+ 
+diff --git a/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c b/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c
+--- a/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c
++++ b/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.c
+@@ -49,16 +49,17 @@ PKIX_PL_NssContext_Create(
+         context->arena = arena;
+         context->certificateUsage = (SECCertificateUsage)certificateUsage;
+         context->wincx = wincx;
+         context->timeoutSeconds = PKIX_DEFAULT_COMM_TIMEOUT_SECONDS;
+         context->maxResponseLength = PKIX_DEFAULT_MAX_RESPONSE_LENGTH;
+         context->crlReloadDelay = PKIX_DEFAULT_CRL_RELOAD_DELAY_SECONDS;
+         context->badDerCrlReloadDelay =
+                              PKIX_DEFAULT_BAD_CRL_RELOAD_DELAY_SECONDS;
++        context->certSignatureCheck = PKIX_TRUE;
+         context->chainVerifyCallback.isChainValid = NULL;
+         context->chainVerifyCallback.isChainValidArg = NULL;
+         *pNssContext = context;
+ 
+ cleanup:
+ 
+         PKIX_RETURN(CONTEXT);
+ }
+@@ -156,16 +157,85 @@ pkix_pl_NssContext_SetCertUsage(
+         PKIX_NULLCHECK_ONE(nssContext);
+ 
+         nssContext->certificateUsage = certUsage;
+ 
+         PKIX_RETURN(CONTEXT);
+ }
+ 
+ /*
++ * FUNCTION: pkix_pl_NssContext_GetCertSignatureCheck
++ * DESCRIPTION:
++ *
++ *  This function obtains the platform-dependent flag to turn on or off
++ *  signature checks.
++ *
++ * PARAMETERS:
++ *  "nssContext"
++ *      The address of the context object whose wincx parameter is to be
++ *      obtained. Must be non-NULL.
++ *  "pCheckSig"
++ *      The address where the result is stored. Must be non-NULL.
++ * THREAD SAFETY:
++ *  Thread Safe (see Thread Safety Definitions in Programmer's Guide)
++ * RETURNS:
++ *  Returns NULL if the function succeeds.
++ *  Returns a Fatal Error if the function fails in an unrecoverable way.
++ */
++PKIX_Error *
++pkix_pl_NssContext_GetCertSignatureCheck(
++        PKIX_PL_NssContext *nssContext,
++        PKIX_Boolean *pCheckSig)
++{
++        void *plContext = NULL;
++
++        PKIX_ENTER(CONTEXT, "pkix_pl_NssContext_GetCertUsage");
++        PKIX_NULLCHECK_TWO(nssContext, pCheckSig);
++
++        *pCheckSig = nssContext->certSignatureCheck;
++
++        PKIX_RETURN(CONTEXT);
++}
++
++/*
++ * FUNCTION: pkix_pl_NssContext_SetCertSignatureCheck
++ * DESCRIPTION:
++ *
++ *  This function sets the check signature flag in
++ *  the context object pointed to by "nssContext" to the value provided in
++ *  "checkSig".
++ *
++ * PARAMETERS:
++ *  "checkSig"
++ *      Boolean that tells whether or not to check the signatues on certs.
++ *  "nssContext"
++ *      The address of the context object whose wincx parameter is to be
++ *      obtained. Must be non-NULL.
++ * THREAD SAFETY:
++ *  Thread Safe (see Thread Safety Definitions in Programmer's Guide)
++ * RETURNS:
++ *  Returns NULL if the function succeeds.
++ *  Returns a Fatal Error if the function fails in an unrecoverable way.
++ */
++PKIX_Error *
++pkix_pl_NssContext_SetCertSignatureCheck(
++        PKIX_Boolean checkSig,
++        PKIX_PL_NssContext *nssContext)
++{
++        void *plContext = NULL;
++
++        PKIX_ENTER(CONTEXT, "pkix_pl_NssContext_SetCertUsage");
++        PKIX_NULLCHECK_ONE(nssContext);
++
++        nssContext->certSignatureCheck =  checkSig;
++
++        PKIX_RETURN(CONTEXT);
++}
++
++/*
+  * FUNCTION: pkix_pl_NssContext_GetWincx
+  * DESCRIPTION:
+  *
+  *  This function obtains the platform-dependent wincx parameter from the
+  *  context object pointed to by "nssContext", storing the result at "pWincx".
+  *
+  * PARAMETERS:
+  *  "nssContext"
+diff --git a/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h b/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h
+--- a/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h
++++ b/lib/libpkix/pkix_pl_nss/module/pkix_pl_nsscontext.h
+@@ -22,28 +22,37 @@ struct PKIX_PL_NssContextStruct {
+         SECCertificateUsage certificateUsage;
+         PLArenaPool *arena;
+         void *wincx;
+         PKIX_UInt32 timeoutSeconds;
+         PKIX_UInt32 maxResponseLength;
+         PRTime crlReloadDelay;
+         PRTime badDerCrlReloadDelay;
+         CERTChainVerifyCallback chainVerifyCallback;
++        PKIX_Boolean certSignatureCheck;
+ };
+ 
+ PKIX_Error *
+ pkix_pl_NssContext_GetCertUsage
+         (PKIX_PL_NssContext *nssContext, SECCertificateUsage *pCertUsage);
+ 
+ /* XXX move the setter into the public header. */
+ PKIX_Error *
+ pkix_pl_NssContext_SetCertUsage
+         (SECCertificateUsage certUsage, PKIX_PL_NssContext *nssContext);
+ 
+ PKIX_Error *
++pkix_pl_NssContext_GetCertSignatureCheck
++        (PKIX_PL_NssContext *nssContext, PKIX_Boolean *pCheckSig);
++
++PKIX_Error *
++pkix_pl_NssContext_SetCertSignatureCheck
++        (PKIX_Boolean checkSig, PKIX_PL_NssContext *nssContext);
++
++PKIX_Error *
+ pkix_pl_NssContext_GetWincx(PKIX_PL_NssContext *nssContext, void **pWincx);
+ 
+ /* XXX move the setter into the public header. */
+ PKIX_Error *
+ pkix_pl_NssContext_SetWincx(void *wincx, PKIX_PL_NssContext *nssContext);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c b/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c
+--- a/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c
++++ b/lib/libpkix/pkix_pl_nss/pki/pkix_pl_cert.c
+@@ -2806,24 +2806,33 @@ PKIX_PL_Cert_VerifySignature(
+         void *plContext)
+ {
+         CERTCertificate *nssCert = NULL;
+         SECKEYPublicKey *nssPubKey = NULL;
+         CERTSignedData *tbsCert = NULL;
+         PKIX_PL_Cert *cachedCert = NULL;
+         PKIX_Error *verifySig = NULL;
+         PKIX_Error *cachedSig = NULL;
++        PKIX_Error *checkSig = NULL;
+         SECStatus status;
+         PKIX_Boolean certEqual = PKIX_FALSE;
+         PKIX_Boolean certInHash = PKIX_FALSE;
++        PKIX_Boolean checkCertSig = PKIX_TRUE;
+         void* wincx = NULL;
+ 
+         PKIX_ENTER(CERT, "PKIX_PL_Cert_VerifySignature");
+         PKIX_NULLCHECK_THREE(cert, cert->nssCert, pubKey);
+ 
++        /* if the cert check flag is off, skip the check */
++        checkSig = pkix_pl_NssContext_GetCertSignatureCheck(
++                   (PKIX_PL_NssContext *)plContext, &checkCertSig);
++        if ((checkCertSig == PKIX_FALSE) && (checkSig == NULL)) {
++            goto cleanup;
++        }
++
+         verifySig = PKIX_PL_HashTable_Lookup
+                         (cachedCertSigTable,
+                         (PKIX_PL_Object *) pubKey,
+                         (PKIX_PL_Object **) &cachedCert,
+                         plContext);
+ 
+         if (cachedCert != NULL && verifySig == NULL) {
+                 /* Cached Signature Table lookup succeed */
+@@ -2874,16 +2883,17 @@ PKIX_PL_Cert_VerifySignature(
+ 
+ cleanup:
+         if (nssPubKey){
+                 PKIX_CERT_DEBUG("\t\tCalling SECKEY_DestroyPublicKey).\n");
+                 SECKEY_DestroyPublicKey(nssPubKey);
+         }
+ 
+         PKIX_DECREF(cachedCert);
++        PKIX_DECREF(checkSig);
+         PKIX_DECREF(verifySig);
+         PKIX_DECREF(cachedSig);
+ 
+         PKIX_RETURN(CERT);
+ }
+ 
+ /*
+  * FUNCTION: PKIX_PL_Cert_CheckValidity (see comments in pkix_pl_pki.h)
+diff --git a/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c b/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c
+--- a/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c
++++ b/lib/libpkix/pkix_pl_nss/pki/pkix_pl_ocspresponse.c
+@@ -736,17 +736,19 @@ pkix_pl_OcspResponse_VerifyResponse(
+             (response->verifyFcn)((PKIX_PL_Object*)response->pkixSignerCert,
+                                   NULL, response->producedAtDate,
+                                   procParams, pNBIOContext,
+                                   state, buildResult,
+                                   NULL, lplContext),
+             PKIX_CERTVERIFYKEYUSAGEFAILED);
+         rv = SECSuccess;
+     } else {
+-        rv = CERT_VerifyCert(response->handle, response->signerCert, PKIX_TRUE,
++        /* checkSig is !isRoot */
++        PRBool checkSig = response->signerCert->isRoot ? PR_FALSE : PR_TRUE;
++        rv = CERT_VerifyCert(response->handle, response->signerCert, checkSig,
+                              certUsage, response->producedAt, NULL, NULL);
+         if (rv != SECSuccess) {
+             PKIX_ERROR(PKIX_CERTVERIFYKEYUSAGEFAILED);
+         }
+     }
+ 
+ cleanup:
+     if (rv != SECSuccess) {
+diff --git a/tests/ssl/ssl.sh b/tests/ssl/ssl.sh
+--- a/tests/ssl/ssl.sh
++++ b/tests/ssl/ssl.sh
+@@ -931,16 +931,60 @@ ssl_policy_listsuites()
+   html_msg $RET $RET_EXP "${testname}" \
+            "produced a returncode of $RET, expected is $RET_EXP"
+ 
+   cp ${P_R_CLIENTDIR}/pkcs11.txt.sav ${P_R_CLIENTDIR}/pkcs11.txt
+ 
+   html "</TABLE><BR>"
+ }
+ 
++ssl_policy_pkix_ocsp()
++{
++  #verbose="-v"
++  html_head "Check that OCSP doesn't break if we disable sha1 $NORM_EXT - server $SERVER_MODE/client $CLIENT_MODE"
++
++  PKIX_SAVE=${NSS_ENABLE_PKIX_VERIFY-"unset"}
++  NSS_ENABLE_PKIX_VERIFY="1"
++  export NSS_ENABLE_PKIX_VERIFY
++
++  testname=""
++
++  if [ ! -f "${P_R_SERVERDIR}/pkcs11.txt" ] ; then
++      html_failed "${SCRIPTNAME}: ${P_R_SERVERDIR} is not initialized"
++      return 1;
++  fi
++
++  echo "Saving pkcs11.txt"
++  cp ${P_R_SERVERDIR}/pkcs11.txt ${P_R_SERVERDIR}/pkcs11.txt.sav
++
++  # Disallow sha1 explicitly. This will test if we are trying to verify the sha1 signature
++  # on the GlobalSign root during OCSP processing
++  setup_policy "disallow=sha1" ${P_R_SERVERDIR}
++  RET_EXP=0
++  echo " vfyserv -o wrong.host.badssl.com -d ${P_R_SERVERDIR} 2>&1 | tee ${P_R_SERVERDIR}/vfy.out"
++  vfyserv -o wrong.host.badssl.com -d ${P_R_SERVERDIR} 2>&1 | tee ${P_R_SERVERDIR}/vfy.out
++  # make sure we have the domain mismatch, not bad signature error
++  echo "grep 12276 ${P_R_SERVERDIR}/vfy.out"
++  grep 12276 ${P_R_SERVERDIR}/vfy.out
++  RET=$?
++  html_msg $RET $RET_EXP "${testname}" \
++           "produced a returncode of $RET, expected is $RET_EXP"
++
++  if [ "${PKIX_SAVE}" = "unset" ]; then
++      unset NSS_ENABLE_PKIX_VERIFY
++  else
++      NSS_ENABLE_PKIX_VERIFY=${PKIX_SAVE}
++      export NSS_ENABLE_PKIX_VERIFY
++  fi
++  cp ${P_R_SERVERDIR}/pkcs11.txt.sav ${P_R_SERVERDIR}/pkcs11.txt
++
++  html "</TABLE><BR>"
++
++}
++
+ ############################## ssl_policy_selfserv #####################
+ # local shell function to perform SSL Policy tests, using selfserv
+ ########################################################################
+ ssl_policy_selfserv()
+ {
+   #verbose="-v"
+   html_head "SSL POLICY SELFSERV $NORM_EXT - server $SERVER_MODE/client $CLIENT_MODE"
+ 
+@@ -1548,16 +1592,17 @@ ssl_run_tests()
+ {
+     for SSL_TEST in ${NSS_SSL_TESTS}
+     do
+         case "${SSL_TEST}" in
+         "policy")
+             if [ "${TEST_MODE}" = "SHARED_DB" ] ; then
+                 ssl_policy_listsuites
+                 ssl_policy_selfserv
++                ssl_policy_pkix_ocsp
+                 ssl_policy
+             fi
+             ;;
+         "crl")
+             ssl_crl_ssl
+             ssl_crl_cache
+             ;;
+         "iopr")
+

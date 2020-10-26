@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          4%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -108,6 +108,8 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 # Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672703
 Patch5:		  nss-ccs.patch
+# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672291
+Patch6:           nss-3.58-pkix-ocsp-fix.patch
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
@@ -904,6 +906,11 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Oct 26 2020 Bob Relyea <rrelyea@redhat.com> - 3.58.0-4
+- fix pkix ocsp to tolerate OCSP checking on intermediates 
+  when the root is signed by sha1 and sha1 is disabled by
+  policy
+
 * Mon Oct 26 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-3
 - Revert the last change, always tolerate the first CCS in TLS 1.3
 
