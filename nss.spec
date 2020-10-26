@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -883,6 +883,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Oct 26 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-3
+- Revert the last change, always tolerate the first CCS in TLS 1.3
+
 * Thu Oct 22 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-2
 - Enable TLS 1.3 middlebox compatibility mode by default
 
