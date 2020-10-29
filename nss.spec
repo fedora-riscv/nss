@@ -261,9 +261,9 @@ Conflicts:      filesystem < 3
 BuildRequires:  gcc
 
 %description -n nspr
-NSPR provides platform independence for non-GUI operating system 
-facilities. These facilities include threads, thread synchronization, 
-normal file and network I/O, interval timing and calendar time, basic 
+NSPR provides platform independence for non-GUI operating system
+facilities. These facilities include threads, thread synchronization,
+normal file and network I/O, interval timing and calendar time, basic
 memory management (malloc and free) and shared library linking.
 
 %package -n nspr-devel
@@ -612,7 +612,7 @@ killall $RANDSERV || :
 pushd nspr_build
 make install DESTDIR=$RPM_BUILD_ROOT
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1 
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
 mkdir -p $RPM_BUILD_ROOT/%{_libdir}/pkgconfig
 
 # Get rid of the things we don't want installed (per upstream)
@@ -625,7 +625,7 @@ rm -rf \
    $RPM_BUILD_ROOT/%{_datadir}/aclocal/nspr.m4 \
    $RPM_BUILD_ROOT/%{_includedir}/nspr4/md
 
-for f in nspr-config; do 
+for f in nspr-config; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 popd
