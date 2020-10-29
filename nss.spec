@@ -50,7 +50,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          5%{?dist}
+Release:          6%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -373,6 +373,9 @@ export XCFLAGS=$RPM_OPT_FLAGS
 %ifarch s390x
 export XCFLAGS="$XCFLAGS -Wno-error=maybe-uninitialized"
 %endif
+
+# Similarly, but for gcc-11
+export XCFLAGS="$XCFLAGS -Wno-array-parameter"
 
 export LDFLAGS=$RPM_LD_FLAGS
 
@@ -1042,6 +1045,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Oct 29 2020 Jeff Law <law@redhat.com> - 3.58.0-6
+- Disable -Warray-parameter warning for gcc-11
+
 * Tue Oct 27 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-5
 - Consolidate NSPR package with this package
 
