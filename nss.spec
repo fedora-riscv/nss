@@ -1,5 +1,4 @@
 %global nspr_version 4.29.0
-%global nspr_release 2
 %global nss_version 3.58.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -50,7 +49,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          6%{?dist}
+Release:          7%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -254,7 +253,6 @@ Header and library files for doing development with Network Security Services.
 %package -n nspr
 Summary:        Netscape Portable Runtime
 Version:        %{nspr_version}
-Release:        %{nspr_release}%{?dist}
 License:        MPLv2.0
 URL:            http://www.mozilla.org/projects/nspr/
 Conflicts:      filesystem < 3
@@ -269,8 +267,7 @@ memory management (malloc and free) and shared library linking.
 %package -n nspr-devel
 Summary:        Development libraries for the Netscape Portable Runtime
 Version:        %{nspr_version}
-Release:        %{nspr_release}%{?dist}
-Requires:       nspr = %{nspr_version}-%{nspr_release}
+Requires:       nspr%{?_isa} = %{nspr_version}-%{release}
 Requires:       pkgconfig
 BuildRequires:  xmlto
 Conflicts:      filesystem < 3
@@ -1045,6 +1042,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Oct 30 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-7
+- Use the lockstep release numbering for both nspr and nss
+
 * Thu Oct 29 2020 Jeff Law <law@redhat.com> - 3.58.0-6
 - Disable -Warray-parameter warning for gcc-11
 
