@@ -1,4 +1,8 @@
 %global nspr_version 4.29.0
+# NOTE: To avoid NVR clashes of nspr* packages:
+# - reset %%{nspr_release} to 1, when updating %%{nspr_version}
+# - increment %%{nspr_version}, when updating the NSS part only
+%global nspr_release 7
 %global nss_version 3.58.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -253,6 +257,7 @@ Header and library files for doing development with Network Security Services.
 %package -n nspr
 Summary:        Netscape Portable Runtime
 Version:        %{nspr_version}
+Release:        %{nspr_release}%{?dist}
 License:        MPLv2.0
 URL:            http://www.mozilla.org/projects/nspr/
 Conflicts:      filesystem < 3
@@ -267,7 +272,8 @@ memory management (malloc and free) and shared library linking.
 %package -n nspr-devel
 Summary:        Development libraries for the Netscape Portable Runtime
 Version:        %{nspr_version}
-Requires:       nspr%{?_isa} = %{nspr_version}-%{release}
+Release:        %{nspr_release}%{?dist}
+Requires:       nspr%{?_isa} = %{nspr_version}-%{nspr_release}%{?dist}
 Requires:       pkgconfig
 BuildRequires:  xmlto
 Conflicts:      filesystem < 3
