@@ -2,7 +2,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 7
+%global nspr_release 8
 %global nss_version 3.58.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
@@ -53,7 +53,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          7%{?dist}
+Release:          8%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -430,7 +430,7 @@ cat %{SOURCE1} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
-                          -e "s,%%NSSUTIL_VERSION%%,%{version},g" > \
+                          -e "s,%%NSSUTIL_VERSION%%,%{nss_version},g" > \
                           ./dist/pkgconfig/nss-util.pc
 
 NSSUTIL_VMAJOR=`cat nss/lib/util/nssutil.h | grep "#define.*NSSUTIL_VMAJOR" | awk '{print $3}'`
@@ -454,7 +454,7 @@ cat %{SOURCE3} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_version},g" \
-                          -e "s,%%SOFTOKEN_VERSION%%,%{version},g" > \
+                          -e "s,%%SOFTOKEN_VERSION%%,%{nss_version},g" > \
                           ./dist/pkgconfig/nss-softokn.pc
 
 SOFTOKEN_VMAJOR=`cat nss/lib/softoken/softkver.h | grep "#define.*SOFTOKEN_VMAJOR" | awk '{print $3}'`
@@ -476,7 +476,7 @@ cat %{SOURCE8} | sed -e "s,%%libdir%%,%{_libdir},g" \
                           -e "s,%%prefix%%,%{_prefix},g" \
                           -e "s,%%exec_prefix%%,%{_prefix},g" \
                           -e "s,%%includedir%%,%{_includedir}/nss3,g" \
-                          -e "s,%%NSS_VERSION%%,%{version},g" \
+                          -e "s,%%NSS_VERSION%%,%{nss_version},g" \
                           -e "s,%%NSPR_VERSION%%,%{nspr_version},g" \
                           -e "s,%%NSSUTIL_VERSION%%,%{nss_version},g" \
                           -e "s,%%SOFTOKEN_VERSION%%,%{nss_version},g" > \
@@ -503,7 +503,7 @@ chmod 755 ./dist/pkgconfig/setup-nsssysinit.sh
 cp ./nss/lib/ckfw/nssck.api ./dist/private/nss/
 
 date +"%e %B %Y" | tr -d '\n' > date.xml
-echo -n %{version} > version.xml
+echo -n %{nss_version} > version.xml
 
 # configuration files and setup script
 for m in %{SOURCE20} %{SOURCE21} %{SOURCE22}; do
@@ -1048,6 +1048,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Sat Nov  7 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-8
+- Replace %%{version} references in %%build with %%{nss_version}, suggested by Dmitry Butskoy in bz#1895447
+
 * Fri Oct 30 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-7
 - Use the lockstep release numbering for both nspr and nss
 
