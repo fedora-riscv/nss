@@ -2,8 +2,8 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 8
-%global nss_version 3.58.0
+%global nspr_release 9
+%global nss_version 3.59.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -53,7 +53,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          8%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -72,7 +72,6 @@ BuildRequires:    gawk
 BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
-BuildRequires:    quilt
 
 Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
 Source1:          nss-util.pc.in
@@ -117,10 +116,6 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672703
-Patch5:		  nss-ccs.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672291
-Patch6:           nss-3.58-pkix-ocsp-fix.patch
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
@@ -1048,6 +1043,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Dec 10 2020 Daiki Ueno <dueno@redhat.com> - 3.59.0-1
+- Update to NSS 3.59
+- Remove unused quilt BR
+
 * Sat Nov  7 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-8
 - Replace %%{version} references in %%build with %%{nss_version}, suggested by Dmitry Butskoy in bz#1895447
 
