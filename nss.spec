@@ -1,5 +1,5 @@
 %global nspr_version 4.29.0
-%global nss_version 3.58.0
+%global nss_version 3.59.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          3%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -106,8 +106,6 @@ Patch2:           nss-539183.patch
 # Once the buildroot aha been bootstrapped the patch may be removed
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=1672703
-Patch5:		  nss-ccs.patch
 Patch12:          nss-signtool-format.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
@@ -904,6 +902,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Dec 11 2020 Daiki Ueno <dueno@redhat.com> - 3.59.0-1
+- Update to NSS 3.59
+
 * Mon Oct 26 2020 Daiki Ueno <dueno@redhat.com> - 3.58.0-3
 - Revert the last change, always tolerate the first CCS in TLS 1.3
 
