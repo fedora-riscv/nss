@@ -44,7 +44,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -112,6 +112,10 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
+# can drop this patch when the underlying btrfs/sqlite issue is solved
+Patch30:          nss-fedora-btrf-sql-hack.patch
+# can drop this patch once crypto-policies has been updated
+Patch31:          nss-3.53.1-revert_rhel8_unsafe_policy_change.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -902,6 +906,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Dec 11 2020 Bob Relyea <rrelyea@redhat.com> - 3.59.0-2
+- Work around btrfs/sqlite bug
+- Disable new policy entries until crypto-polices has been updated
+
 * Fri Dec 11 2020 Daiki Ueno <dueno@redhat.com> - 3.59.0-1
 - Update to NSS 3.59
 
