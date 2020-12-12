@@ -1,0 +1,39 @@
+diff -up ./lib/pk11wrap/pk11pars.c.policy_revert ./lib/pk11wrap/pk11pars.c
+--- ./lib/pk11wrap/pk11pars.c.policy_revert	2020-11-04 10:26:59.085300799 -0800
++++ ./lib/pk11wrap/pk11pars.c	2020-11-04 10:29:52.774239468 -0800
+@@ -391,12 +391,6 @@ static const oidValDef signOptList[] = {
+     /* Signatures */
+     { CIPHER_NAME("DSA"), SEC_OID_ANSIX9_DSA_SIGNATURE,
+       NSS_USE_ALG_IN_SSL_KX | NSS_USE_ALG_IN_SIGNATURE },
+-    { CIPHER_NAME("RSA-PKCS"), SEC_OID_PKCS1_RSA_ENCRYPTION,
+-      NSS_USE_ALG_IN_SSL_KX | NSS_USE_ALG_IN_SIGNATURE },
+-    { CIPHER_NAME("RSA-PSS"), SEC_OID_PKCS1_RSA_PSS_SIGNATURE,
+-      NSS_USE_ALG_IN_SSL_KX | NSS_USE_ALG_IN_SIGNATURE },
+-    { CIPHER_NAME("ECDSA"), SEC_OID_ANSIX962_EC_PUBLIC_KEY,
+-      NSS_USE_ALG_IN_SSL_KX | NSS_USE_ALG_IN_SIGNATURE },
+ };
+ 
+ typedef struct {
+@@ -412,7 +406,7 @@ static const algListsDef algOptLists[] =
+     { macOptList, PR_ARRAY_SIZE(macOptList), "MAC", PR_FALSE },
+     { cipherOptList, PR_ARRAY_SIZE(cipherOptList), "CIPHER", PR_FALSE },
+     { kxOptList, PR_ARRAY_SIZE(kxOptList), "OTHER-KX", PR_FALSE },
+-    { signOptList, PR_ARRAY_SIZE(signOptList), "OTHER-SIGN", PR_FALSE },
++    { signOptList, PR_ARRAY_SIZE(signOptList), "OTHER-SIGN", PR_TRUE },
+ };
+ 
+ static const optionFreeDef sslOptList[] = {
+diff -up ./tests/ssl/sslpolicy.txt.policy_revert ./tests/ssl/sslpolicy.txt
+--- ./tests/ssl/sslpolicy.txt.policy_revert	2020-11-04 10:31:20.837715397 -0800
++++ ./tests/ssl/sslpolicy.txt	2020-11-04 10:33:19.598357223 -0800
+@@ -193,7 +193,9 @@
+   1 noECC  SSL3   d    disallow=all_allow=hmac-sha1:sha256:rsa-pkcs:rsa:des-ede3-cbc:tls-version-min=tls1.0:tls-version-max=tls1.2 Disallow Version Implicitly Narrow
+   1 noECC  SSL3   d    disallow=all_allow=md2/all:md4/all:md5/all:sha1/all:sha256/all:sha384/all:sha512/all:rsa-pkcs/all:rsa-pss/all:ecdsa/all:dsa/all:hmac-sha1/all:hmac-sha224/all:hmac-sha256/all:hmac-sha384/all:hmac-sha512/all:hmac-md5/all:camellia128-cbc/all:camellia192-cbc/all:camellia256-cbc/all:seed-cbc/all:des-ede3-cbc/all:des-40-cbc/all:des-cbc/all:null-cipher/all:rc2/all:rc4/all:idea/all:rsa/all:rsa-export/all:dhe-rsa/all:dhe-dss/all:ecdhe-ecdsa/all:ecdhe-rsa/all:ecdh-ecdsa/all:ecdh-rsa/all:tls-version-min=tls1.0:tls-version-max=tls1.2 Disallow Version Implicitly
+   0 noECC  SSL3   d    disallow=dsa Disallow DSA Signatures Explicitly
+-  1 noECC  SSL3   d    disallow=rsa-pkcs Disallow RSA PKCS 1 Signatures Explicitly
++# rsa-pkcs, rsa-pss, and ecdsa policy checking reverted in rhel8 for binary
++# compatibility reasons
++#  1 noECC  SSL3   d    disallow=rsa-pkcs Disallow RSA PKCS 1 Signatures Explicitly
+ # test default settings
+ # NOTE: tstclient will attempt to overide the defaults, so we detect we
+ # were successful by locking in our settings
