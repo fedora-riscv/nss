@@ -43,7 +43,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -115,6 +115,7 @@ Patch20:          nss-gcm-param-default-pkcs11v2.patch
 Patch30:          nss-fedora-btrf-sql-hack.patch
 # can drop this patch once crypto-policies has been updated
 Patch31:          nss-3.53.1-revert_rhel8_unsafe_policy_change.patch
+Patch33:          nss-fedora-relax-sha1.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -885,6 +886,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Dec 15 2020 Bob Relyea <rrelyea@redhat.com> - 3.59.0-3
+- Back out strict SHA-1 signature control because firefox
+  Addon system is still using sha-1 signatures
+
 * Fri Dec 11 2020 Bob Relyea <rrelyea@redhat.com> - 3.59.0-2
 - Work around btrfs/sqlite bug
 - Disable new policy entries until crypto-polices has been updated
