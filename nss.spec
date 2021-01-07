@@ -64,6 +64,7 @@ Requires:         nss-system-init
 Requires:         p11-kit-trust
 Requires:         /usr/bin/update-crypto-policies
 # for shlibsign
+BuildRequires: make
 BuildRequires:    nss-softokn
 BuildRequires:    sqlite-devel
 BuildRequires:    zlib-devel
