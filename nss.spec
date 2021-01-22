@@ -2,7 +2,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 10
+%global nspr_release 11
 %global nss_version 3.60.1
 # only need to update this as we added new
 # algorithms under nss policy control
@@ -56,7 +56,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          3%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -1053,6 +1053,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Jan 22 2021 Bob Relyea <rrelyea@redhat.com> - 3.60.1-2
+- Update nspr release number
+
 * Fri Jan 22 2021 Bob Relyea <rrelyea@redhat.com> - 3.60.1-2
 - Update requires so that we get the correct crypto policies
   (or all RSA and ECDSA signatures wil fail)
