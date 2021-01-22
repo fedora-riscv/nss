@@ -4,6 +4,9 @@
 # - increment %%{nspr_version}, when updating the NSS part only
 %global nspr_release 10
 %global nss_version 3.60.1
+# only need to update this as we added new
+# algorithms under nss policy control
+%global crypto_policies_version 20210118
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -53,7 +56,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          1%{?dist}
+Release:          2%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -63,6 +66,7 @@ Requires:         nss-softokn%{_isa} >= %{nss_version}
 Requires:         nss-system-init
 Requires:         p11-kit-trust
 Requires:         /usr/bin/update-crypto-policies
+Requires:         crypto-policies >= %{crypto_policies_version}
 # for shlibsign
 BuildRequires: make
 BuildRequires:    nss-softokn
@@ -1049,6 +1053,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Jan 22 2021 Bob Relyea <rrelyea@redhat.com> - 3.60.1-2
+- Update requires so that we get the correct crypto policies
+  (or all RSA and ECDSA signatures wil fail)
+
 * Thu Jan 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.60.1-1
 - Update to NSS 3.60.1
 - Drop NODEPEND_FREEBL and LOWHASH
