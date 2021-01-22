@@ -2,8 +2,8 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 9
-%global nss_version 3.59.0
+%global nspr_release 10
+%global nss_version 3.60.1
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -53,7 +53,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          2%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -118,6 +118,7 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
+Patch13:          nss-turn-off-expired-ocsp-cert.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
@@ -125,8 +126,6 @@ Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 # can drop this patch when the underlying btrfs/sqlite issue is solved
 Patch30:          nss-fedora-btrf-sql-hack.patch
-# can drop this patch once crypto-policies has been updated
-Patch31:          nss-3.53.1-revert_rhel8_unsafe_policy_change.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -348,13 +347,13 @@ popd
 # This package fails its testsuite with LTO.  Disable LTO for now
 %global _lto_cflags %{nil}
 
-export FREEBL_NO_DEPEND=1
+#export FREEBL_NO_DEPEND=1
 
 # Must export FREEBL_LOWHASH=1 for nsslowhash.h so that it gets
 # copied to dist and the rpm install phase can find it
 # This due of the upstream changes to fix
 # https://bugzilla.mozilla.org/show_bug.cgi?id=717906
-export FREEBL_LOWHASH=1
+# export FREEBL_LOWHASH=1
 
 # uncomment if the iquote patch is activated
 export IN_TREE_FREEBL_HEADERS_FIRST=1
@@ -392,6 +391,8 @@ export NSPR_INCLUDE_DIR=$PWD/dist/include/nspr
 export NSS_USE_SYSTEM_SQLITE=1
 
 export NSS_ALLOW_SSLKEYLOGFILE=1
+
+export NSS_SEED_ONLY_DEV_URANDOM=1
 
 %if %{with dbm}
 %else
@@ -1048,6 +1049,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jan 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.60.1-1
+- Update to NSS 3.60.1
+- Drop NODEPEND_FREEBL and LOWHASH
+
 * Fri Dec 11 2020 Bob Relyea <rrelyea@redhat.com> - 3.59.0-2
 - Work around btrfs/sqlite bug
 - Disable new policy entries until crypto-polices has been updated
