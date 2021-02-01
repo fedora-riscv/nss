@@ -2,7 +2,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 11
+%global nspr_release 12
 %global nss_version 3.60.1
 # only need to update this as we added new
 # algorithms under nss policy control
@@ -56,7 +56,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          4%{?dist}
+Release:          5%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -260,7 +260,7 @@ Header and library files for doing development with Network Security Services.
 %package -n nspr
 Summary:        Netscape Portable Runtime
 Version:        %{nspr_version}
-Release:        %{nspr_release}%{?dist}.1
+Release:        %{nspr_release}%{?dist}
 License:        MPLv2.0
 URL:            http://www.mozilla.org/projects/nspr/
 Conflicts:      filesystem < 3
@@ -275,7 +275,7 @@ memory management (malloc and free) and shared library linking.
 %package -n nspr-devel
 Summary:        Development libraries for the Netscape Portable Runtime
 Version:        %{nspr_version}
-Release:        %{nspr_release}%{?dist}.1
+Release:        %{nspr_release}%{?dist}
 Requires:       nspr%{?_isa} = %{nspr_version}-%{nspr_release}%{?dist}
 Requires:       pkgconfig
 BuildRequires:  xmlto
@@ -1053,6 +1053,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Feb 01 2021 Kalev Lember <klember@redhat.com> - 3.60.1-5
+- Rebuild to fix broken nspr dependencies
+
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.60.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
