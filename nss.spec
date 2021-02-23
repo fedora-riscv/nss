@@ -3,7 +3,7 @@
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
 %global nspr_release 12
-%global nss_version 3.60.1
+%global nss_version 3.62.0
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -56,7 +56,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          5%{?dist}
+Release:          1%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -122,7 +122,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-Patch13:          nss-turn-off-expired-ocsp-cert.patch
 %if 0%{?fedora} < 34
 %if 0%{?rhel} < 9
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
@@ -1053,6 +1052,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Feb 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.62.0-1
+- Update to 3.62
+
 * Mon Feb 01 2021 Kalev Lember <klember@redhat.com> - 3.60.1-5
 - Rebuild to fix broken nspr dependencies
 
