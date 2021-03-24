@@ -1,9 +1,9 @@
-%global nspr_version 4.29.0
+%global nspr_version 4.30.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 13
-%global nss_version 3.62.0
+%global nspr_release 1
+%global nss_version 3.63.0
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -87,9 +87,11 @@ Source6:          nss-softokn-dracut-module-setup.sh
 Source7:          nss-softokn-dracut.conf
 Source8:          nss.pc.in
 Source9:          nss-config.in
+%if %{with dbm}
 Source10:         blank-cert8.db
 Source11:         blank-key3.db
 Source12:         blank-secmod.db
+%endif
 Source13:         blank-cert9.db
 Source14:         blank-key4.db
 Source15:         system-pkcs11.txt
@@ -97,11 +99,13 @@ Source16:         setup-nsssysinit.sh
 Source20:         nss-config.xml
 Source21:         setup-nsssysinit.xml
 Source22:         pkcs11.txt.xml
-Source23:         cert8.db.xml
 Source24:         cert9.db.xml
-Source25:         key3.db.xml
 Source26:         key4.db.xml
+%if %{with dbm}
+Source23:         cert8.db.xml
+Source25:         key3.db.xml
 Source27:         secmod.db.xml
+%endif
 Source28:         nss-p11-kit.config
 
 Source100:        nspr-%{nspr_archive_version}.tar.gz
@@ -122,12 +126,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-%if 0%{?fedora} < 34
-%if 0%{?rhel} < 9
-Patch20:          nss-gcm-param-default-pkcs11v2.patch
-%endif
-%endif
-# can drop this patch when the underlying btrfs/sqlite issue is solved
 Patch30:          nss-fedora-btrf-sql-hack.patch
 
 Patch100:         nspr-config-pc.patch
@@ -510,19 +508,19 @@ date +"%e %B %Y" | tr -d '\n' > date.xml
 echo -n %{nss_version} > version.xml
 
 # configuration files and setup script
-for m in %{SOURCE20} %{SOURCE21} %{SOURCE22}; do
+%if %{with dbm}
+%global XMLSOURCES %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26} %{SOURCE27}
+%global dbfiles cert8.db key3.db secmod.db cert9.db key4.db pkcs11.txt
+%else
+%global XMLSOURCES %{SOURCE22} %{SOURCE24} %{SOURCE26}
+%global dbfiles cert9.db key4.db pkcs11.txt
+%endif
+for m in %{SOURCE20} %{SOURCE21} %{XMLSOURCES}; do
   cp ${m} .
 done
-for m in nss-config.xml setup-nsssysinit.xml pkcs11.txt.xml; do
-  xmlto man ${m}
-done
-
-# nss databases considered to be configuration files
-for m in %{SOURCE23} %{SOURCE24} %{SOURCE25} %{SOURCE26} %{SOURCE27}; do
-  cp ${m} .
-done
-for m in cert8.db.xml cert9.db.xml key3.db.xml key4.db.xml secmod.db.xml; do
-  xmlto man ${m}
+%global configFiles nss-config setup-nsssysinit
+for m in %{configFiles}  %{dbfiles}; do
+  xmlto man ${m}.xml
 done
 
 
@@ -674,9 +672,11 @@ done
 # Install the empty NSS db files
 # Legacy db
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb
+%if %{with dbm}
 install -p -m 644 %{SOURCE10} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert8.db
 install -p -m 644 %{SOURCE11} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key3.db
 install -p -m 644 %{SOURCE12} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/secmod.db
+%endif
 # Shared db
 install -p -m 644 %{SOURCE13} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/cert9.db
 install -p -m 644 %{SOURCE14} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/key4.db
@@ -738,7 +738,7 @@ install -p -m 755 ./dist/pkgconfig/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir
 ln -r -s -f $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit.sh $RPM_BUILD_ROOT/%{_bindir}/setup-nsssysinit
 
 # Copy the man pages for scripts
-for f in nss-config setup-nsssysinit; do
+for f in %{configFiles}; do
    install -c -m 644 ${f}.1 $RPM_BUILD_ROOT%{_mandir}/man1/${f}.1
 done
 # Copy the man pages for the nss tools
@@ -751,12 +751,8 @@ install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_mandir}/man1/pp.1
 install -c -m 644 ./dist/docs/nroff/pp.1 $RPM_BUILD_ROOT%{_datadir}/doc/nss-tools/pp.1
 %endif
 
-# Copy the man pages for the configuration files
-for f in pkcs11.txt; do
-   install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
-done
 # Copy the man pages for the nss databases
-for f in cert8.db cert9.db key3.db key4.db secmod.db; do
+for f in %{dbfiles}; do
    install -c -m 644 ${f}.5 $RPM_BUILD_ROOT%{_mandir}/man5/${f}.5
 done
 
@@ -793,16 +789,20 @@ update-crypto-policies &> /dev/null || :
 %{_libdir}/libssl3.so
 %{_libdir}/libsmime3.so
 %dir %{_sysconfdir}/pki/nssdb
+%if %{with dbm}
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert8.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key3.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/secmod.db
+%endif
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/cert9.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/key4.db
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/pki/nssdb/pkcs11.txt
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/crypto-policies/local.d/nss-p11-kit.config
+%if %{with dbm}
 %doc %{_mandir}/man5/cert8.db.5*
 %doc %{_mandir}/man5/key3.db.5*
 %doc %{_mandir}/man5/secmod.db.5*
+%endif
 %doc %{_mandir}/man5/cert9.db.5*
 %doc %{_mandir}/man5/key4.db.5*
 %doc %{_mandir}/man5/pkcs11.txt.5*
@@ -1052,6 +1052,11 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Mar 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.63.0-1
+- Update to 3.63
+- Update to NSPR 2.30
+- Remove old dbm files and man pages
+
 * Tue Feb 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.62.0-1
 - Update to 3.62
 
