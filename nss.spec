@@ -1,5 +1,5 @@
-%global nspr_version 4.29.0
-%global nss_version 3.62.0
+%global nspr_version 4.30.0
+%global nss_version 3.63.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -886,6 +886,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Mar 25 2021 Bob Relyea <rrelyea@redhat.com> - 3.63.0-1
+ - Update to NSS 3.63.0
+
 * Tue Feb 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.62.0-1
  - Update to NSS 3.62.0
 
