@@ -3,7 +3,7 @@
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
 %global nspr_release 1
-%global nss_version 3.63.0
+%global nss_version 3.65.0
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -127,9 +127,21 @@ Patch2:           nss-539183.patch
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
 Patch30:          nss-fedora-btrf-sql-hack.patch
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1566124
+# still needs to be fixed. disable hw support until it is.
+Patch31:          nss-3.65-disable-hw-ppc.patch
+
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1712184
+# we're including this here now because we will need a fedora specific
+# man page patch to remove references to dbm. I'd like to do the patch
+# once, so I'm picking up the 3.66 patch now
+Patch39:          nss-sql-man-page.patch
+# fedora disabled dbm by default
+Patch40:          nss-no-dbm-man-page.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
+
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -545,6 +557,7 @@ popd
 export FREEBL_NO_DEPEND=1
 
 export BUILD_OPT=1
+export NSS_DISABLE_PPC_GHASH=1
 
 %ifnarch noarch
 %if 0%{__isa_bits} == 64
@@ -1052,6 +1065,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Mar 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.65.0-1
+- Update to 3.65
+- update nss-tools manages to remove references to dbm
+
 * Tue Mar 23 2021 Bob Relyea <rrelyea@redhat.com> - 3.63.0-1
 - Update to 3.63
 - Update to NSPR 2.30
