@@ -1,0 +1,749 @@
+# HG changeset patch
+# User Robert Relyea <rrelyea@redhat.com>
+# Date 1621548343 25200
+#      Thu May 20 15:05:43 2021 -0700
+# Node ID 230ce820b8fd9bc542940a324388f6b2b55ecca8
+# Parent  207465bda46a4d6eb07ddef2a3a8232643ff027e
+Bug 1712184 NSS tools manpages need to be updated to reflect that sqlite is the default database.
+
+update certutil.xml pk12util.xml modutil.xml and signver.xml to reflect the fact
+the the sql database is default. Many of these also has examples of specifying
+sql:dirname which is now the default. I did not replace them with dbm:dirname since
+we don't want to encourage regressing back. The one exception is in the paragraph
+explaining how to get to the old database format.
+
+
+Differential Revision: https://phabricator.services.mozilla.com/D115658
+
+diff --git a/doc/certutil.xml b/doc/certutil.xml
+--- a/doc/certutil.xml
++++ b/doc/certutil.xml
+@@ -203,17 +203,17 @@ If this option is not used, the validity
+         <listitem>
+           <para>Specify the database directory containing the certificate and key database files.</para>
+           <para><command>certutil</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). </para>
+           <para>NSS recognizes the following prefixes:</para>
+           <itemizedlist>
+             <listitem><para><command>sql:</command> requests the newer database</para></listitem>
+ 	    <listitem><para><command>dbm:</command> requests the legacy database</para></listitem>
+           </itemizedlist>
+-          <para>If no prefix is specified the default type is retrieved from NSS_DEFAULT_DB_TYPE. If NSS_DEFAULT_DB_TYPE is not set then <command>dbm:</command> is the default.</para>
++          <para>If no prefix is specified the default type is retrieved from NSS_DEFAULT_DB_TYPE. If NSS_DEFAULT_DB_TYPE is not set then <command>sql:</command> is the default.</para>
+         </listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>--dump-ext-val OID </term>
+         <listitem><para>For single cert, print binary DER encoding of extension OID.</para></listitem>
+       </varlistentry>
+ 
+@@ -843,23 +843,23 @@ Comma separated list of one or more of t
+ 	<para>
+ 		secmod.db or pkcs11.txt
+ 	</para>
+ 	</listitem>
+ 	</itemizedlist>
+ 	<para>
+ 		These databases must be created before certificates or keys can be generated.
+ 	</para>
+-<programlisting>certutil -N -d [sql:]directory</programlisting>
++<programlisting>certutil -N -d directory</programlisting>
+ 
+ 	<para><command>Creating a Certificate Request</command></para>
+ 	<para>
+ 		A certificate request contains most or all of the information that is used to generate the final certificate. This request is submitted separately to a certificate authority and is then approved by some mechanism (automatically or by human review). Once the request is approved, then the certificate is generated.
+ 	</para>
+-<programlisting>$ certutil -R -k key-type-or-id [-q pqgfile|curve-name] -g key-size -s subject [-h tokenname] -d [sql:]directory [-p phone] [-o output-file] [-a]</programlisting>
++<programlisting>$ certutil -R -k key-type-or-id [-q pqgfile|curve-name] -g key-size -s subject [-h tokenname] -d directory [-p phone] [-o output-file] [-a]</programlisting>
+ 	<para>
+ 		The <option>-R</option> command options requires four arguments:
+ 	</para>
+ 	<itemizedlist>
+ 	<listitem>
+ 	<para>
+ 		<option>-k</option> to specify either the key type to generate or, when renewing a certificate, the existing key pair to use
+ 	</para>
+@@ -881,27 +881,27 @@ Comma separated list of one or more of t
+ 	</listitem>
+ 	</itemizedlist>
+ 	<para>
+ 		The new certificate request can be output in ASCII format (<option>-a</option>) or can be written to a specified file (<option>-o</option>).
+ 	</para>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil -R -k rsa -g 1024 -s "CN=John Smith,O=Example Corp,L=Mountain View,ST=California,C=US" -d sql:$HOME/nssdb -p 650-555-0123 -a -o cert.cer
++<programlisting>$ certutil -R -k rsa -g 1024 -s "CN=John Smith,O=Example Corp,L=Mountain View,ST=California,C=US" -d $HOME/nssdb -p 650-555-0123 -a -o cert.cer
+ 
+ Generating key.  This may take a few moments...
+ 
+ </programlisting>
+ 
+ 	<para><command>Creating a Certificate</command></para>
+ 	<para>
+ 		A valid certificate must be issued by a trusted CA. This can be done by specifying a CA certificate (<option>-c</option>) that is stored in the certificate database. If a CA key pair is not available, you can create a self-signed certificate using the <option>-x</option> argument with the <option>-S</option> command option.
+ 	</para>
+-<programlisting>$ certutil -S -k rsa|dsa|ec -n certname -s subject [-c issuer |-x] -t trustargs -d [sql:]directory [-m serial-number] [-v valid-months] [-w offset-months] [-p phone] [-1] [-2] [-3] [-4] [-5 keyword] [-6 keyword] [-7 emailAddress] [-8 dns-names] [--extAIA] [--extSIA] [--extCP] [--extPM] [--extPC] [--extIA] [--extSKID]</programlisting>
++<programlisting>$ certutil -S -k rsa|dsa|ec -n certname -s subject [-c issuer |-x] -t trustargs -d directory [-m serial-number] [-v valid-months] [-w offset-months] [-p phone] [-1] [-2] [-3] [-4] [-5 keyword] [-6 keyword] [-7 emailAddress] [-8 dns-names] [--extAIA] [--extSIA] [--extCP] [--extPM] [--extPC] [--extIA] [--extSKID]</programlisting>
+ 	<para>
+ 		The series of numbers and <option>--ext*</option> options set certificate extensions that can be added to the certificate when it is generated by the CA. Interactive prompts will result.
+ 	</para>
+ 	<para>
+ 		For example, this creates a self-signed certificate:
+ 	</para>
+ <programlisting>$ certutil -S -s "CN=Example CA" -n my-ca-cert -x -t "C,C,C" -1 -2 -5 -m 3650</programlisting>
+ 	<para>
+@@ -911,55 +911,55 @@ The interative prompts for key usage and
+ 		From there, new certificates can reference the self-signed certificate:
+ 	</para>
+ <programlisting>$ certutil -S -s "CN=My Server Cert" -n my-server-cert -c "my-ca-cert" -t ",," -1 -5 -6 -8 -m 730</programlisting>
+ 
+ 	<para><command>Generating a Certificate from a Certificate Request</command></para>
+ 	<para>
+ 		When a certificate request is created, a certificate can be generated by using the request and then referencing a certificate authority signing certificate (the <emphasis>issuer</emphasis> specified in the <option>-c</option> argument). The issuing certificate must be in the certificate database in the specified directory.
+ 	</para>
+-<programlisting>certutil -C -c issuer -i cert-request-file -o output-file [-m serial-number] [-v valid-months] [-w offset-months] -d [sql:]directory [-1] [-2] [-3] [-4] [-5 keyword] [-6 keyword] [-7 emailAddress] [-8 dns-names]</programlisting>
++<programlisting>certutil -C -c issuer -i cert-request-file -o output-file [-m serial-number] [-v valid-months] [-w offset-months] -d directory [-1] [-2] [-3] [-4] [-5 keyword] [-6 keyword] [-7 emailAddress] [-8 dns-names]</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil -C -c "my-ca-cert" -i /home/certs/cert.req -o cert.cer -m 010 -v 12 -w 1 -d sql:$HOME/nssdb -1 nonRepudiation,dataEncipherment -5 sslClient -6 clientAuth -7 jsmith@example.com</programlisting>
++<programlisting>$ certutil -C -c "my-ca-cert" -i /home/certs/cert.req -o cert.cer -m 010 -v 12 -w 1 -d $HOME/nssdb -1 nonRepudiation,dataEncipherment -5 sslClient -6 clientAuth -7 jsmith@example.com</programlisting>
+ 
+ 	<para><command>Listing Certificates</command></para>
+ 	<para>
+ 		The <option>-L</option> command option lists all of the certificates listed in the certificate database. The path to the directory (<option>-d</option>) is required.
+ 	</para>
+-<programlisting>$ certutil -L -d sql:/home/my/sharednssdb
++<programlisting>$ certutil -L -d /home/my/sharednssdb
+ 
+ Certificate Nickname                                         Trust Attributes
+                                                              SSL,S/MIME,JAR/XPI
+ 
+ CA Administrator of Instance pki-ca1's Example Domain ID     u,u,u
+ TPS Administrator's Example Domain ID                        u,u,u
+ Google Internet Authority                                    ,,   
+ Certificate Authority - Example Domain                       CT,C,C</programlisting>
+ 	<para>
+ 		Using additional arguments with <option>-L</option> can return and print the information for a single, specific certificate. For example, the <option>-n</option> argument passes the certificate name, while the <option>-a</option> argument prints the certificate in ASCII format:
+ 	</para>
+ <programlisting>
+-$ certutil -L -d sql:$HOME/nssdb -a -n my-ca-cert
++$ certutil -L -d $HOME/nssdb -a -n my-ca-cert
+ -----BEGIN CERTIFICATE-----
+ MIIB1DCCAT2gAwIBAgICDkIwDQYJKoZIhvcNAQEFBQAwFTETMBEGA1UEAxMKRXhh
+ bXBsZSBDQTAeFw0xMzAzMTMxOTEwMjlaFw0xMzA2MTMxOTEwMjlaMBUxEzARBgNV
+ BAMTCkV4YW1wbGUgQ0EwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJ4Kzqvz
+ JyBVgFqDXRYSyTBNw1DrxUU/3GvWA/ngjAwHEv0Cul/6sO/gsCvnABHiH6unns6x
+ XRzPORlC2WY3gkk7vmlsLvYpyecNazAi/NAwVnU/66HOsaoVFWE+gBQo99UrN2yk
+ 0BiK/GMFlLm5dXQROgA9ZKKyFdI0LIXtf6SbAgMBAAGjMzAxMBEGCWCGSAGG+EIB
+ AQQEAwIHADAMBgNVHRMEBTADAQH/MA4GA1UdDwEB/wQEAwICBDANBgkqhkiG9w0B
+ AQUFAAOBgQA6chkzkACN281d1jKMrc+RHG2UMaQyxiteaLVZO+Ro1nnRUvseDf09
+ XKYFwPMJjWCihVku6bw/ihZfuMHhxK22Nue6inNQ6eDu7WmrqL8z3iUrQwxs+WiF
+ ob2rb8XRVVJkzXdXxlk4uo3UtNvw8sAz7sWD71qxKaIHU5q49zijfg==
+ -----END CERTIFICATE-----
+ </programlisting>
+ <para>For a human-readable display</para>
+-<programlisting>$ certutil -L -d sql:$HOME/nssdb -n my-ca-cert
++<programlisting>$ certutil -L -d $HOME/nssdb -n my-ca-cert
+ Certificate:
+     Data:
+         Version: 3 (0x2)
+         Serial Number: 3650 (0xe42)
+         Signature Algorithm: PKCS #1 SHA-1 With RSA Encryption
+         Issuer: "CN=Example CA"
+         Validity:
+             Not Before: Wed Mar 13 19:10:29 2013
+@@ -1022,17 +1022,17 @@ Certificate:
+ 
+ 	<para><command>Listing Keys</command></para>
+ 	<para>
+ 		Keys are the original material used to encrypt certificate data. The keys generated for certificates are stored separately, in the key database. 
+ 	</para>
+ 	<para>
+ 		To list all keys in the database, use the <option>-K</option> command option and the (required) <option>-d</option> argument to give the path to the directory.
+ 	</para>
+-<programlisting>$ certutil -K -d sql:$HOME/nssdb
++<programlisting>$ certutil -K -d $HOME/nssdb
+ certutil: Checking token "NSS Certificate DB" in slot "NSS User Private Key and Certificate Services                  "
+ &lt; 0> rsa      455a6673bde9375c2887ec8bf8016b3f9f35861d   Thawte Freemail Member's Thawte Consulting (Pty) Ltd. ID
+ &lt; 1> rsa      40defeeb522ade11090eacebaaf1196a172127df   Example Domain Administrator Cert
+ &lt; 2> rsa      1d0b06f44f6c03842f7d4f4a1dc78b3bcd1b85a5   John Smith user cert</programlisting>
+ 	<para>
+ 		There are ways to narrow the keys listed in the search results:
+ 	</para>
+ 	<itemizedlist>
+@@ -1052,111 +1052,111 @@ certutil: Checking token "NSS Certificat
+ 	</para>
+ 	</listitem>
+ 	</itemizedlist>
+ 
+ 	<para><command>Listing Security Modules</command></para>
+ 	<para>
+ 		The devices that can be used to store certificates -- both internal databases and external devices like smart cards -- are recognized and used by loading security modules. The <option>-U</option> command option lists all of the security modules listed in the <filename>secmod.db</filename> database. The path to the directory (<option>-d</option>) is required.
+ 	</para>
+-<programlisting>$ certutil -U -d sql:/home/my/sharednssdb
++<programlisting>$ certutil -U -d /home/my/sharednssdb
+ 
+     slot: NSS User Private Key and Certificate Services                  
+    token: NSS Certificate DB
+      uri: pkcs11:token=NSS%20Certificate%20DB;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203
+ 
+     slot: NSS Internal Cryptographic Services                            
+    token: NSS Generic Crypto Services
+      uri: pkcs11:token=NSS%20Generic%20Crypto%20Services;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203</programlisting>
+ 
+ 	<para><command>Adding Certificates to the Database</command></para>
+ 	<para>
+ 		Existing certificates or certificate requests can be added manually to the certificate database, even if they were generated elsewhere. This uses the <option>-A</option> command option.
+ 	</para>
+-<programlisting>certutil -A -n certname -t trustargs -d [sql:]directory [-a] [-i input-file]</programlisting>
++<programlisting>certutil -A -n certname -t trustargs -d directory [-a] [-i input-file]</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil -A -n "CN=My SSL Certificate" -t ",," -d sql:/home/my/sharednssdb -i /home/example-certs/cert.cer</programlisting>
++<programlisting>$ certutil -A -n "CN=My SSL Certificate" -t ",," -d /home/my/sharednssdb -i /home/example-certs/cert.cer</programlisting>
+ 	<para>
+ 		A related command option, <option>-E</option>, is used specifically to add email certificates to the certificate database. The <option>-E</option> command has the same arguments as the <option>-A</option> command. The trust arguments for certificates have the format <emphasis>SSL,S/MIME,Code-signing</emphasis>, so the middle trust settings relate most to email certificates (though the others can be set). For example:
+ 	</para>
+-<programlisting>$ certutil -E -n "CN=John Smith Email Cert" -t ",P," -d sql:/home/my/sharednssdb -i /home/example-certs/email.cer</programlisting>
++<programlisting>$ certutil -E -n "CN=John Smith Email Cert" -t ",P," -d /home/my/sharednssdb -i /home/example-certs/email.cer</programlisting>
+ 
+ 	<para><command>Deleting Certificates to the Database</command></para>
+ 	<para>
+ 		Certificates can be deleted from a database using the <option>-D</option> option. The only required options are to give the security database directory and to identify the certificate nickname.
+ 	</para>
+-<programlisting>certutil -D -d [sql:]directory -n "nickname"</programlisting>
++<programlisting>certutil -D -d directory -n "nickname"</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil -D -d sql:/home/my/sharednssdb -n "my-ssl-cert"</programlisting>
++<programlisting>$ certutil -D -d /home/my/sharednssdb -n "my-ssl-cert"</programlisting>
+ 
+ 	<para><command>Validating Certificates</command></para>
+ 	<para>
+ 		A certificate contains an expiration date in itself, and expired certificates are easily rejected. However, certificates can also be revoked before they hit their expiration date. Checking whether a certificate has been revoked requires validating the certificate. Validation can also be used to ensure that the certificate is only used for the purposes it was initially issued for. Validation is carried out by the <option>-V</option> command option.
+ 	</para>
+-<programlisting>certutil -V -n certificate-name [-b time] [-e] [-u cert-usage] -d [sql:]directory</programlisting>
++<programlisting>certutil -V -n certificate-name [-b time] [-e] [-u cert-usage] -d directory</programlisting>
+ 	<para>
+ 		For example, to validate an email certificate:
+ 	</para>
+-<programlisting>$ certutil -V -n "John Smith's Email Cert" -e -u S,R -d sql:/home/my/sharednssdb</programlisting>
++<programlisting>$ certutil -V -n "John Smith's Email Cert" -e -u S,R -d /home/my/sharednssdb</programlisting>
+ 
+ 	<para><command>Modifying Certificate Trust Settings</command></para>
+ 	<para>
+ 		The trust settings (which relate to the operations that a certificate is allowed to be used for) can be changed after a certificate is created or added to the database. This is especially useful for CA certificates, but it can be performed for any type of certificate.
+ 	</para>
+-<programlisting>certutil -M -n certificate-name -t trust-args -d [sql:]directory</programlisting>
++<programlisting>certutil -M -n certificate-name -t trust-args -d directory</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil -M -n "My CA Certificate" -d sql:/home/my/sharednssdb -t "CT,CT,CT"</programlisting>
++<programlisting>$ certutil -M -n "My CA Certificate" -d /home/my/sharednssdb -t "CT,CT,CT"</programlisting>
+ 
+ 	<para><command>Printing the Certificate Chain</command></para>
+ 	<para>
+ 		Certificates can be issued in <emphasis>chains</emphasis> because every certificate authority itself has a certificate; when a CA issues a certificate, it essentially stamps that certificate with its own fingerprint. The <option>-O</option> prints the full chain of a certificate, going from the initial CA (the root CA) through ever intermediary CA to the actual certificate. For example, for an email certificate with two CAs in the chain:
+ 	</para>
+-<programlisting>$ certutil -d sql:/home/my/sharednssdb -O -n "jsmith@example.com"
++<programlisting>$ certutil -d /home/my/sharednssdb -O -n "jsmith@example.com"
+ "Builtin Object Token:Thawte Personal Freemail CA" [E=personal-freemail@thawte.com,CN=Thawte Personal Freemail CA,OU=Certification Services Division,O=Thawte Consulting,L=Cape Town,ST=Western Cape,C=ZA]
+ 
+   "Thawte Personal Freemail Issuing CA - Thawte Consulting" [CN=Thawte Personal Freemail Issuing CA,O=Thawte Consulting (Pty) Ltd.,C=ZA]
+ 
+     "(null)" [E=jsmith@example.com,CN=Thawte Freemail Member]</programlisting>
+ 
+ 	<para><command>Resetting a Token</command></para>
+ 	<para>
+ 		The device which stores certificates -- both external hardware devices and internal software databases -- can be blanked and reused. This operation is performed on the device which stores the data, not directly on the security databases, so the location must be referenced through the token name (<option>-h</option>) as well as any directory path. If there is no external token used, the default value is internal.
+ 	</para>
+-<programlisting>certutil -T -d [sql:]directory -h token-name -0 security-officer-password</programlisting>
++<programlisting>certutil -T -d directory -h token-name -0 security-officer-password</programlisting>
+ 	<para>
+ 		Many networks have dedicated personnel who handle changes to security tokens (the security officer). This person must supply the password to access the specified token. For example:
+ 	</para>
+-<programlisting>$ certutil -T -d sql:/home/my/sharednssdb -h nethsm -0 secret</programlisting>
++<programlisting>$ certutil -T -d /home/my/sharednssdb -h nethsm -0 secret</programlisting>
+ 
+ 	<para><command>Upgrading or Merging the Security Databases</command></para>
+ 	<para>
+ 		Many networks or applications may be using older BerkeleyDB versions of the certificate database (<filename>cert8.db</filename>). Databases can be upgraded to the new SQLite version of the database (<filename>cert9.db</filename>) using the <option>--upgrade-merge</option> command option or existing databases can be merged with the new <filename>cert9.db</filename> databases using the <option>---merge</option> command.
+ 	</para>
+ 	<para>
+ 		The <option>--upgrade-merge</option> command must give information about the original database and then use the standard arguments (like <option>-d</option>) to give the information about the new databases. The command also requires information that the tool uses for the process to upgrade and write over the original database.
+ 	</para>
+-<programlisting>certutil --upgrade-merge -d [sql:]directory [-P dbprefix] --source-dir directory --source-prefix dbprefix --upgrade-id id --upgrade-token-name name [-@ password-file]</programlisting>
++<programlisting>certutil --upgrade-merge -d directory [-P dbprefix] --source-dir directory --source-prefix dbprefix --upgrade-id id --upgrade-token-name name [-@ password-file]</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil --upgrade-merge -d sql:/home/my/sharednssdb --source-dir /opt/my-app/alias/ --source-prefix serverapp- --upgrade-id 1 --upgrade-token-name internal</programlisting>
++<programlisting>$ certutil --upgrade-merge -d /home/my/sharednssdb --source-dir /opt/my-app/alias/ --source-prefix serverapp- --upgrade-id 1 --upgrade-token-name internal</programlisting>
+ 	<para>
+ 		The <option>--merge</option> command only requires information about the location of the original database; since it doesn't change the format of the database, it can write over information without performing interim step.
+ 	</para>
+-<programlisting>certutil --merge -d [sql:]directory [-P dbprefix] --source-dir directory --source-prefix dbprefix [-@ password-file]</programlisting>
++<programlisting>certutil --merge -d directory [-P dbprefix] --source-dir directory --source-prefix dbprefix [-@ password-file]</programlisting>
+ 	<para>
+ 		For example:
+ 	</para>
+-<programlisting>$ certutil --merge -d sql:/home/my/sharednssdb --source-dir /opt/my-app/alias/ --source-prefix serverapp-</programlisting>
++<programlisting>$ certutil --merge -d /home/my/sharednssdb --source-dir /opt/my-app/alias/ --source-prefix serverapp-</programlisting>
+ 
+ 	<para><command>Running certutil Commands from a Batch File</command></para>
+ 	<para>
+ 		A series of commands can be run sequentially from a text file with the <option>-B</option> command option. The only argument for this specifies the input file.
+ 	</para>
+ <programlisting>$ certutil -B -i /path/to/batch-file</programlisting>
+   </refsection>
+ 
+@@ -1202,27 +1202,26 @@ BerkeleyDB. These new databases provide 
+ 		<para>
+ 			pkcs11.txt, a listing of all of the PKCS #11 modules, contained in a new subdirectory in the security databases directory
+ 		</para>
+ 	</listitem>
+ </itemizedlist>
+ 
+ <para>Because the SQLite databases are designed to be shared, these are the <emphasis>shared</emphasis> database type. The shared database type is preferred; the legacy format is included for backward compatibility.</para>
+ 
+-<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases follow the more common legacy type. 
+-Using the SQLite databases must be manually specified by using the <command>sql:</command> prefix with the given security directory. For example:</para>
++<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases use the SQLite type.
++Using the legacy databases must be manually specified by using the <command>dbm:</command> prefix with the given security directory. For example:</para>
+ 
+-<programlisting>$ certutil -L -d sql:/home/my/sharednssdb</programlisting>
++<programlisting>$ certutil -L -d dbm:/home/my/sharednssdb</programlisting>
+ 
+-<para>To set the shared database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>sql</envar>:</para>
+-<programlisting>export NSS_DEFAULT_DB_TYPE="sql"</programlisting>
++<para>To set the legacy database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>dbm</envar>:</para>
++<programlisting>export NSS_DEFAULT_DB_TYPE="dbm"</programlisting>
+ 
+ <para>This line can be set added to the <filename>~/.bashrc</filename> file to make the change permanent.</para>
+ 
+-<para>Most applications do not use the shared database by default, but they can be configured to use them. For example, this how-to article covers how to configure Firefox and Thunderbird to use the new shared NSS databases:</para>
+ <itemizedlist>
+ 	<listitem>
+ 		<para>
+ 			https://wiki.mozilla.org/NSS_Shared_DB_Howto</para>
+ 	</listitem>
+ </itemizedlist>
+ <para>For an engineering draft on the changes in the shared NSS databases, see the NSS project wiki:</para>
+ <itemizedlist>
+diff --git a/doc/modutil.xml b/doc/modutil.xml
+--- a/doc/modutil.xml
++++ b/doc/modutil.xml
+@@ -144,24 +144,24 @@
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>-ciphers cipher-enable-list</term>
+ 	  <listitem><para>Enable specific ciphers in a module that is being added to the database. The <emphasis>cipher-enable-list</emphasis> is a colon-delimited list of cipher names. Enclose this list in quotation marks if it contains spaces.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+-        <term>-dbdir [sql:]directory</term>
++        <term>-dbdir directory</term>
+ 	  <listitem><para>Specify the database directory in which to access or create security module database files.</para>
+-	<para><command>modutil</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>sql:</command> is not used, then the tool assumes that the given databases are in the old format.</para></listitem>
++	<para><command>modutil</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>dbm:</command> is not used, then the tool assumes that the given databases are in SQLite format.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>--dbprefix prefix</term>
+-	  <listitem><para>Specify the prefix used on the database files, such as <filename>my_</filename> for <filename>my_cert8.db</filename>. This option is provided as a special case. Changing the names of the certificate and key databases is not recommended.</para></listitem>
++	  <listitem><para>Specify the prefix used on the database files, such as <filename>my_</filename> for <filename>my_cert9.db</filename>. This option is provided as a special case. Changing the names of the certificate and key databases is not recommended.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>-installdir root-installation-directory</term>
+ 	  <listitem><para>Specify the root installation directory relative to which files will be installed by the <option>-jar</option> option. This directory should be one below which it is appropriate to store dynamic library files, such as a server's root directory.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+@@ -224,23 +224,23 @@
+     </variablelist>
+   </refsection>
+ 
+   <refsection id="usage-and-examples">
+     <title>Usage and Examples</title>
+ 
+     <para><command>Creating Database Files</command></para>
+     <para>Before any operations can be performed, there must be a set of security databases available. <command>modutil</command> can be used to create these files. The only required argument is the database that where the databases will be located.</para>
+-<programlisting>modutil -create -dbdir [sql:]directory</programlisting>
++<programlisting>modutil -create -dbdir directory</programlisting>
+ 
+ 	<para><command>Adding a Cryptographic Module</command></para>
+ 	<para>Adding a PKCS #11 module means submitting a supporting library file, enabling its ciphers, and setting default provider status for various security mechanisms. This can be done by supplying all of the information through <command>modutil</command> directly or by running a JAR file and install script. For the most basic case, simply upload the library:</para>
+ <programlisting>modutil -add modulename -libfile library-file [-ciphers cipher-enable-list] [-mechanisms mechanism-list] </programlisting>
+ 	<para>For example:
+-<programlisting>modutil -dbdir sql:/home/my/sharednssdb -add "Example PKCS #11 Module" -libfile "/tmp/crypto.so" -mechanisms RSA:DSA:RC2:RANDOM 
++<programlisting>modutil -dbdir /home/my/sharednssdb -add "Example PKCS #11 Module" -libfile "/tmp/crypto.so" -mechanisms RSA:DSA:RC2:RANDOM 
+ 
+ Using database directory ... 
+ Module "Example PKCS #11 Module" added to database.</programlisting>
+         </para>
+ 
+ 
+ 	<para><command>Installing a Cryptographic Module from a JAR File</command></para>
+ 	<para>PKCS #11 modules can also be loaded using a JAR file, which contains all of the required libraries and an installation script that describes how to install the module. The JAR install script is described in more detail in <xref linkend="jar-install-file" />.</para>
+@@ -262,17 +262,17 @@ Module "Example PKCS #11 Module" added t
+       } 
+    } 
+    Linux:6.0.0:x86 { 
+       EquivalentPlatform { Linux:5.4.08:x86 } 
+    } 
+ } </programlisting>
+ 	<para>Both the install script and the required libraries must be bundled in a JAR file, which is specified with the <option>-jar</option> argument.</para>
+ 
+-<programlisting>modutil -dbdir sql:/home/mt"jar-install-filey/sharednssdb -jar install.jar -installdir sql:/home/my/sharednssdb
++<programlisting>modutil -dbdir /home/mt"jar-install-filey/sharednssdb -jar install.jar -installdir /home/my/sharednssdb
+ 
+ This installation JAR file was signed by: 
+ ---------------------------------------------- 
+ 
+ **SUBJECT NAME** 
+ 
+ C=US, ST=California, L=Mountain View, CN=Cryptorific Inc., OU=Digital ID
+ Class 3 - Netscape Object Signing, OU="www.verisign.com/repository/CPS
+@@ -299,42 +299,42 @@ Installation completed successfully </pr
+ 
+ 	<para><command>Adding Module Spec</command></para>
+ 	<para>Each module has information stored in the security database about its configuration and parameters. These can be added or edited using the <option>-rawadd</option> command. For the current settings or to see the format of the module spec in the database, use the <option>-rawlist</option> option.</para>
+ <programlisting>modutil -rawadd modulespec</programlisting>
+ 
+ 
+ 	<para><command>Deleting a Module</command></para>
+     <para>A specific PKCS #11 module can be deleted from the <filename>secmod.db</filename> database:</para>
+-<programlisting>modutil -delete modulename -dbdir [sql:]directory </programlisting>
++<programlisting>modutil -delete modulename -dbdir directory </programlisting>
+ 
+ 	<para><command>Displaying Module Information</command></para>
+ 	<para>The <filename>secmod.db</filename> database contains information about the PKCS #11 modules that are available to an application or server to use. The list of all modules, information about specific modules, and database configuration specs for modules can all be viewed. </para>
+     <para>To simply get a list of modules in the database, use the <option>-list</option> command.</para>
+-<programlisting>modutil -list [modulename] -dbdir [sql:]directory </programlisting>
++<programlisting>modutil -list [modulename] -dbdir directory </programlisting>
+ 	<para>Listing the modules shows the module name, their status, and other associated security databases for certificates and keys. For example:</para>
+    
+-<programlisting>modutil -list -dbdir sql:/home/my/sharednssdb 
++<programlisting>modutil -list -dbdir /home/my/sharednssdb 
+ 
+ Listing of PKCS #11 Modules
+ -----------------------------------------------------------
+   1. NSS Internal PKCS #11 Module
+          slots: 2 slots attached
+         status: loaded
+ 
+          slot: NSS Internal Cryptographic Services                            
+         token: NSS Generic Crypto Services
+ 	  uri: pkcs11:token=NSS%20Generic%20Crypto%20Services;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203
+ 
+          slot: NSS User Private Key and Certificate Services                  
+         token: NSS Certificate DB
+ 	  uri: pkcs11:token=NSS%20Certificate%20DB;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203
+ -----------------------------------------------------------</programlisting>
+ 	<para>Passing a specific module name with the <option>-list</option> returns details information about the module itself, like supported cipher mechanisms, version numbers, serial numbers, and other information about the module and the token it is loaded on. For example:</para>
+-<programlisting> modutil -list "NSS Internal PKCS #11 Module" -dbdir sql:/home/my/sharednssdb
++<programlisting> modutil -list "NSS Internal PKCS #11 Module" -dbdir /home/my/sharednssdb
+ 
+ -----------------------------------------------------------
+ Name: NSS Internal PKCS #11 Module
+ Library file: **Internal ONLY module**
+ Manufacturer: Mozilla Foundation              
+ Description: NSS Internal Crypto Services    
+ PKCS #11 Version 2.20
+ Library Version: 3.11
+@@ -370,17 +370,17 @@ Default Mechanism Flags: RSA:RC2:RC4:DES
+   Token Model: NSS 3           
+   Token Serial Number: 0000000000000000
+   Token Version: 8.3
+   Token Firmware Version: 0.0
+   Access: NOT Write Protected
+   Login Type: Login required
+   User Pin: Initialized</programlisting>
+ 	<para>A related command, <option>-rawlist</option> returns information about the database configuration for the modules. (This information can be edited by loading new specs using the <option>-rawadd</option> command.)</para>
+-<programlisting> modutil -rawlist -dbdir sql:/home/my/sharednssdb
++<programlisting> modutil -rawlist -dbdir /home/my/sharednssdb
+  name="NSS Internal PKCS #11 Module" parameters="configdir=. certPrefix= keyPrefix= secmod=secmod.db flags=readOnly " NSS="trustOrder=75 cipherOrder=100 slotParams={0x00000001=[slotFlags=RSA,RC4,RC2,DES,DH,SHA1,MD5,MD2,SSL,TLS,AES,RANDOM askpw=any timeout=30 ] }  Flags=internal,critical"</programlisting>
+ 
+ 	<para><command>Setting a Default Provider for Security Mechanisms</command></para>
+ 	<para>Multiple security modules may provide support for the same security mechanisms. It is possible to set a specific security module as the default provider for a specific security mechanism (or, conversely, to prohibit a provider from supplying those mechanisms).</para>
+ <programlisting>modutil -default modulename -mechanisms mechanism-list </programlisting>
+ 	<para>To set a module as the default provider for mechanisms, use the <option>-default</option> command with a colon-separated list of mechanisms. The available mechanisms depend on the module; NSS supplies almost all common mechanisms. For example:</para>
+ <programlisting>modutil -default "NSS Internal PKCS #11 Module" -dbdir -mechanisms RSA:DSA:RC2 
+ 
+@@ -398,29 +398,29 @@ Successfully changed defaults.</programl
+     <para>For example:</para>
+ <programlisting>modutil -enable "NSS Internal PKCS #11 Module" -slot "NSS Internal Cryptographic Services                            " -dbdir .
+ 
+ Slot "NSS Internal Cryptographic Services                            " enabled.</programlisting>
+ 	<para>Be sure that the appropriate amount of trailing whitespace is after the slot name. Some slot names have a significant amount of whitespace that must be included, or the operation will fail.</para>
+ 
+ 	<para><command>Enabling and Verifying FIPS Compliance</command></para>
+ 	<para>The NSS modules can have FIPS 140-2 compliance enabled or disabled using <command>modutil</command> with the <option>-fips</option> option. For example:</para>
+-<programlisting>modutil -fips true -dbdir sql:/home/my/sharednssdb/
++<programlisting>modutil -fips true -dbdir /home/my/sharednssdb/
+ 
+ FIPS mode enabled.</programlisting>
+ 	<para>To verify that status of FIPS mode, run the <option>-chkfips</option> command with either a true or false flag (it doesn't matter which). The tool returns the current FIPS setting.</para>
+-<programlisting>modutil -chkfips false -dbdir sql:/home/my/sharednssdb/
++<programlisting>modutil -chkfips false -dbdir /home/my/sharednssdb/
+ 
+ FIPS mode enabled.</programlisting>
+ 
+ 	<para><command>Changing the Password on a Token</command></para>
+ 
+     <para>Initializing or changing a token's password:</para>
+ <programlisting>modutil -changepw tokenname [-pwfile old-password-file] [-newpwfile new-password-file] </programlisting>
+-<programlisting>modutil -dbdir sql:/home/my/sharednssdb -changepw "NSS Certificate DB" 
++<programlisting>modutil -dbdir /home/my/sharednssdb -changepw "NSS Certificate DB" 
+ 
+ Enter old password: 
+ Incorrect password, try again... 
+ Enter old password: 
+ Enter new password: 
+ Re-enter new password: 
+ Token "Communicator Certificate DB" password changed successfully.</programlisting>
+   </refsection>
+@@ -684,27 +684,26 @@ BerkleyDB. These new databases provide m
+ 		<para>
+ 			pkcs11.txt, which is listing of all of the PKCS #11 modules contained in a new subdirectory in the security databases directory
+ 		</para>
+ 	</listitem>
+ </itemizedlist>
+ 
+ <para>Because the SQLite databases are designed to be shared, these are the <emphasis>shared</emphasis> database type. The shared database type is preferred; the legacy format is included for backward compatibility.</para>
+ 
+-<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases follow the more common legacy type. 
+-Using the SQLite databases must be manually specified by using the <command>sql:</command> prefix with the given security directory. For example:</para>
++<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases use the SQLite type.
++Using the legacy databases must be manually specified by using the <command>dbm:</command> prefix with the given security directory. For example:</para>
+ 
+-<programlisting>modutil -create -dbdir sql:/home/my/sharednssdb</programlisting>
++<programlisting>modutil -create -dbdir dbm:/home/my/sharednssdb</programlisting>
+ 
+-<para>To set the shared database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>sql</envar>:</para>
+-<programlisting>export NSS_DEFAULT_DB_TYPE="sql"</programlisting>
++<para>To set the legacy database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>dbm</envar>:</para>
++<programlisting>export NSS_DEFAULT_DB_TYPE="dbm"</programlisting>
+ 
+ <para>This line can be added to the <filename>~/.bashrc</filename> file to make the change permanent for the user.</para>
+ 
+-<para>Most applications do not use the shared database by default, but they can be configured to use them. For example, this how-to article covers how to configure Firefox and Thunderbird to use the new shared NSS databases:</para>
+ <itemizedlist>
+ 	<listitem>
+ 		<para>
+ 			https://wiki.mozilla.org/NSS_Shared_DB_Howto</para>
+ 	</listitem>
+ </itemizedlist>
+ <para>For an engineering draft on the changes in the shared NSS databases, see the NSS project wiki:</para>
+ <itemizedlist>
+diff --git a/doc/pk12util.xml b/doc/pk12util.xml
+--- a/doc/pk12util.xml
++++ b/doc/pk12util.xml
+@@ -25,17 +25,17 @@
+   </refnamediv>
+ 
+   <refsynopsisdiv>
+     <cmdsynopsis>
+       <command>pk12util</command>
+       <arg>-i p12File|-l p12File|-o p12File</arg>
+       <arg>-c keyCipher</arg>
+       <arg>-C certCipher</arg>
+-      <arg>-d [sql:]directory</arg>
++      <arg>-d directory</arg>
+       <arg>-h tokenname</arg>
+       <arg>-m | --key-len  keyLength</arg>
+       <arg>-M hashAlg</arg>
+       <arg>-n certname</arg>
+       <arg>-P dbprefix</arg>
+       <arg>-r</arg>
+       <arg>-v</arg>
+       <arg>--cert-key-len  certKeyLength</arg>
+@@ -83,19 +83,19 @@
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>-C certCipher</term>
+         <listitem><para>Specify the certiticate encryption algorithm.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+-        <term>-d [sql:]directory</term>
++        <term>-d directory</term>
+         <listitem><para>Specify the database directory into which to import to or export from certificates and keys.</para>
+-	<para><command>pk12util</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>sql:</command> is not used, then the tool assumes that the given databases are in the old format.</para></listitem>
++	<para><command>pk12util</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>dbm:</command> is not used, then the tool assumes that the given databases are in the SQLite format.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+         <term>-h tokenname</term>
+         <listitem><para>Specify the name of the token to import into or export from.</para></listitem>
+       </varlistentry>
+ 
+       <varlistentry>
+@@ -244,44 +244,44 @@
+   </refsection>
+ 
+   <refsection id="examples">
+     <title>Examples</title>
+     <para><command>Importing Keys and Certificates</command></para>
+     <para>The most basic usage of <command>pk12util</command> for importing a certificate or key is the PKCS #12 input file (<option>-i</option>) and some way to specify the security database being accessed (either <option>-d</option> for a directory or <option>-h</option> for a token).
+     </para>
+     <para>
+-    pk12util -i p12File [-h tokenname] [-v] [-d [sql:]directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]
++    pk12util -i p12File [-h tokenname] [-v] [-d directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]
+     </para>
+     <para>For example:</para>
+     <para> </para>
+-    <programlisting># pk12util -i /tmp/cert-files/users.p12 -d sql:/home/my/sharednssdb
++    <programlisting># pk12util -i /tmp/cert-files/users.p12 -d /home/my/sharednssdb
+ 
+ Enter a password which will be used to encrypt your keys.
+ The password should be at least 8 characters long,
+ and should contain at least one non-alphabetic character.
+ 
+ Enter new password: 
+ Re-enter password: 
+ Enter password for PKCS12 file: 
+ pk12util: PKCS12 IMPORT SUCCESSFUL</programlisting>
+ 
+     <para><command>Exporting Keys and Certificates</command></para>
+     <para>Using the <command>pk12util</command> command to export certificates and keys requires both the name of the certificate to extract from the database (<option>-n</option>) and the PKCS #12-formatted output file to write to. There are optional parameters that can be used to encrypt the file to protect the certificate material.
+     </para>
+-    <para>pk12util -o p12File -n certname [-c keyCipher] [-C certCipher] [-m|--key_len keyLen] [-n|--cert_key_len certKeyLen] [-d [sql:]directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]</para>
++    <para>pk12util -o p12File -n certname [-c keyCipher] [-C certCipher] [-m|--key_len keyLen] [-n|--cert_key_len certKeyLen] [-d directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]</para>
+     <para>For example:</para>
+-    <programlisting># pk12util -o certs.p12 -n Server-Cert -d sql:/home/my/sharednssdb
++    <programlisting># pk12util -o certs.p12 -n Server-Cert -d /home/my/sharednssdb
+ Enter password for PKCS12 file: 
+ Re-enter password: </programlisting>
+ 
+     <para><command>Listing Keys and Certificates</command></para>
+     <para>The information in a <filename>.p12</filename> file are not human-readable. The certificates and keys in the file can be printed (listed) in a human-readable pretty-print format that shows information for every certificate and any public keys in the <filename>.p12</filename> file.
+     </para>
+-    <para>pk12util -l p12File [-h tokenname] [-r] [-d [sql:]directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]</para>
++    <para>pk12util -l p12File [-h tokenname] [-r] [-d directory] [-P dbprefix] [-k slotPasswordFile|-K slotPassword] [-w p12filePasswordFile|-W p12filePassword]</para>
+     <para>For example, this prints the default ASCII output:</para>
+     <programlisting># pk12util -l certs.p12
+ 
+ Enter password for PKCS12 file: 
+ Key(shrouded):
+     Friendly Name: Thawte Freemail Member's Thawte Consulting (Pty) Ltd. ID
+ 
+     Encryption algorithm: PKCS #12 V2 PBE With SHA-1 And 3KEY Triple DES-CBC
+@@ -389,27 +389,26 @@ BerkleyDB. These new databases provide m
+ 		<para>
+ 			pkcs11.txt, which is listing of all of the PKCS #11 modules contained in a new subdirectory in the security databases directory
+ 		</para>
+ 	</listitem>
+ </itemizedlist>
+ 
+ <para>Because the SQLite databases are designed to be shared, these are the <emphasis>shared</emphasis> database type. The shared database type is preferred; the legacy format is included for backward compatibility.</para>
+ 
+-<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases follow the more common legacy type. 
+-Using the SQLite databases must be manually specified by using the <command>sql:</command> prefix with the given security directory. For example:</para>
++<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases use the SQLite type
++Using the legacy databases must be manually specified by using the <command>dbm:</command> prefix with the given security directory. For example:</para>
+ 
+-<programlisting># pk12util -i /tmp/cert-files/users.p12 -d sql:/home/my/sharednssdb</programlisting>
++<programlisting># pk12util -i /tmp/cert-files/users.p12 -d dbm:/home/my/sharednssdb</programlisting>
+ 
+-<para>To set the shared database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>sql</envar>:</para>
+-<programlisting>export NSS_DEFAULT_DB_TYPE="sql"</programlisting>
++<para>To set the legacy database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>dbm</envar>:</para>
++<programlisting>export NSS_DEFAULT_DB_TYPE="dbm"</programlisting>
+ 
+ <para>This line can be set added to the <filename>~/.bashrc</filename> file to make the change permanent.</para>
+ 
+-<para>Most applications do not use the shared database by default, but they can be configured to use them. For example, this how-to article covers how to configure Firefox and Thunderbird to use the new shared NSS databases:</para>
+ <itemizedlist>
+ 	<listitem>
+ 		<para>
+ 			https://wiki.mozilla.org/NSS_Shared_DB_Howto</para>
+ 	</listitem>
+ </itemizedlist>
+ <para>For an engineering draft on the changes in the shared NSS databases, see the NSS project wiki:</para>
+ <itemizedlist>
+diff --git a/doc/signver.xml b/doc/signver.xml
+--- a/doc/signver.xml
++++ b/doc/signver.xml
+@@ -59,19 +59,19 @@
+         <term>-A</term>
+         <listitem><para>Displays all of the information in the PKCS#7 signature.</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>-V</term>
+         <listitem><para>Verifies the digital signature.</para></listitem>
+       </varlistentry>
+       <varlistentry>
+-        <term>-d [sql:]<emphasis>directory</emphasis></term>
++        <term>-d <emphasis>directory</emphasis></term>
+         <listitem><para>Specify the database directory which contains the certificates and keys.</para>
+-	<para><command>signver</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>sql:</command> is not used, then the tool assumes that the given databases are in the old format.</para></listitem>
++	<para><command>signver</command> supports two types of databases: the legacy security databases (<filename>cert8.db</filename>, <filename>key3.db</filename>, and <filename>secmod.db</filename>) and new SQLite databases (<filename>cert9.db</filename>, <filename>key4.db</filename>, and <filename>pkcs11.txt</filename>). If the prefix <command>dbm:</command> is not used, then the tool assumes that the given databases are in the SQLite format.</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>-a</term>
+         <listitem><para>Sets that the given signature file is in ASCII format.</para></listitem>
+       </varlistentry>
+       <varlistentry>
+         <term>-i <emphasis>input_file</emphasis></term>
+         <listitem><para>Gives the input file for the object with signed data.</para></listitem>
+@@ -90,17 +90,17 @@
+       </varlistentry>
+     </variablelist>
+   </refsection>
+ 
+   <refsection id="examples">
+     <title>Extended Examples</title>
+ 	<refsection><title>Verifying a Signature</title>
+ 	<para>The <option>-V</option> option verifies that the signature in a given signature file is valid when used to sign the given object (from the input file).</para>
+-<programlisting>signver -V -s <replaceable>signature_file</replaceable> -i <replaceable>signed_file</replaceable> -d sql:/home/my/sharednssdb
++<programlisting>signver -V -s <replaceable>signature_file</replaceable> -i <replaceable>signed_file</replaceable> -d /home/my/sharednssdb
+ 
+ signatureValid=yes</programlisting>
+ 	</refsection>
+ 
+ 	<refsection><title>Printing Signature Data</title>
+ 		<para>
+ 			The <option>-A</option> option prints all of the information contained in a signature file. Using the <option>-o</option> option prints the signature file information to the given output file rather than stdout.
+ 		</para>
+@@ -150,27 +150,26 @@ BerkleyDB. These new databases provide m
+ 		<para>
+ 			pkcs11.txt, which is listing of all of the PKCS #11 modules contained in a new subdirectory in the security databases directory
+ 		</para>
+ 	</listitem>
+ </itemizedlist>
+ 
+ <para>Because the SQLite databases are designed to be shared, these are the <emphasis>shared</emphasis> database type. The shared database type is preferred; the legacy format is included for backward compatibility.</para>
+ 
+-<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases follow the more common legacy type. 
+-Using the SQLite databases must be manually specified by using the <command>sql:</command> prefix with the given security directory. For example:</para>
++<para>By default, the tools (<command>certutil</command>, <command>pk12util</command>, <command>modutil</command>) assume that the given security databases use the SQLite type
++Using the legacy databases must be manually specified by using the <command>dbm:</command> prefix with the given security directory. For example:</para>
+ 
+-<programlisting># signver -A -s <replaceable>signature</replaceable> -d sql:/home/my/sharednssdb</programlisting>
++<programlisting># signver -A -s <replaceable>signature</replaceable> -d dbm:/home/my/sharednssdb</programlisting>
+ 
+-<para>To set the shared database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>sql</envar>:</para>
+-<programlisting>export NSS_DEFAULT_DB_TYPE="sql"</programlisting>
++<para>To set the legacy database type as the default type for the tools, set the <envar>NSS_DEFAULT_DB_TYPE</envar> environment variable to <envar>dbm</envar>:</para>
++<programlisting>export NSS_DEFAULT_DB_TYPE="dbm"</programlisting>
+ 
+ <para>This line can be added to the <filename>~/.bashrc</filename> file to make the change permanent for the user.</para>
+ 
+-<para>Most applications do not use the shared database by default, but they can be configured to use them. For example, this how-to article covers how to configure Firefox and Thunderbird to use the new shared NSS databases:</para>
+ <itemizedlist>
+ 	<listitem>
+ 		<para>
+ 			https://wiki.mozilla.org/NSS_Shared_DB_Howto</para>
+ 	</listitem>
+ </itemizedlist>
+ <para>For an engineering draft on the changes in the shared NSS databases, see the NSS project wiki:</para>
+ <itemizedlist>

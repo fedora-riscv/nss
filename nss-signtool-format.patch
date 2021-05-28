@@ -26,28 +26,19 @@ diff --git a/cmd/modutil/install.c b/cmd/modutil/install.c
 diff --git a/cmd/signtool/util.c b/cmd/signtool/util.c
 --- a/cmd/signtool/util.c
 +++ b/cmd/signtool/util.c
-@@ -132,17 +132,20 @@ rm_dash_r(char *path)
-         if (!dir) {
-             PR_fprintf(errorFD, "Error: Unable to open directory %s.\n", path);
-             errorCount++;
-             return -1;
-         }
- 
+@@ -138,6 +138,12 @@ rm_dash_r(char *path)
          /* Recursively delete all entries in the directory */
          while ((entry = PR_ReadDir(dir, PR_SKIP_BOTH)) != NULL) {
--            sprintf(filename, "%s/%s", path, entry->name);
-+            if (snprintf(filename, sizeof(filename), "%s/%s", path, entry->name) >= sizeof(filename)) {
+             sprintf(filename, "%s/%s", path, entry->name);
++            if (snprintf(filename, sizeof(filename), "%s/%s", path, entry->name
++) >= sizeof(filename)) {
 +                errorCount++;
++                PR_CloseDir(dir);
 +                return -1;
 +            }
-             if (rm_dash_r(filename))
+             if (rm_dash_r(filename)) {
+                 PR_CloseDir(dir);
                  return -1;
-         }
- 
-         if (PR_CloseDir(dir) != PR_SUCCESS) {
-             PR_fprintf(errorFD, "Error: Could not close %s.\n", path);
-             errorCount++;
-             return -1;
 diff --git a/lib/libpkix/pkix/util/pkix_list.c b/lib/libpkix/pkix/util/pkix_list.c
 --- a/lib/libpkix/pkix/util/pkix_list.c
 +++ b/lib/libpkix/pkix/util/pkix_list.c
