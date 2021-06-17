@@ -1,9 +1,9 @@
-%global nspr_version 4.30.0
+%global nspr_version 4.31.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global nspr_release 2
-%global nss_version 3.65.0
+%global nspr_release 1
+%global nss_version 3.67.0
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -129,13 +129,6 @@ Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 # can drop this patch when the underlying btrfs/sqlite issue is solved
 Patch30:          nss-fedora-btrf-sql-hack.patch
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1566124
-# still needs to be fixed. disable hw support until it is.
-Patch31:          nss-3.65-disable-hw-ppc.patch
-
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1712184
-Patch39:          nss-sql-man-page.patch
-
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1059,6 +1052,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri May 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
+- Update NSS to 3.67
+- Update NSPR to 2.31
+
 * Fri May 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.65.0-1
 - Update NSS to 3.65
 
