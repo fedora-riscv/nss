@@ -1,5 +1,5 @@
-%global nspr_version 4.30.0
-%global nss_version 3.65.0
+%global nspr_version 4.31.0
+%global nss_version 3.67.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -117,12 +117,6 @@ Patch30:          nss-fedora-btrf-sql-hack.patch
 # can drop this patch once crypto-policies has been updated
 Patch31:          nss-3.53.1-revert_rhel8_unsafe_policy_change.patch
 Patch33:          nss-fedora-relax-sha1.patch
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1566124
-# still needs to be fixed. disable hw support until it is.
-Patch34:          nss-3.65-disable-hw-ppc.patch
-
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1712184
-Patch39:          nss-sql-man-page.patch
 
 %description
 Network Security Services (NSS) is a set of libraries designed to
@@ -913,6 +907,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jul 17 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
+- Update NSS to 3.67
+
 * Fri May 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.65.0-1
 - Update NSS to 3.65
 
