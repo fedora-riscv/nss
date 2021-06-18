@@ -907,7 +907,7 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Thu Jul 17 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
+* Thu Jun 17 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
 - Update NSS to 3.67
 
 * Fri May 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.65.0-1
