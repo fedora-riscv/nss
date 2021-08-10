@@ -130,7 +130,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-Patch30:          nss-fedora-btrf-sql-hack.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
 
