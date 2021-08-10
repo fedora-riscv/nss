@@ -1,9 +1,9 @@
-%global nspr_version 4.31.0
-%global nss_version 3.67.0
+%global nspr_version 4.32.0
+%global nss_version 3.66.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 4
+%global baserelease 1
 %global nss_release %baserelease
 # use %global nspr_release %[%baserelease+n] to handle offsets when
 # release number between nss and nspr are different.
@@ -1060,6 +1060,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-1
+- Update to 3.69
+- Update to NSPR 4.31
+
 * Tue Jul 27 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-4
 - switch to baserelease so rpmdev-bumpspec will work next time
 
