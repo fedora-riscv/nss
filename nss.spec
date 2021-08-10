@@ -1,9 +1,9 @@
-%global nspr_version 4.31.0
+%global nspr_version 4.32.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
 %global nspr_release 1
-%global nss_version 3.67.0
+%global nss_version 3.69.0
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -127,8 +127,6 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
-# can drop this patch when the underlying btrfs/sqlite issue is solved
-Patch30:          nss-fedora-btrf-sql-hack.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1052,6 +1050,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-1
+- Update to 3.69
+- Update to NSPR 4.31
+
 * Fri May 21 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
 - Update NSS to 3.67
 - Update NSPR to 2.31
