@@ -3,7 +3,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 1
+%global baserelease 2
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
@@ -352,7 +352,7 @@ popd
 # Build NSS
 #
 # This package fails its testsuite with LTO.  Disable LTO for now
-%global _lto_cflags %{nil}
+#%global _lto_cflags %{nil}
 
 #export FREEBL_NO_DEPEND=1
 
@@ -1059,6 +1059,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-2
+- turn on lto
+
 * Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-1
 - Update to 3.69
 - Update to NSPR 4.31
