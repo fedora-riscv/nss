@@ -1,5 +1,5 @@
 %global nspr_version 4.32.0
-%global nss_version 3.66.0
+%global nss_version 3.69.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
