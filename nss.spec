@@ -5,7 +5,7 @@
 # - increment %%{nspr_version}, when updating the NSS part only
 %global baserelease 1
 %global nss_release %baserelease
-# use %global nspr_release %[%baserelease+n] to handle offsets when
+# use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
 %global nspr_release %baserelease
 # only need to update this as we added new
