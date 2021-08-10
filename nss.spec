@@ -1,5 +1,5 @@
-%global nspr_version 4.31.0
-%global nss_version 3.67.0
+%global nspr_version 4.32.0
+%global nss_version 3.69.0
 %global unsupported_tools_directory %{_libdir}/nss/unsupported-tools
 %global saved_files_dir %{_libdir}/nss/saved
 %global dracutlibdir %{_prefix}/lib/dracut
@@ -112,8 +112,6 @@ Patch12:          nss-signtool-format.patch
 Patch20:          nss-gcm-param-default-pkcs11v2.patch
 %endif
 %endif
-# can drop this patch when the underlying btrfs/sqlite issue is solved
-Patch30:          nss-fedora-btrf-sql-hack.patch
 # can drop this patch once crypto-policies has been updated
 Patch31:          nss-3.53.1-revert_rhel8_unsafe_policy_change.patch
 Patch33:          nss-fedora-relax-sha1.patch
@@ -907,6 +905,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-1
+- Update NSS to 3.69
+
 * Thu Jun 17 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-1
 - Update NSS to 3.67
 
