@@ -1,11 +1,11 @@
-%global nspr_version 4.31.0
-%global nss_version 3.67.0
+%global nspr_version 4.32.0
+%global nss_version 3.69.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 4
+%global baserelease 2
 %global nss_release %baserelease
-# use %global nspr_release %[%baserelease+n] to handle offsets when
+# use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
 %global nspr_release %baserelease
 # only need to update this as we added new
@@ -130,7 +130,6 @@ Patch2:           nss-539183.patch
 # but it doesn't hurt to keep it.
 Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
-Patch30:          nss-fedora-btrf-sql-hack.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
 
@@ -353,7 +352,7 @@ popd
 # Build NSS
 #
 # This package fails its testsuite with LTO.  Disable LTO for now
-%global _lto_cflags %{nil}
+#%global _lto_cflags %{nil}
 
 #export FREEBL_NO_DEPEND=1
 
@@ -1060,6 +1059,13 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-2
+- turn on lto
+
+* Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-1
+- Update to 3.69
+- Update to NSPR 4.31
+
 * Tue Jul 27 2021 Bob Relyea <rrelyea@redhat.com> - 3.67.0-4
 - switch to baserelease so rpmdev-bumpspec will work next time
 
