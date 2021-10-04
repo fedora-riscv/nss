@@ -1059,6 +1059,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Mon Oct 4 2021 Bob Relyea <rrelyea@redhat.com> - 3.71.0-1
+- Update to 3.71
+
 * Tue Aug 10 2021 Bob Relyea <rrelyea@redhat.com> - 3.69.0-2
 - turn on lto
 
