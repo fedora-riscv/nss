@@ -1,13 +1,13 @@
 %global nspr_version 4.32.0
-%global nss_version 3.69.0
+%global nss_version 3.71.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 2
+%global baserelease 1
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %baserelease
+%global nspr_release %[%baserelease+2]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
