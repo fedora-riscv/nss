@@ -1,5 +1,5 @@
 %global nspr_version 4.32.0
-%global nss_version 3.71.0
+%global nss_version 3.73.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
@@ -1059,6 +1059,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Wed Dec 1 2021 Bob Relyea <rrelyea@redhat.com> - 3.73.0-1
+- Update to 3.73
+- includes CVE 2021-43527
+
 * Mon Oct 4 2021 Bob Relyea <rrelyea@redhat.com> - 3.71.0-1
 - Update to 3.71
 
