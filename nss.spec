@@ -1,5 +1,5 @@
-%global nspr_version 4.32.0
-%global nss_version 3.77.0
+%global nspr_version 4.34.0
+%global nss_version 3.79.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
@@ -7,7 +7,7 @@
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %[%baserelease+5]
+%global nspr_release %baserelease
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -115,8 +115,6 @@ Source28:         nss-p11-kit.config
 Source100:        nspr-%{nspr_archive_version}.tar.gz
 Source101:        nspr-config.xml
 
-# Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=617723
-Patch2:           nss-539183.patch
 # This patch uses the GCC -iquote option documented at
 # http://gcc.gnu.org/onlinedocs/gcc/Directory-Options.html#Directory-Options
 # to give the in-tree headers a higher priority over the system headers,
@@ -394,6 +392,7 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
 
 export NSPR_INCLUDE_DIR=$PWD/dist/include/nspr
+export NSPR_LIB_DIR=$PWD/dist/lib
 
 export NSS_USE_SYSTEM_SQLITE=1
 
@@ -417,6 +416,7 @@ export USE_64=1
 export POLICY_FILE="nss.config"
 # location of the policy file
 export POLICY_PATH="/etc/crypto-policies/back-ends"
+
 
 %{__make} -C ./nss all
 %{__make} -C ./nss latest
@@ -561,6 +561,15 @@ export USE_64=1
 
 # End -- copied from the build section
 
+# copy the nspr libraries into the NSS object directory so we use the
+# newly compiled nspr binaries in our test rather than the build root
+# versions
+export LOBJDIR=`make -s -C ./nss/tests/common objdir_name`
+for i in ./dist/lib/*.so
+do
+   cp $i ./dist/${LOBJDIR}/lib
+done
+
 # This is necessary because the test suite tests algorithms that are
 # disabled by the system policy.
 export NSS_IGNORE_SYSTEM_POLICY=1
@@ -584,9 +593,9 @@ if [ $SPACEISBAD -ne 0 ]; then
   echo "error: filenames containing space are not supported (xargs)"
   exit 1
 fi
-MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND ||:
-RANDSERV=selfserv_${MYRAND}; echo $RANDSERV ||:
-DISTBINDIR=`ls -d ./dist/*.OBJ/bin`; echo $DISTBINDIR ||:
+export MYRAND=`perl -e 'print 9000 + int rand 1000'`; echo $MYRAND
+export RANDSERV=selfserv_${MYRAND}; echo $RANDSERV
+export DISTBINDIR=./dist/${LOBJDIR}/bin
 pushd "$DISTBINDIR"
 ln -s selfserv $RANDSERV
 popd
@@ -645,6 +654,25 @@ for f in nspr-config; do
 done
 popd
 
+# Begin -- copied from the build section
+# this is needed to make sure LOBJDIR is correct
+
+export FREEBL_NO_DEPEND=1
+
+export BUILD_OPT=1
+export NSS_DISABLE_PPC_GHASH=1
+
+%ifnarch noarch
+%if 0%{__isa_bits} == 64
+export USE_64=1
+%endif
+%endif
+
+# End -- copied from the build section
+
+# get the objdir value from the test make file
+export LOBJDIR=`make -s -C ./nss/tests/common objdir_name`
+
 # There is no make install target so we'll do it ourselves.
 
 mkdir -p $RPM_BUILD_ROOT/%{_includedir}/nss3
@@ -673,7 +701,7 @@ mkdir -p $RPM_BUILD_ROOT%{_mandir}/man5
 # Copy the binary libraries we want
 for file in libnssutil3.so libsoftokn3.so %{?with_dbm:libnssdbm3.so} libfreebl3.so libfreeblpriv3.so libnss3.so libnsssysinit.so libsmime3.so libssl3.so
 do
-  install -p -m 755 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 755 dist/${LOBJDIR}/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Install the empty NSS db files
@@ -692,19 +720,19 @@ install -p -m 644 %{SOURCE15} $RPM_BUILD_ROOT/%{_sysconfdir}/pki/nssdb/pkcs11.tx
 # Copy the development libraries we want
 for file in libcrmf.a libnssb.a libnssckfw.a
 do
-  install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+  install -p -m 644 dist/${LOBJDIR}/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the binaries we want
 for file in certutil cmsutil crlutil modutil nss-policy-check pk12util signver ssltap
 do
-  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{_bindir}
+  install -p -m 755 dist/${LOBJDIR}/bin/$file $RPM_BUILD_ROOT/%{_bindir}
 done
 
 # Copy the binaries we ship as unsupported
 for file in bltest ecperf fbectest fipstest shlibsign atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
-  install -p -m 755 dist/*.OBJ/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
+  install -p -m 755 dist/${LOBJDIR}/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
 
 # Copy the include files we want
@@ -722,7 +750,7 @@ done
 # Copy the static freebl library
 for file in libfreebl.a
 do
-install -p -m 644 dist/*.OBJ/lib/$file $RPM_BUILD_ROOT/%{_libdir}
+install -p -m 644 dist/${LOBJDIR}/lib/$file $RPM_BUILD_ROOT/%{_libdir}
 done
 
 # Copy the template files we want
@@ -1059,7 +1087,11 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Tue Apr 5 2022 Bob Relyea <rrelyea@redhat.com> - 3.75.0-1
+* Tue May 31 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-1
+- Update to NSS 3.79
+- Update to NSPR 4.34
+
+* Tue Apr 5 2022 Bob Relyea <rrelyea@redhat.com> - 3.77.0-1
 - Update to 3.77
 
 * Mon Feb 7 2022 Bob Relyea <rrelyea@redhat.com> - 3.75.0-1
