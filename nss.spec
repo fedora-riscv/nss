@@ -3,7 +3,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 1
+%global baserelease 2
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
@@ -130,6 +130,9 @@ Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
+
+# upstream bug https://bugzilla.mozilla.org/show_bug.cgi?id=1774654
+Patch50:	nss-3.79-fix-client-cert-crash.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1087,6 +1090,7 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jun 16 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-2
 * Tue May 31 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-1
 - Update to NSS 3.79
 - Update to NSPR 4.34
@@ -1178,7 +1182,7 @@ update-crypto-policies &> /dev/null || :
 - Consolidate NSPR package with this package
 
 * Mon Oct 26 2020 Bob Relyea <rrelyea@redhat.com> - 3.58.0-4
-- fix pkix ocsp to tolerate OCSP checking on intermediates 
+- fix pkix ocsp to tolerate OCSP checking on intermediates
   when the root is signed by sha1 and sha1 is disabled by
   policy
 
