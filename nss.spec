@@ -1,5 +1,5 @@
 %global nspr_version 4.34.0
-%global nss_version 3.79.0
+%global nss_version 3.81.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
@@ -7,7 +7,7 @@
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %baserelease
+%global nspr_release [%baserelease+2]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -130,6 +130,9 @@ Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
+
+# upstream bug https://bugzilla.mozilla.org/show_bug.cgi?id=1774654
+Patch50:	nss-3.79-fix-client-cert-crash.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1087,11 +1090,17 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jun 21 2022 Bob Relyea <rrelyea@redhat.com> - 3.81.0-1
+- udpate to NSS 3.81
+
+* Thu Jun 16 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-2
+- Fix crash when getting client cert and there is none in the database.
+
 * Tue May 31 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-1
 - Update to NSS 3.79
 - Update to NSPR 4.34
 
-* Tue Apr 5 2022 Bob Relyea <rrelyea@redhat.com> - 3.77.0-1
+* Mon Apr 4 2022 Bob Relyea <rrelyea@redhat.com> - 3.77.0-1
 - Update to 3.77
 
 * Fri Feb 4 2022 Bob Relyea <rrelyea@redhat.com> - 3.75.0-1
@@ -1178,7 +1187,7 @@ update-crypto-policies &> /dev/null || :
 - Consolidate NSPR package with this package
 
 * Mon Oct 26 2020 Bob Relyea <rrelyea@redhat.com> - 3.58.0-4
-- fix pkix ocsp to tolerate OCSP checking on intermediates 
+- fix pkix ocsp to tolerate OCSP checking on intermediates
   when the root is signed by sha1 and sha1 is disabled by
   policy
 
