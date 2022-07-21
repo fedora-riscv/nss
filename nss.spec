@@ -1,13 +1,13 @@
 %global nspr_version 4.34.0
-%global nss_version 3.79.0
+%global nss_version 3.81.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 2
+%global baserelease 1
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %baserelease
+%global nspr_release [%baserelease+2]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -1090,7 +1090,12 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jun 21 2022 Bob Relyea <rrelyea@redhat.com> - 3.81.0-1
+- udpate to NSS 3.81
+
 * Thu Jun 16 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-2
+- Fix crash when getting client cert and there is none in the database.
+
 * Tue May 31 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-1
 - Update to NSS 3.79
 - Update to NSPR 4.34
