@@ -7,7 +7,7 @@
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release [%baserelease+2]
+%global nspr_release %[%baserelease+2]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
