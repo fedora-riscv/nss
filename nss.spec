@@ -3,7 +3,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 1
+%global baserelease 2
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
@@ -133,6 +133,8 @@ Patch40:          nss-no-dbm-man-page.patch
 
 # upstream bug https://bugzilla.mozilla.org/show_bug.cgi?id=1774654
 Patch50:	nss-3.79-fix-client-cert-crash.patch
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1774659
+Patch51:	nss-3.79-dbtool.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -733,7 +735,7 @@ do
 done
 
 # Copy the binaries we ship as unsupported
-for file in bltest ecperf fbectest fipstest shlibsign atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
+for file in bltest dbtool ecperf fbectest fipstest shlibsign atob btoa derdump listsuites ocspclnt pp selfserv signtool strsclnt symkeyutil tstclnt vfyserv vfychain
 do
   install -p -m 755 dist/${LOBJDIR}/bin/$file $RPM_BUILD_ROOT/%{unsupported_tools_directory}
 done
@@ -1030,6 +1032,7 @@ update-crypto-policies &> /dev/null || :
 %dir %{saved_files_dir}
 %dir %{unsupported_tools_directory}
 %{unsupported_tools_directory}/bltest
+%{unsupported_tools_directory}/dbtool
 %{unsupported_tools_directory}/ecperf
 %{unsupported_tools_directory}/fbectest
 %{unsupported_tools_directory}/fipstest
@@ -1090,7 +1093,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Thu Jun 21 2022 Bob Relyea <rrelyea@redhat.com> - 3.81.0-1
+* Fri Sep 9 2022 Bob Relyea <rrelyea@redhat.com> - 3.81.0-2
+- add dbtool
+
+* Thu Jul 21 2022 Bob Relyea <rrelyea@redhat.com> - 3.81.0-1
 - udpate to NSS 3.81
 
 * Thu Jun 16 2022 Bob Relyea <rrelyea@redhat.com> - 3.79.0-2
