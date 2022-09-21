@@ -1,12 +1,7 @@
-diff --git a/pr/include/md/_linux.h b/pr/include/md/_linux.h
---- a/pr/include/md/_linux.h
-+++ b/pr/include/md/_linux.h
-@@ -82,53 +82,73 @@
- #define NO_DLOPEN_NULL
- #endif
- 
- #if defined(__FreeBSD_kernel__) || defined(__GNU__)
- #define _PR_HAVE_SOCKADDR_LEN
+diff -up ./pr/include/md/_linux.h.gcc-atomics ./pr/include/md/_linux.h
+--- ./pr/include/md/_linux.h.gcc-atomics	2022-09-20 11:23:22.008942926 -0700
++++ ./pr/include/md/_linux.h	2022-09-20 11:34:45.536751340 -0700
+@@ -105,6 +105,15 @@
  #endif
  
  #if defined(__i386__)
@@ -22,11 +17,7 @@ diff --git a/pr/include/md/_linux.h b/pr/include/md/_linux.h
  #define _PR_HAVE_ATOMIC_OPS
  #define _MD_INIT_ATOMIC()
  extern PRInt32 _PR_x86_AtomicIncrement(PRInt32 *val);
- #define _MD_ATOMIC_INCREMENT          _PR_x86_AtomicIncrement
- extern PRInt32 _PR_x86_AtomicDecrement(PRInt32 *val);
- #define _MD_ATOMIC_DECREMENT          _PR_x86_AtomicDecrement
- extern PRInt32 _PR_x86_AtomicAdd(PRInt32 *ptr, PRInt32 val);
- #define _MD_ATOMIC_ADD                _PR_x86_AtomicAdd
+@@ -116,6 +125,7 @@ extern PRInt32 _PR_x86_AtomicAdd(PRInt32
  extern PRInt32 _PR_x86_AtomicSet(PRInt32 *val, PRInt32 newval);
  #define _MD_ATOMIC_SET                _PR_x86_AtomicSet
  #endif
@@ -34,15 +25,7 @@ diff --git a/pr/include/md/_linux.h b/pr/include/md/_linux.h
  
  #if defined(__ia64__)
  #define _PR_HAVE_ATOMIC_OPS
- #define _MD_INIT_ATOMIC()
- extern PRInt32 _PR_ia64_AtomicIncrement(PRInt32 *val);
- #define _MD_ATOMIC_INCREMENT          _PR_ia64_AtomicIncrement
- extern PRInt32 _PR_ia64_AtomicDecrement(PRInt32 *val);
- #define _MD_ATOMIC_DECREMENT          _PR_ia64_AtomicDecrement
- extern PRInt32 _PR_ia64_AtomicAdd(PRInt32 *ptr, PRInt32 val);
- #define _MD_ATOMIC_ADD                _PR_ia64_AtomicAdd
- extern PRInt32 _PR_ia64_AtomicSet(PRInt32 *val, PRInt32 newval);
- #define _MD_ATOMIC_SET                _PR_ia64_AtomicSet
+@@ -131,6 +141,15 @@ extern PRInt32 _PR_ia64_AtomicSet(PRInt3
  #endif
  
  #if defined(__x86_64__)
@@ -58,20 +41,11 @@ diff --git a/pr/include/md/_linux.h b/pr/include/md/_linux.h
  #define _PR_HAVE_ATOMIC_OPS
  #define _MD_INIT_ATOMIC()
  extern PRInt32 _PR_x86_64_AtomicIncrement(PRInt32 *val);
- #define _MD_ATOMIC_INCREMENT          _PR_x86_64_AtomicIncrement
- extern PRInt32 _PR_x86_64_AtomicDecrement(PRInt32 *val);
- #define _MD_ATOMIC_DECREMENT          _PR_x86_64_AtomicDecrement
- extern PRInt32 _PR_x86_64_AtomicAdd(PRInt32 *ptr, PRInt32 val);
- #define _MD_ATOMIC_ADD                _PR_x86_64_AtomicAdd
+@@ -142,6 +161,7 @@ extern PRInt32 _PR_x86_64_AtomicAdd(PRIn
  extern PRInt32 _PR_x86_64_AtomicSet(PRInt32 *val, PRInt32 newval);
  #define _MD_ATOMIC_SET                _PR_x86_64_AtomicSet
  #endif
 +#endif
  
- #if defined(__or1k__)
+ #if defined(__loongarch__)
  #if defined(__GNUC__)
- /* Use GCC built-in functions */
- #define _PR_HAVE_ATOMIC_OPS
- #define _MD_INIT_ATOMIC()
- #define _MD_ATOMIC_INCREMENT(ptr) __sync_add_and_fetch(ptr, 1)
- #define _MD_ATOMIC_DECREMENT(ptr) __sync_sub_and_fetch(ptr, 1)
