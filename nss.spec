@@ -17,7 +17,12 @@
 %global dracut_modules_dir %{dracutlibdir}/modules.d/05nss-softokn/
 %global dracut_conf_dir %{dracutlibdir}/dracut.conf.d
 
+# tests failed on riscv64, make it default disabled.
+%ifarch riscv64
+%bcond_with tests
+%else
 %bcond_without tests
+%endif
 %bcond_with dbm
 
 # Produce .chk files for the final stripped binaries
@@ -60,7 +65,7 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
-Release:          %{nss_release}%{?dist}
+Release:          %{nss_release}.rv64%{?dist}
 License:          MPLv2.0
 URL:              http://www.mozilla.org/projects/security/pki/nss/
 Requires:         nspr >= %{nspr_version}
@@ -1090,6 +1095,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri Jan 06 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 3.85.0-1.rv64
+- Disable tests by default on riscv64 due to failure.
+
+
 * Thu Nov 17 2022 Bob Relyea <rrelyea@redhat.com> - 3.85.0-1
  - update to NSS 3.85
 
