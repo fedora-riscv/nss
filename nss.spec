@@ -387,6 +387,10 @@ export XCFLAGS="$XCFLAGS -Wno-error=maybe-uninitialized"
 # Similarly, but for gcc-11
 export XCFLAGS="$XCFLAGS -Wno-array-parameter"
 
+# aaaand gcc-133:
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1826650
+export XCFLAGS="$XCFLAGS -Wno-dangling-pointer"
+
 export LDFLAGS=$RPM_LD_FLAGS
 
 export DSO_LDOPTS=$RPM_LD_FLAGS
