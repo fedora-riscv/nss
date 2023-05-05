@@ -147,7 +147,7 @@ v3 certificates, and other security standards.
 
 %package tools
 Summary:          Tools for the Network Security Services
-Requires:         %{name}%{?_isa} = %{version}-%{release}
+Requires:         %{name}%{?_isa} = %{nss_version}-%{release}
 
 %description tools
 Network Security Services (NSS) is a set of libraries designed to
@@ -164,7 +164,7 @@ Summary:          System NSS Initialization
 # providing nss-system-init without version so that it can
 # be replaced by a better one, e.g. supplied by the os vendor
 Provides:         nss-system-init
-Requires:         nss%{?_isa} = %{version}-%{release}
+Requires:         nss%{?_isa} = %{nss_version}-%{release}
 Requires(post):   coreutils, sed
 
 %description sysinit
@@ -175,8 +175,8 @@ any system or user configured modules.
 
 %package devel
 Summary:          Development libraries for Network Security Services
-Provides:         nss-static = %{version}-%{release}
-Requires:         nss%{?_isa} = %{version}-%{release}
+Provides:         nss-static = %{nss_version}-%{release}
+Requires:         nss%{?_isa} = %{nss_version}-%{release}
 Requires:         nss-util-devel
 Requires:         nss-softokn-devel
 Requires:         nspr-devel >= %{nspr_version}
@@ -189,9 +189,9 @@ Header and Library files for doing development with Network Security Services.
 
 %package pkcs11-devel
 Summary:          Development libraries for PKCS #11 (Cryptoki) using NSS
-Provides:         nss-pkcs11-devel-static = %{version}-%{release}
-Requires:         nss-devel = %{version}-%{release}
-Requires:         nss-softokn-freebl-devel = %{version}-%{release}
+Provides:         nss-pkcs11-devel-static = %{nss_version}-%{release}
+Requires:         nss-devel = %{nss_version}-%{release}
+Requires:         nss-softokn-freebl-devel = %{nss_version}-%{release}
 
 %description pkcs11-devel
 Library files for developing PKCS #11 modules using basic NSS
@@ -207,7 +207,7 @@ Utilities for Network Security Services and the Softoken module
 
 %package util-devel
 Summary:          Development libraries for Network Security Services Utilities
-Requires:         nss-util%{?_isa} = %{version}-%{release}
+Requires:         nss-util%{?_isa} = %{nss_version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
 Requires:         pkgconfig
 
@@ -218,8 +218,8 @@ Header and library files for doing development with Network Security Services.
 %package softokn
 Summary:          Network Security Services Softoken Module
 Requires:         nspr >= %{nspr_version}
-Requires:         nss-util >= %{version}-%{release}
-Requires:         nss-softokn-freebl%{_isa} >= %{version}-%{release}
+Requires:         nss-util >= %{nss_version}-%{release}
+Requires:         nss-softokn-freebl%{_isa} >= %{nss_version}-%{release}
 
 %description softokn
 Network Security Services Softoken Cryptographic Module
@@ -240,8 +240,8 @@ Install the nss-softokn-freebl package if you need the freebl library.
 
 %package softokn-freebl-devel
 Summary:          Header and Library files for doing development with the Freebl library for NSS
-Provides:         nss-softokn-freebl-static = %{version}-%{release}
-Requires:         nss-softokn-freebl%{?_isa} = %{version}-%{release}
+Provides:         nss-softokn-freebl-static = %{nss_version}-%{release}
+Requires:         nss-softokn-freebl%{?_isa} = %{nss_version}-%{release}
 
 %description softokn-freebl-devel
 NSS Softoken Cryptographic Module Freebl Library Development Tools
@@ -252,10 +252,10 @@ Developers should rely only on the officially supported NSS public API.
 
 %package softokn-devel
 Summary:          Development libraries for Network Security Services
-Requires:         nss-softokn%{?_isa} = %{version}-%{release}
-Requires:         nss-softokn-freebl-devel%{?_isa} = %{version}-%{release}
+Requires:         nss-softokn%{?_isa} = %{nss_version}-%{release}
+Requires:         nss-softokn-freebl-devel%{?_isa} = %{nss_version}-%{release}
 Requires:         nspr-devel >= %{nspr_version}
-Requires:         nss-util-devel >= %{version}-%{release}
+Requires:         nss-util-devel >= %{nss_version}-%{release}
 Requires:         pkgconfig
 
 %description softokn-devel
@@ -1091,6 +1091,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri May 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.89.0-1
+- replace %{version} with %{nss_version} as it version can be overiden.
+
 * Fri Mar 10 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.89.0-1
 - Update NSS to 3.89.0
 
