@@ -57,6 +57,8 @@ rpm.define(string.format("nss_release_tag NSS_%s_RTM",
            string.gsub(rpm.expand("%nss_archive_version"), "%.", "_")))
 }
 
+%global nss_nspr_archive nss-%{nss_archive_version}-with-nspr-%{nspr_archive_version}
+
 Summary:          Network Security Services
 Name:             nss
 Version:          %{nss_version}
@@ -82,7 +84,7 @@ BuildRequires:    psmisc
 BuildRequires:    perl-interpreter
 BuildRequires:    gcc-c++
 
-Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{name}-%{nss_archive_version}.tar.gz
+Source0:          https://ftp.mozilla.org/pub/security/nss/releases/%{nss_release_tag}/src/%{nss_nspr_archive}.tar.gz
 Source1:          nss-util.pc.in
 Source2:          nss-util-config.in
 Source3:          nss-softokn.pc.in
@@ -112,7 +114,6 @@ Source27:         secmod.db.xml
 %endif
 Source28:         nss-p11-kit.config
 
-Source100:        nspr-%{nspr_archive_version}.tar.gz
 Source101:        nspr-config.xml
 
 # This patch uses the GCC -iquote option documented at
@@ -288,12 +289,8 @@ Conflicts:      filesystem < 3
 %description -n nspr-devel
 Header files for doing development with the Netscape Portable Runtime.
 
-
 %prep
-%setup -q -T -b 100 -n nspr-%{nspr_archive_version}
-
 %setup -q -T -b 0 -n %{name}-%{nss_archive_version}
-mv ../nspr-%{nspr_archive_version}/nspr .
 cp ./nspr/config/nspr-config.in ./nspr/config/nspr-config-pc.in
 
 %patch100 -p0 -b .flags
@@ -1091,6 +1088,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Fri May 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.89.0-1
+- combine nss and nspr source togeather
+
 * Fri May 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.89.0-1
 - replace %{version} with %{nss_version} as it version can be overiden.
 
