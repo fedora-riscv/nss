@@ -293,9 +293,9 @@ Header files for doing development with the Netscape Portable Runtime.
 %setup -q -T -b 0 -n %{name}-%{nss_archive_version}
 cp ./nspr/config/nspr-config.in ./nspr/config/nspr-config-pc.in
 
-%patch100 -p0 -b .flags
+%patch 100 -p0 -b .flags
 pushd nspr
-%patch101 -p1 -b .gcc-atomics
+%patch 101 -p1 -b .gcc-atomics
 popd
 
 pushd nss
@@ -1088,6 +1088,10 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+
+* Mon Jun 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
+- Update %patch syntax
+
 * Mon Jun 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
 - Update NSS to 3.90.0
 
