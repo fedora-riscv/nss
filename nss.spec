@@ -132,6 +132,10 @@ Patch12:          nss-signtool-format.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
 
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1836781
+# https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
+Patch60:          nss-3.90-DisablingASM.patch
+
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
 
@@ -1084,6 +1088,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Jun 6 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
+- Add patch for https://bugzilla.mozilla.org/show_bug.cgi?id=1836781 &
+                https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
 
 * Mon Jun 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
 - Update %patch syntax
