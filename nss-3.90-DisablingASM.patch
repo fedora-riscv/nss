@@ -1,0 +1,36 @@
+diff --git a/lib/freebl/Makefile b/lib/freebl/Makefile
+--- a/lib/freebl/Makefile
++++ b/lib/freebl/Makefile
+@@ -560,6 +560,9 @@ else
+ endif # Solaris for non-sparc family CPUs
+ endif # target == SunO
+ 
++# As the result of the bug https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
++# we currently totally removing the support of Vale implementation of Curve25519
++SUPPORTS_VALE_CURVE25519 = 0
+ ifdef USE_64
+ # no __int128 at least up to lcc 1.23 (pretending to be gcc5)
+ # NB: CC_NAME is not defined here
+@@ -568,7 +571,6 @@ ifneq ($(shell $(CC) -? 2>&1 >/dev/null </dev/null | sed -e 's/:.*//;1q'),lcc)
+             HAVE_INT128_SUPPORT = 1
+             DEFINES += -DHAVE_INT128_SUPPORT
+     else ifeq (1,$(CC_IS_GCC))
+-        SUPPORTS_VALE_CURVE25519 = 1
+         ifneq (,$(filter 4.6 4.7 4.8 4.9,$(word 1,$(GCC_VERSION)).$(word 2,$(GCC_VERSION))))
+             HAVE_INT128_SUPPORT = 1
+             DEFINES += -DHAVE_INT128_SUPPORT
+diff --git a/lib/freebl/freebl.gyp b/lib/freebl/freebl.gyp
+--- a/lib/freebl/freebl.gyp
++++ b/lib/freebl/freebl.gyp
+@@ -934,11 +934,6 @@
+   'variables': {
+     'module': 'nss',
+     'conditions': [
+-      [ 'target_arch=="x64" and cc_is_gcc==1', {
+-        'supports_vale_curve25519%': 1,
+-      }, {
+-        'supports_vale_curve25519%': 0,
+-      }],
+       [ 'target_arch=="x64" or target_arch=="arm64" or target_arch=="aarch64"', {
+         'have_int128_support%': 1,
+       }, {
