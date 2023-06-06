@@ -1092,7 +1092,7 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
-* Thu Jun 6 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
+* Tue Jun 6 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
 - Add patch for https://bugzilla.mozilla.org/show_bug.cgi?id=1836781 &
                 https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
 
