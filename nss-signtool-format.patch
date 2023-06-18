@@ -10,7 +10,7 @@ diff --git a/cmd/modutil/install.c b/cmd/modutil/install.c
  
          /* Recursively delete all entries in the directory */
          while ((entry = PR_ReadDir(dir, PR_SKIP_BOTH)) != NULL) {
--            sprintf(filename, "%s/%s", path, entry->name);
+-            snprintf(filename, sizeof(filename), "%s/%s", path, entry->name);
 +            if (snprintf(filename, sizeof(filename), "%s/%s", path, entry->name) >= sizeof(filename)) {
 +                PR_CloseDir(dir);
 +                return -1;
@@ -29,7 +29,7 @@ diff --git a/cmd/signtool/util.c b/cmd/signtool/util.c
 @@ -138,6 +138,12 @@ rm_dash_r(char *path)
          /* Recursively delete all entries in the directory */
          while ((entry = PR_ReadDir(dir, PR_SKIP_BOTH)) != NULL) {
-             sprintf(filename, "%s/%s", path, entry->name);
+             snprintf(filename, sizeof(filename), "%s/%s", path, entry->name);
 +            if (snprintf(filename, sizeof(filename), "%s/%s", path, entry->name
 +) >= sizeof(filename)) {
 +                errorCount++;
