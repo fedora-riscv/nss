@@ -1,5 +1,5 @@
 %global nspr_version 4.35.0
-%global nss_version 3.90.0
+%global nss_version 3.92.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
@@ -7,7 +7,7 @@
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %[%baserelease+6]
+%global nspr_release %[%baserelease+8]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -139,10 +139,6 @@ Patch40:          nss-no-dbm-man-page.patch
 
 # https://bugzilla.mozilla.org/show_bug.cgi?id=1774659
 Patch51:	nss-3.79-dbtool.patch
-
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1836781
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
-Patch60:          nss-3.90-DisablingASM.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1097,16 +1093,25 @@ update-crypto-policies &> /dev/null || :
 %{_includedir}/nspr4
 %{_libdir}/pkgconfig/nspr.pc
 %{_bindir}/nspr-config
-%{_mandir}/man*/*
+%doc %{_mandir}/man1/nspr-config.*
 
 
 %changelog
-* Sun Jun 18 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 3.90.0-1.rv64
-- Disable tests by default on riscv64 due to failure.
+* Thu Aug 3 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 3.92.0-1.rv64
+- Merge to upstream version 3.92.0-1
+
+* Tue Aug 1 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.92.0-1
+- Update NSS to 3.92.0
+
+* Tue Jul 4 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.91.0-1
+- Update NSS to 3.91.0
 
 * Tue Jun 6 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
 - Add patch for https://bugzilla.mozilla.org/show_bug.cgi?id=1836781 &
                 https://bugzilla.mozilla.org/show_bug.cgi?id=1836925
+
+* Sun Jun 18 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 3.90.0-1.rv64
+- Disable tests by default on riscv64 due to failure.
 
 * Mon Jun 5 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.90.0-1
 - Update %patch syntax
