@@ -3,7 +3,7 @@
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
-%global baserelease 1
+%global baserelease 2
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
@@ -131,6 +131,8 @@ Patch4:           iquote.patch
 Patch12:          nss-signtool-format.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
+
+Patch50:          nss-3.94-fix-ec-encoding.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1085,6 +1087,9 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Oct 26 2023 Bob Relyea <rrelyea#redhat.com> - 3.94.0-2
+- binary compatibility issue with HACL ECC 256 patch.
+
 * Wed Oct 4 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.94.0-1
 - Update NSS to 3.94.0
 
