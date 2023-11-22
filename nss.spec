@@ -1,5 +1,5 @@
 %global nspr_version 4.35.0
-%global nss_version 3.92.0
+%global nss_version 3.94.0
 # NOTE: To avoid NVR clashes of nspr* packages:
 # - reset %%{nspr_release} to 1, when updating %%{nspr_version}
 # - increment %%{nspr_version}, when updating the NSS part only
@@ -7,7 +7,7 @@
 %global nss_release %baserelease
 # use "%%global nspr_release %%[%%baserelease+n]" to handle offsets when
 # release number between nss and nspr are different.
-%global nspr_release %[%baserelease+8]
+%global nspr_release %[%baserelease+12]
 # only need to update this as we added new
 # algorithms under nss policy control
 %global crypto_policies_version 20210118
@@ -137,8 +137,7 @@ Patch12:          nss-signtool-format.patch
 # fedora disabled dbm by default
 Patch40:          nss-no-dbm-man-page.patch
 
-# https://bugzilla.mozilla.org/show_bug.cgi?id=1774659
-Patch51:	nss-3.79-dbtool.patch
+Patch50:          nss-3.94-fix-ec-encoding.patch
 
 Patch100:         nspr-config-pc.patch
 Patch101:         nspr-gcc-atomics.patch
@@ -1097,11 +1096,23 @@ update-crypto-policies &> /dev/null || :
 
 
 %changelog
+* Thu Oct 26 2023 Bob Relyea <rrelyea#redhat.com> - 3.94.0-2
+- binary compatibility issue with HACL ECC 256 patch.
+
+* Wed Oct 4 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.94.0-1
+- Update NSS to 3.94.0
+
+* Thu Aug 31 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.93.0-1
+- Update NSS to 3.93.0
+
 * Thu Aug 3 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 3.92.0-1.rv64
 - Merge to upstream version 3.92.0-1
 
 * Tue Aug 1 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.92.0-1
 - Update NSS to 3.92.0
+
+* Thu Jul 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 3.91.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
 
 * Tue Jul 4 2023 Frantisek Krenzelok <krenzelok.frantisek@gmail.com> - 3.91.0-1
 - Update NSS to 3.91.0

@@ -1,4 +1,0 @@
-PURPOSE of NSS-tools-should-not-use-SHA1-by-default-when
-Description: NSS tools should not use SHA1 by default when
-Author: Hubert Kario <hkario@redhat.com>
-Summary: NSS tools should not use SHA1 by default when generating digital signatures/certificates
